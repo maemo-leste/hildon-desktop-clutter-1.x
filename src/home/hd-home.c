@@ -81,7 +81,6 @@
 #define HD_HOME_DBUS_PATH  "/com/nokia/HildonDesktop/Home"
 
 #define GCONF_KEY_SCROLL_VERTICAL    "/apps/osso/hildon-desktop/scroll_vertical"
-#define GCONF_KEY_EDIT_MODE_PORTRAIT "/apps/osso/hildon-desktop/edit_mode_portrait"
 #define GCONF_KEY_PORTRAIT_WALLPAPER "/apps/osso/hildon-desktop/portrait_wallpaper"
 
 #define CALL_UI_GCONF_KEY "/apps/osso/hildon-desktop/callui_dbus_interface"
@@ -281,29 +280,10 @@ hd_home_edit_button_clicked (ClutterActor *button,
 			     ClutterEvent *event,
 			     HdHome       *home)
 {
-  GError *error = NULL;
-  GConfClient *gconf_client = gconf_client_get_default ();
-
 	if(STATE_IS_PORTRAIT (hd_render_manager_get_state()))
-    {
-      gconf_client_set_bool(gconf_client, GCONF_KEY_EDIT_MODE_PORTRAIT, TRUE, &error);
-	    hd_render_manager_set_state(HDRM_STATE_HOME_EDIT_PORTRAIT);
-    }
+	  hd_render_manager_set_state(HDRM_STATE_HOME_EDIT_PORTRAIT);
 	else
-    {
-      gconf_client_set_bool(gconf_client, GCONF_KEY_EDIT_MODE_PORTRAIT, FALSE, &error);
-	    hd_render_manager_set_state(HDRM_STATE_HOME_EDIT);
-    }
-
-  if (G_UNLIKELY (error))
-    {
-      g_warning ("%s. Could not sync GConf. %s",
-                 __FUNCTION__,
-                 error->message);
-      g_clear_error (&error);
-    }
-
-  g_object_unref (gconf_client);
+	  hd_render_manager_set_state(HDRM_STATE_HOME_EDIT);
 
   return TRUE;
 }

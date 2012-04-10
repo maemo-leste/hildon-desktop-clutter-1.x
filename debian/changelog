@@ -1,3 +1,9 @@
+hildon-desktop (1:2.2.142-21) unstable; urgency=low
+
+  * Remove depracted GConf key.
+
+ -- Tomasz Pieniazek <t.pieniazek@gazeta.pl>  Tue, 10 Apr 2012 20:48:41 +0200
+
 hildon-desktop (1:2.2.142-20) unstable; urgency=low
 
   * Don't do extra transistion when launching an application that does not support portrait.
