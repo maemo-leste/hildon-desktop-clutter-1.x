@@ -3773,7 +3773,7 @@ hd_comp_mgr_is_whitelisted(MBWindowManager *wm, MBWindowManagerClient *c)
   gchar *wname = NULL;
   gboolean is_on_whitelist = FALSE;
 
-  if (!HD_IS_APP (c) || !MB_WINDOW_MANAGER(wm) || c == wm->desktop)
+  if ((!c) || !HD_IS_APP (c) || !MB_WINDOW_MANAGER(wm) || c == wm->desktop)
     return FALSE;
 
   whitelist = g_strdup(hd_transition_get_string("thp_tweaks", "whitelist", ""));
@@ -3809,7 +3809,7 @@ hd_comp_mgr_is_blacklisted(MBWindowManager *wm, MBWindowManagerClient *c)
   Status ret;
   gchar *wname = NULL;
 
-  if (!HD_IS_APP (c) || !MB_WINDOW_MANAGER(wm) || c == wm->desktop)
+  if ((!c) || !HD_IS_APP (c) || !MB_WINDOW_MANAGER(wm) || c == wm->desktop)
     return FALSE;
 
   /* We don't want blacklisted windows when forcerotation == 0. */

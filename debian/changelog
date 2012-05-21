@@ -1,3 +1,9 @@
+hildon-desktop (1:2.2.142-21.1) unstable; urgency=low
+
+  * Don't dereference null pointer when checking for whitelisted/blacklisted application.
+
+ -- Ivaylo Dimitrov <freemangordon@abv.bg>  Mon, 21 May 2012 16:06:33 +0300
+
 hildon-desktop (1:2.2.142-21) unstable; urgency=low
 
   * Remove depracted GConf key.
