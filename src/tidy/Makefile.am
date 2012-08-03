@@ -28,6 +28,7 @@ source_h = \
 	$(top_srcdir)/src/tidy/tidy-adjustment.h	\
 	$(top_srcdir)/src/tidy/tidy-blur-group.h 	\
 	$(top_srcdir)/src/tidy/tidy-cached-group.h 	\
+	$(top_srcdir)/src/tidy/tidy-desaturation-group.h 	\
 	$(top_srcdir)/src/tidy/tidy-finger-scroll.h	\
 	$(top_srcdir)/src/tidy/tidy-frame.h	\
 	$(top_srcdir)/src/tidy/tidy-highlight.h		\
@@ -52,6 +53,7 @@ source_c = \
 	tidy-adjustment.c \
 	tidy-blur-group.c \
 	tidy-cached-group.c \
+	tidy-desaturation-group.c \
 	tidy-finger-scroll.c \
 	tidy-frame.c \
 	tidy-highlight.c \
