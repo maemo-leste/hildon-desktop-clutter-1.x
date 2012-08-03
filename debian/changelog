@@ -1,3 +1,10 @@
+hildon-desktop (1:2.2.142-22) unstable; urgency=low
+
+  * Make blurless desaturation tweak really blurless.
+  * Desaturate the window thumb, when it's about to close.
+
+ -- Tomasz Pieniążek <t.pieniazek@gazeta.pl>  Fri, 03 Aug 2012 16:28:03 +0200
+
 hildon-desktop (1:2.2.142-21.1) unstable; urgency=low
 
   * Don't dereference null pointer when checking for whitelisted/blacklisted application.
