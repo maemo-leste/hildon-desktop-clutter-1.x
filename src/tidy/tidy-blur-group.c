@@ -512,7 +512,8 @@ tidy_blur_group_paint (ClutterActor *actor)
       }
 
       /* translate a bit to let bilinear filter smooth out intermediate pixels */
-      cogl_translatex(CFX_ONE/2,CFX_ONE/2,0);
+      if (!priv->tweaks_blurless)
+        cogl_translatex(CFX_ONE/2,CFX_ONE/2,0);
 
       cogl_paint_init(&bgcol);
       cogl_color (&white);
