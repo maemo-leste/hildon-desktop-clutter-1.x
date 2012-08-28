@@ -184,6 +184,9 @@
 #define NOTIFADE_OUT_DURATION     \
   hd_transition_get_int("task_nav", "notifade_out", 250)
 
+#define THUMB_DESATURATION_ENABLED     \
+  hd_transition_get_int("thp_tweaks", "thumb_desaturation", 0)
+
 /*
  *  These are based on the UX Guidance.
  *
@@ -2424,7 +2427,10 @@ create_thwin (Thumbnail * thumb, ClutterActor * prison)
                          thumb->title, thumb->close, NULL);
 
   /* .thwin */
-  thumb->thwin = tidy_desaturation_group_new ();
+  if (THUMB_DESATURATION_ENABLED)
+    thumb->thwin = tidy_desaturation_group_new ();
+  else
+    thumb->thwin = clutter_group_new ();
 
   clutter_actor_set_name (thumb->thwin, "thumbnail");
   clutter_actor_set_reactive (thumb->thwin, TRUE);
@@ -3080,7 +3086,8 @@ appthumb_close_clicked (const Thumbnail * apthumb)
     g_signal_emit_by_name (Navigator, "notification-closed",
                            apthumb->tnote->hdnote);
   else {
-    if (!apthumb_has_dialogs (apthumb))
+    if (!apthumb_has_dialogs (apthumb) 
+      && THUMB_DESATURATION_ENABLED)
         appthumb_set_desaturation (apthumb, TRUE);
 
     /* Report a regular click on the thumbnail (and make %HdSwitcher zoom in)
@@ -3471,7 +3478,8 @@ hd_task_navigator_add_dialog (HdTaskNavigator * self,
   clutter_actor_hide (apthumb->close_app_icon);
 
   /* Undo desaturation for @apthumb->thwin. */
-  appthumb_set_desaturation (apthumb, FALSE);
+  if (THUMB_DESATURATION_ENABLED)
+    appthumb_set_desaturation (apthumb, FALSE);
 }
 /* Add/remove windows }}} */
 
