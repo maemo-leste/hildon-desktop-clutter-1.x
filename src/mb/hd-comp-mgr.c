@@ -3397,29 +3397,29 @@ hd_comp_mgr_should_be_portrait (HdCompMgr *hmgr)
 gboolean
 hd_comp_mgr_can_be_portrait (HdCompMgr *hmgr)
 {
-  if (STATE_IS_LAUNCHER (hd_render_manager_get_state ()))
+    if (STATE_IS_LAUNCHER (hd_render_manager_get_state ()))
     {
-      if (hd_app_mgr_ui_can_rotate ())
-        return TRUE;
-      else
-        return FALSE;
+        if (hd_app_mgr_ui_can_rotate ())
+            return TRUE;
+        else
+            return FALSE;
     }
-  else if (STATE_IS_TASK_NAV (hd_render_manager_get_state ()))
+    else if (STATE_IS_TASK_NAV (hd_render_manager_get_state ()))
     {
-      return hd_app_mgr_slide_is_open();
+        return hd_app_mgr_slide_is_open();
     }
-	else if (STATE_IS_HOME (hd_render_manager_get_state ()))
-	{
-		return hd_app_mgr_slide_is_open();
-	}
-	else if (STATE_IS_EDIT_MODE (hd_render_manager_get_state ()))
-	{
-		return hd_app_mgr_slide_is_open();
-	}
-  else
+    else if (STATE_IS_HOME (hd_render_manager_get_state ()))
     {
-      /* compute it normally if not in LAUNCHER */
-      return hd_comp_mgr_may_be_portrait(hmgr, TRUE);
+        return hd_app_mgr_slide_is_open();
+    }
+    else if (STATE_IS_EDIT_MODE (hd_render_manager_get_state ()))
+    {
+        return hd_app_mgr_slide_is_open();
+    }
+    else
+    {
+        /* compute it normally if not in LAUNCHER */
+        return hd_comp_mgr_may_be_portrait(hmgr, TRUE);
     }
 }
 
