@@ -2068,10 +2068,11 @@ hd_comp_mgr_map_notify (MBWMCompMgr *mgr, MBWindowManagerClient *c)
         }
       /* Move to HDRM_STATE_HOME even if we don't have a loading screen,
        * otherwise we hide the launcher and go to a broken state. */
-			if(STATE_IS_PORTRAIT (hd_render_manager_get_state () ))
+      if(STATE_IS_PORTRAIT (hd_render_manager_get_state () ))
 	      hd_render_manager_set_state (HDRM_STATE_HOME_PORTRAIT);
-			else
-				hd_render_manager_set_state (HDRM_STATE_HOME);
+      else
+		  hd_render_manager_set_state (HDRM_STATE_HOME);
+
       hd_launcher_hide ();
       return;
     }
@@ -2196,13 +2197,14 @@ hd_comp_mgr_map_notify (MBWMCompMgr *mgr, MBWindowManagerClient *c)
     if (ctype == MBWMClientTypeDialog
         || HD_IS_INFO_NOTE (c) || HD_IS_CONFIRMATION_NOTE (c))
       if (STATE_ONE_OF(hd_render_manager_get_state(),
-                       HDRM_STATE_LAUNCHER | HDRM_STATE_LAUNCHER_PORTRAIT |
-		       HDRM_STATE_TASK_NAV | HDRM_STATE_TASK_NAV_PORTRAIT))
+            HDRM_STATE_LAUNCHER | HDRM_STATE_LAUNCHER_PORTRAIT |
+            HDRM_STATE_TASK_NAV | HDRM_STATE_TASK_NAV_PORTRAIT))
         {
-					if(STATE_IS_PORTRAIT (hd_render_manager_get_state () ))
+            if(STATE_IS_PORTRAIT (hd_render_manager_get_state () ))
 	      		hd_render_manager_set_state (HDRM_STATE_HOME_PORTRAIT);
-					else
-						hd_render_manager_set_state (HDRM_STATE_HOME);
+            else
+                hd_render_manager_set_state (HDRM_STATE_HOME);
+
           if (hd_comp_mgr_client_is_maximized(c->window->geometry))
             /*
              * So we are in switcher view and want to get to home view
@@ -2255,14 +2257,14 @@ hd_comp_mgr_map_notify (MBWMCompMgr *mgr, MBWindowManagerClient *c)
   else if (ctype == HdWmClientTypeStatusMenu)
     { /* Either status menu OR power menu. */
       if (STATE_ONE_OF(hd_render_manager_get_state(),
-                       HDRM_STATE_LAUNCHER | HDRM_STATE_LAUNCHER_PORTRAIT |
-		       HDRM_STATE_TASK_NAV | HDRM_STATE_TASK_NAV_PORTRAIT))
-			{
-				if(STATE_IS_PORTRAIT (hd_render_manager_get_state () ))
-	      	hd_render_manager_set_state (HDRM_STATE_HOME_PORTRAIT);
-				else
-					hd_render_manager_set_state (HDRM_STATE_HOME);
-			}
+            HDRM_STATE_LAUNCHER | HDRM_STATE_LAUNCHER_PORTRAIT |
+            HDRM_STATE_TASK_NAV | HDRM_STATE_TASK_NAV_PORTRAIT))
+        {
+            if(STATE_IS_PORTRAIT (hd_render_manager_get_state () ))
+                hd_render_manager_set_state (HDRM_STATE_HOME_PORTRAIT);
+            else
+                hd_render_manager_set_state (HDRM_STATE_HOME);
+        }
       hd_home_add_status_menu (HD_HOME (priv->home), actor);
       priv->status_menu_client = c;
       return;
@@ -2704,12 +2706,12 @@ hd_comp_mgr_reconsider_compositing (MBWMCompMgr *mgr)
   else if (STATE_IS_NON_COMP (hdrm_state))
     {
       if (c && c == mgr->wm->desktop)
-			{
-				if(STATE_IS_PORTRAIT (hdrm_state ))
-		      hd_render_manager_set_state (HDRM_STATE_HOME_PORTRAIT);
-				else
-					hd_render_manager_set_state (HDRM_STATE_HOME);
-			}
+        {
+            if(STATE_IS_PORTRAIT (hdrm_state ))
+                hd_render_manager_set_state (HDRM_STATE_HOME_PORTRAIT);
+            else
+                hd_render_manager_set_state (HDRM_STATE_HOME);
+        }
       else if (c)
         {
           MBWindowManagerClient *tmp;
@@ -2791,12 +2793,12 @@ hd_comp_mgr_unmap_notify (MBWMCompMgr *mgr, MBWindowManagerClient *c)
           }
         }
       if (!grab_spoil)
-				{
-					if(STATE_IS_PORTRAIT(hdrm_state))
-	        	hd_render_manager_set_state(HDRM_STATE_HOME_EDIT_PORTRAIT);
-					else
-	        	hd_render_manager_set_state(HDRM_STATE_HOME_EDIT);
-				}
+        {
+            if(STATE_IS_PORTRAIT(hdrm_state))
+                hd_render_manager_set_state(HDRM_STATE_HOME_EDIT_PORTRAIT);
+            else
+                hd_render_manager_set_state(HDRM_STATE_HOME_EDIT);
+        }
     }
 
   if (HD_IS_APP (c) && HD_APP (c)->stack_index > 0 &&
