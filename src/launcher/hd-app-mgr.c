@@ -2274,7 +2274,7 @@ hd_app_mgr_gconf_value_changed (GConfClient *client,
           hd_render_manager_set_state (hd_render_manager_get_state () == HDRM_STATE_LAUNCHER_PORTRAIT?HDRM_STATE_LAUNCHER:HDRM_STATE_TASK_NAV);
           priv->portrait = portrait;
         }
-      else if (priv->slide_closed && priv->portrait &&
+      else if (priv->slide_closed && priv->portrait && priv->ui_can_rotate &&
         STATE_ONE_OF(hd_render_manager_get_state () , HDRM_STATE_LAUNCHER | HDRM_STATE_TASK_NAV))
           hd_render_manager_set_state (hd_render_manager_get_state () == HDRM_STATE_LAUNCHER?HDRM_STATE_LAUNCHER_PORTRAIT:HDRM_STATE_TASK_NAV_PORTRAIT);
       else
