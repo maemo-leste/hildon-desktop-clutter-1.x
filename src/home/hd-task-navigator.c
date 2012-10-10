@@ -4407,7 +4407,8 @@ hd_task_navigator_new (void)
 }
 /* %HdTaskNavigator }}} */
 
-static int hd_thumb_compare (gconstpointer a, gconstpointer b)
+static int
+hd_thumb_compare (gconstpointer a, gconstpointer b)
 {
 	Thumbnail *t=(Thumbnail *)a;
 	Thumbnail *s=(Thumbnail *)b;
@@ -4422,14 +4423,16 @@ static int hd_thumb_compare (gconstpointer a, gconstpointer b)
 	return s->last_activated - t->last_activated;
 }	
 
-static int hd_thumb_compare2 (gconstpointer a, gconstpointer b)
+static int
+hd_thumb_compare2 (gconstpointer a, gconstpointer b)
 {
   Thumbnail *t=(Thumbnail *)a;
   Thumbnail *s=(Thumbnail *)b;
   return t->last_activated - s->last_activated;
 }
 
-void hd_task_navigator_rotate_thumbs (void) 
+void
+hd_task_navigator_rotate_thumbs (void) 
 {
 	GList *s, *t;
 
@@ -4451,7 +4454,8 @@ void hd_task_navigator_rotate_thumbs (void)
 
   layout (NULL, FALSE);
 }
-void hd_task_navigator_sort_thumbs (void) 
+void
+hd_task_navigator_sort_thumbs (void) 
 {
 	GList *s, *t;
 
@@ -4465,7 +4469,8 @@ void hd_task_navigator_sort_thumbs (void)
   layout (NULL, FALSE);
 }
 
-void hd_task_navigator_activate (int x, int y, int close) 
+void
+hd_task_navigator_activate (int x, int y, int close) 
 {
 	Layout lout;
 	int n;
@@ -4523,12 +4528,14 @@ void hd_task_navigator_activate (int x, int y, int close)
 	  }
 }
 
-int hd_task_navigator_mode(void)
+int
+hd_task_navigator_mode(void)
 {
   return g_hd_task_navigator_mode;
 }
 
-void hd_task_navigator_rotate(int mode)
+void
+hd_task_navigator_rotate(int mode)
 {
   if(mode)
     mode = 1;
@@ -4546,7 +4553,8 @@ void hd_task_navigator_rotate(int mode)
   layout (NULL, FALSE);
 }
 
-void hd_task_navigator_update_orientation(gboolean portrait)
+void
+hd_task_navigator_update_orientation(gboolean portrait)
 {
   hd_launcher_update_orientation (portrait);
   hd_app_mgr_update_orientation();
@@ -4566,7 +4574,8 @@ hd_task_navigator_app_portrait_capable(Thumbnail * thumb)
       !hd_comp_mgr_is_blacklisted (thumb->win->wm, c);
 }
 
-static Thumbnail * find_thumb_from_xwindow(Window xwindow)
+static Thumbnail *
+find_thumb_from_xwindow(Window xwindow)
 {
   int i;
   const GList *li;
@@ -4578,7 +4587,8 @@ static Thumbnail * find_thumb_from_xwindow(Window xwindow)
   return NULL;
 }
 
-void hd_task_navigator_update_win_orientation(Window xwindow, gboolean portrait)
+void
+hd_task_navigator_update_win_orientation(Window xwindow, gboolean portrait)
 {
   if (!STATE_IS_TASK_NAV(hd_render_manager_get_state ()) || !IS_PORTRAIT || (portrait == -1))
     /* We do not care, get out of here */
@@ -4683,7 +4693,8 @@ hd_task_navigator_get_disable_portrait(MBWindowManagerClient *c)
 
   return disable_portrait;
 }
-static void hd_task_navigator_set_disable_portrait(Thumbnail * thumb,gboolean disable)
+static void
+hd_task_navigator_set_disable_portrait(Thumbnail * thumb,gboolean disable)
 {
   Display * dpy=thumb->win->wm->xdpy;
 
