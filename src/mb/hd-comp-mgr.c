@@ -3334,61 +3334,61 @@ void hd_comp_mgr_set_pip_flags (HdCompMgr *hmgr,
 gboolean
 hd_comp_mgr_should_be_portrait (HdCompMgr *hmgr)
 {
-    HdCompMgrPrivate *priv = hmgr->priv;
+  HdCompMgrPrivate *priv = hmgr->priv;
 
-    /* LAUNCHER can be portraited but does not handle the normal XProperties so
-    * we need to check it explicitely */
-    if (STATE_IS_LAUNCHER (hd_render_manager_get_state ()))
+  /* LAUNCHER can be portraited but does not handle the normal XProperties so
+  * we need to check it explicitely */
+  if (STATE_IS_LAUNCHER (hd_render_manager_get_state ()))
     {
-        if (hd_app_mgr_ui_can_rotate () && hd_app_mgr_is_portrait ())
-            return TRUE;
-        else
-            return FALSE;
-    }
-    else if (STATE_IS_TASK_NAV (hd_render_manager_get_state ()))
-    {
-        if(hd_task_navigator_mode())
-	        return TRUE;
-	    else
-	        return FALSE;
-    }
-	else if (STATE_IS_HOME (hd_render_manager_get_state ()))
-	{
-        /* Check if desktop is not prevented from switching to portrait mode */
-        if (gconf_client_get_bool (priv->gconf_client, GCONF_KEY_DESKTOP_ORIENTATION_LOCK, NULL))
-            return FALSE;
-
-        /* Let's honour orientation lock, prevents freezing desktop in portrait
-         * mode */
-        gboolean orientation_lock = gconf_client_get_bool (priv->gconf_client, 
-																												GCONF_KEY_ORIENTATION_LOCK, NULL);
-
-        /* hd_comp_mgr_may_be_portrait tells also if there's an app _requesting_ 
-        * portrait mode (mostly call-ui) */
-        if((hd_home_is_portrait_capable () && !orientation_lock) || hd_comp_mgr_may_be_portrait(hmgr, FALSE))
-            return TRUE;
-        else
+      if (hd_app_mgr_ui_can_rotate () && hd_app_mgr_is_portrait ())
+        return TRUE;
+      else
         return FALSE;
     }
-    else if (STATE_IS_EDIT_MODE (hd_render_manager_get_state ()))
+  else if (STATE_IS_TASK_NAV (hd_render_manager_get_state ()))
     {
-        /* Check if desktop is not prevented from switching to portrait mode */
-        if (gconf_client_get_bool (priv->gconf_client, GCONF_KEY_DESKTOP_ORIENTATION_LOCK, NULL))
-            return FALSE;
-
-        /* Check if we are in portrait desktop edit mode and block screen orientation 
-         * if it's true */
-        gboolean is_edit_portrait = (hd_render_manager_get_state () == HDRM_STATE_HOME_EDIT_PORTRAIT 
-																|| hd_render_manager_get_state () == HDRM_STATE_HOME_EDIT_DLG_PORTRAIT);
-
-        if((hd_home_is_portrait_capable () || is_edit_portrait) && is_edit_portrait)
-            return TRUE;
-        else
-            return FALSE;
+      if(hd_task_navigator_mode())
+        return TRUE;
+      else
+        return FALSE;
     }
-    else
+  else if (STATE_IS_HOME (hd_render_manager_get_state ()))
     {
-        return hd_comp_mgr_may_be_portrait(hmgr, FALSE);
+      /* Check if desktop is not prevented from switching to portrait mode */
+      if (gconf_client_get_bool (priv->gconf_client, GCONF_KEY_DESKTOP_ORIENTATION_LOCK, NULL))
+        return FALSE;
+
+      /* Let's honour orientation lock, prevents freezing desktop in portrait
+       * mode */
+      gboolean orientation_lock = gconf_client_get_bool (priv->gconf_client, 
+																												GCONF_KEY_ORIENTATION_LOCK, NULL);
+
+      /* hd_comp_mgr_may_be_portrait tells also if there's an app _requesting_ 
+       * portrait mode (mostly call-ui) */
+      if ((hd_home_is_portrait_capable () && !orientation_lock) || hd_comp_mgr_may_be_portrait(hmgr, FALSE))
+        return TRUE;
+      else
+        return FALSE;
+    }
+  else if (STATE_IS_EDIT_MODE (hd_render_manager_get_state ()))
+    {
+      /* Check if desktop is not prevented from switching to portrait mode */
+      if (gconf_client_get_bool (priv->gconf_client, GCONF_KEY_DESKTOP_ORIENTATION_LOCK, NULL))
+        return FALSE;
+
+      /* Check if we are in portrait desktop edit mode and block screen orientation 
+       * if it's true */
+      gboolean is_edit_portrait = (hd_render_manager_get_state () == HDRM_STATE_HOME_EDIT_PORTRAIT 
+                                  || hd_render_manager_get_state () == HDRM_STATE_HOME_EDIT_DLG_PORTRAIT);
+
+      if ((hd_home_is_portrait_capable () || is_edit_portrait) && is_edit_portrait)
+        return TRUE;
+      else
+        return FALSE;
+    }
+  else
+    {
+      return hd_comp_mgr_may_be_portrait(hmgr, FALSE);
     }
 }
 
@@ -3397,29 +3397,29 @@ hd_comp_mgr_should_be_portrait (HdCompMgr *hmgr)
 gboolean
 hd_comp_mgr_can_be_portrait (HdCompMgr *hmgr)
 {
-    if (STATE_IS_LAUNCHER (hd_render_manager_get_state ()))
+  if (STATE_IS_LAUNCHER (hd_render_manager_get_state ()))
     {
-        if (hd_app_mgr_ui_can_rotate ())
-            return TRUE;
-        else
-            return FALSE;
+      if (hd_app_mgr_ui_can_rotate ())
+        return TRUE;
+      else
+        return FALSE;
     }
-    else if (STATE_IS_TASK_NAV (hd_render_manager_get_state ()))
+  else if (STATE_IS_TASK_NAV (hd_render_manager_get_state ()))
     {
-        return hd_app_mgr_slide_is_open();
+      return hd_app_mgr_slide_is_open();
     }
-    else if (STATE_IS_HOME (hd_render_manager_get_state ()))
+  else if (STATE_IS_HOME (hd_render_manager_get_state ()))
     {
-        return hd_app_mgr_slide_is_open();
+      return hd_app_mgr_slide_is_open();
     }
-    else if (STATE_IS_EDIT_MODE (hd_render_manager_get_state ()))
+  else if (STATE_IS_EDIT_MODE (hd_render_manager_get_state ()))
     {
-        return hd_app_mgr_slide_is_open();
+      return hd_app_mgr_slide_is_open();
     }
-    else
+  else
     {
-        /* compute it normally if not in LAUNCHER */
-        return hd_comp_mgr_may_be_portrait(hmgr, TRUE);
+      /* compute it normally if not in LAUNCHER */
+      return hd_comp_mgr_may_be_portrait(hmgr, TRUE);
     }
 }
 

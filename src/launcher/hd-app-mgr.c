@@ -2263,7 +2263,7 @@ hd_app_mgr_gconf_value_changed (GConfClient *client,
        * LAUNCHER_PORTRAIT.
        * Under any other case just update the portraitness */
       if (!priv->slide_closed &&
-	  STATE_ONE_OF(hd_render_manager_get_state () ,HDRM_STATE_LAUNCHER_PORTRAIT | HDRM_STATE_TASK_NAV_PORTRAIT))
+        STATE_ONE_OF(hd_render_manager_get_state (), HDRM_STATE_LAUNCHER_PORTRAIT | HDRM_STATE_TASK_NAV_PORTRAIT))
         {
           /* manually setting the HDAppMgr is a bit of kludge, since it's
            * supposed to reflect the accellerometer status, but it's needed or
