@@ -3815,25 +3815,24 @@ hd_comp_mgr_is_blacklisted(MBWindowManager *wm, MBWindowManagerClient *c)
     return FALSE;
 
   /* We don't want blacklisted windows when forcerotation == 0. */
-  if(!hd_transition_get_int("thp_tweaks", "forcerotation", 0))
+  if (!hd_transition_get_int("thp_tweaks", "forcerotation", 0))
     return FALSE;
 
   /* Let's check if the window is on the whitelist. */
-  if(hd_comp_mgr_is_whitelisted(wm, c))
+  if (hd_comp_mgr_is_whitelisted(wm, c))
     return FALSE;
 
-  blacklist = g_strdup(hd_transition_get_string("thp_tweaks", "blacklist", ""));
-  memset(&class_hint, 0, sizeof(XClassHint));
+  blacklist = g_strdup (hd_transition_get_string ("thp_tweaks", "blacklist", ""));
+  memset (&class_hint, 0, sizeof (XClassHint));
   mb_wm_util_async_trap_x_errors (wm->xdpy);
   ret = XGetClassHint (wm->xdpy, c->window->xwindow, &class_hint);
 	mb_wm_util_async_untrap_x_errors ();	
 
   if (ret && class_hint.res_class)
-    wname = g_strdup(class_hint.res_name);
+    wname = g_strdup (class_hint.res_name);
 
   /* Check, if X-CSSU-Force-Landscape=true. */
-  gboolean blacklisted = hd_comp_mgr_is_blacklisted_parse_desktop_file(wname, class_hint.res_class, c->window->pid);
-
+  gboolean blacklisted = hd_comp_mgr_is_blacklisted_parse_desktop_file (wname, class_hint.res_class, c->window->pid);
 
   if (class_hint.res_class)
     XFree(class_hint.res_class);
@@ -3841,16 +3840,23 @@ hd_comp_mgr_is_blacklisted(MBWindowManager *wm, MBWindowManagerClient *c)
   if (class_hint.res_name)
     XFree(class_hint.res_name);
 
-
-  if (g_strrstr(blacklist, wname) && !(c->portrait_supported || c->portrait_requested))
+  /* 
+   * Commenting out part of the following code
+   * fixes BMO #12629: blacklisting works not as it should. 
+   * All in all, the problem is with Qt based apps, which sets 
+   * portrait_supported and portrait_requested flags
+   * when the application window is going to be rotated. 
+   * MCE! I'm looking at you! 
+   */
+  if (g_strrstr(blacklist, wname))// && !(c->portrait_supported || c->portrait_requested))
     blacklisted = TRUE;
 
-  if(c->stacked_below && (wname == NULL))
-    if(hd_comp_mgr_is_blacklisted(wm, c->stacked_below))
+  if (c->stacked_below && (wname == NULL))
+    if (hd_comp_mgr_is_blacklisted (wm, c->stacked_below))
       blacklisted = TRUE;
 
-  g_free(blacklist);
-  g_free(wname);
+  g_free (blacklist);
+  g_free (wname);
 
   return blacklisted;
 }
@@ -3868,12 +3874,12 @@ hd_comp_mgr_is_blacklisted_parse_desktop_file(char *res_name,
   /* Get application list. */
   tree = hd_app_mgr_get_tree ();
   /* Find our app in the app list. */
-  item = hd_launcher_tree_find_item(tree, hd_running_app_get_id(app));
+  item = hd_launcher_tree_find_item (tree, hd_running_app_get_id (app));
   
-  if(item)
+  if (item)
     {
       /* Check, if X-CSSU-Force-Landscape=true. */
-      if(hd_launcher_item_get_cssu_force_landscape (item))
+      if (hd_launcher_item_get_cssu_force_landscape (item))
         return TRUE;
     }
   return FALSE;
