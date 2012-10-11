@@ -222,6 +222,8 @@ HdCompMgrClient * hd_comp_mgr_get_current_client (HdCompMgr *hmgr);
 gboolean hd_comp_mgr_is_whitelisted(MBWindowManager *wm, MBWindowManagerClient *c);
 gboolean hd_comp_mgr_is_blacklisted(MBWindowManager *wm, MBWindowManagerClient *c);
 gboolean hd_comp_mgr_is_blacklisted_parse_desktop_file(char *res_name, char *res_class, GPid pid);
+gboolean hd_comp_mgr_is_callui_window (MBWindowManager *wm, MBWindowManagerClient *c);
+gboolean hd_comp_mgr_is_orientationlock_enabled (MBWindowManager *wm, MBWindowManagerClient *c);
 
 G_END_DECLS
 

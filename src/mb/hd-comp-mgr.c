@@ -1092,7 +1092,7 @@ lp_forecast (MBWindowManager *wm, MBWindowManagerClient *client)
       mb_wm_client_update_portrait_flags (c, portrait_freshness_counter);
       if ((!hd_transition_get_int("thp_tweaks", "forcerotation", 0) 
               && !c->portrait_supported)
-              || gconf_client_get_bool (gconf_client, GCONF_KEY_ORIENTATION_LOCK, NULL)
+              || hd_comp_mgr_is_orientationlock_enabled (wm, c)
               || hd_launcher_is_editor_in_landscape ())
         {
           hd_transition_rotate_screen (wm, FALSE);
@@ -3223,7 +3223,6 @@ hd_comp_mgr_may_be_portrait (HdCompMgr *hmgr, gboolean assume_requested)
 {
   MBWindowManager *wm;
   MBWindowManagerClient *c;
-  HdCompMgrPrivate *priv = hmgr->priv;
   gboolean any_supports, any_requests;
 
   /* Invalidate all cached, inherited portrait flags at once. */
@@ -3275,30 +3274,6 @@ hd_comp_mgr_may_be_portrait (HdCompMgr *hmgr, gboolean assume_requested)
       if((c == hd_comp_mgr_determine_current_app()) && hd_comp_mgr_is_blacklisted(wm, c))
         return FALSE;
 
-      gboolean is_whitelisted = FALSE;
-
-      if(c == hd_comp_mgr_determine_current_app() && hd_comp_mgr_is_whitelisted(wm, c))
-        is_whitelisted = TRUE;
-
-      if (((!hd_transition_get_int("thp_tweaks", "forcerotation", 0)
-              && !is_whitelisted)
-              && !c->portrait_supported)
-              || gconf_client_get_bool (priv->gconf_client, GCONF_KEY_ORIENTATION_LOCK, NULL)
-              || hd_launcher_is_editor_in_landscape ())
-        return FALSE;
-
-      any_supports  = TRUE;
-      any_requests |= c->portrait_requested != 0;
-      if (!c->portrait_requested && !c->portrait_requested_inherited)
-        { /* Client explicity !REQUESTED portrait, obey. */
-          PORTRAIT ("PROHIBITED");
-          if (!hd_transition_get_int("thp_tweaks", "forcerotation", 0)
-              || !is_whitelisted
-              || gconf_client_get_bool (priv->gconf_client, GCONF_KEY_ORIENTATION_LOCK, NULL)
-              || hd_launcher_is_editor_in_landscape ())
-              return FALSE;
-        }
-
       /*
        * This is a workaround for the fullscreen incoming call dialog.
        * Since it's fullscreen we can safely assume it will cover
@@ -3310,8 +3285,34 @@ hd_comp_mgr_may_be_portrait (HdCompMgr *hmgr, gboolean assume_requested)
           || (c->portrait_requested && c->window
               && c->window->ewmh_state & MBWMClientWindowEWMHStateFullscreen))
         {
+          any_supports  = TRUE;
+          any_requests |= c->portrait_requested != 0;
           PORTRAIT ("DEMANDED");
           break;
+        }
+
+      gboolean is_whitelisted = FALSE;
+
+      if(c == hd_comp_mgr_determine_current_app() && hd_comp_mgr_is_whitelisted(wm, c))
+        is_whitelisted = TRUE;
+
+      if (((!hd_transition_get_int("thp_tweaks", "forcerotation", 0)
+              && !is_whitelisted)
+              && !c->portrait_supported)
+              || hd_comp_mgr_is_orientationlock_enabled (wm, c)
+              || hd_launcher_is_editor_in_landscape ())
+        return FALSE;
+
+      any_supports  = TRUE;
+      any_requests |= c->portrait_requested != 0;
+      if (!c->portrait_requested && !c->portrait_requested_inherited)
+        { /* Client explicity !REQUESTED portrait, obey. */
+          PORTRAIT ("PROHIBITED");
+          if (!hd_transition_get_int("thp_tweaks", "forcerotation", 0)
+              || !is_whitelisted
+              || hd_comp_mgr_is_orientationlock_enabled (wm, c)
+              || hd_launcher_is_editor_in_landscape ())
+              return FALSE;
         }
     }
 
@@ -3845,8 +3846,8 @@ hd_comp_mgr_is_blacklisted(MBWindowManager *wm, MBWindowManagerClient *c)
    * fixes BMO #12629: blacklisting works not as it should. 
    * All in all, the problem is with Qt based apps, which sets 
    * portrait_supported and portrait_requested flags
-   * when the application window is going to be rotated. 
-   * MCE! I'm looking at you! 
+   * when the application window is going to be rotated.
+   * MCE! I'm looking at you!
    */
   if (g_strrstr(blacklist, wname))// && !(c->portrait_supported || c->portrait_requested))
     blacklisted = TRUE;
@@ -3884,3 +3885,56 @@ hd_comp_mgr_is_blacklisted_parse_desktop_file(char *res_name,
     }
   return FALSE;
 }
+
+gboolean
+hd_comp_mgr_is_callui_window (MBWindowManager *wm, MBWindowManagerClient *c)
+{
+  gchar *whitelist = "rtcom-call-ui";
+  XClassHint class_hint;
+  Status ret;
+  gchar *wname = NULL;
+  gboolean is_callui_window = FALSE;
+
+  if ((!c) || !MB_WINDOW_MANAGER(wm) || c == wm->desktop)
+    return FALSE;
+
+  memset(&class_hint, 0, sizeof(XClassHint));
+  mb_wm_util_async_trap_x_errors (wm->xdpy);
+  ret = XGetClassHint (wm->xdpy, c->window->xwindow, &class_hint);
+	mb_wm_util_async_untrap_x_errors ();	
+
+  if (ret && class_hint.res_class)
+    wname = g_strdup(class_hint.res_name);
+
+  if (class_hint.res_class)
+    XFree(class_hint.res_class);
+
+  if (class_hint.res_name)
+    XFree(class_hint.res_name);
+
+  if (g_strrstr(whitelist, wname))
+    is_callui_window = TRUE;
+
+  g_free(wname);
+
+  return is_callui_window;
+}
+
+gboolean
+hd_comp_mgr_is_orientationlock_enabled (MBWindowManager *wm, MBWindowManagerClient *c)
+{
+  /* GConf client for orientation lock. */
+  GConfClient* gconf_client = gconf_client_get_default();;
+  g_assert(GCONF_IS_CLIENT(gconf_client));
+
+  gboolean ret_value = gconf_client_get_bool (gconf_client, GCONF_KEY_ORIENTATION_LOCK, NULL);
+
+  /* Do not try to lock call-ui window. */
+  if (hd_comp_mgr_is_callui_window (wm, c))
+    ret_value = FALSE;
+
+  g_object_unref(gconf_client);
+
+  return ret_value;
+}
+
