@@ -1,3 +1,9 @@
+hildon-desktop (1:2.2.142-23) unstable; urgency=low
+
+  * Small fixes.
+
+ -- Tomasz Pieniążek <t.pieniazek@gazeta.pl>  Fri, 12 Oct 2012 01:20:01 +0200
+
 hildon-desktop (1:2.2.142-22.1) unstable; urgency=low
 
   * Fixes BMO #12052: Orientation lock causes incoming call to not display properly
