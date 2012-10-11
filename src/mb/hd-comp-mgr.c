@@ -3928,12 +3928,15 @@ hd_comp_mgr_is_orientationlock_enabled (MBWindowManager *wm, MBWindowManagerClie
   g_assert(GCONF_IS_CLIENT(gconf_client));
 
   gboolean ret_value = gconf_client_get_bool (gconf_client, GCONF_KEY_ORIENTATION_LOCK, NULL);
+  g_object_unref(gconf_client);
+
+  if (!ret_value)
+    /* Orientation lock is disabled. */
+    return FALSE;
 
   /* Do not try to lock call-ui window. */
   if (hd_comp_mgr_is_callui_window (wm, c))
     ret_value = FALSE;
-
-  g_object_unref(gconf_client);
 
   return ret_value;
 }
