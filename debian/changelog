@@ -1,3 +1,11 @@
+hildon-desktop (1:2.2.142-22.1) unstable; urgency=low
+
+  * Fixes BMO #12052: Orientation lock causes incoming call to not display properly
+  * Fixes BMO #12584: hildon-menu gets rotated if orientation locked from portrait
+  * Fixes BMO #12629: blacklisting works not as it should
+
+ -- Tomasz Pieniążek <t.pieniazek@gazeta.pl>  Thu, 11 Oct 2012 19:56:33 +0200
+
 hildon-desktop (1:2.2.142-22) unstable; urgency=low
 
   * Make blurless desaturation tweak really blurless.
