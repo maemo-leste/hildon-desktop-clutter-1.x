@@ -975,9 +975,6 @@ lp_forecast (MBWindowManager *wm, MBWindowManagerClient *client)
   gboolean goto_app_state;
   HDRMStateEnum state;
   unsigned l, r;
-  /* GConf client for orientation lock. */
-  GConfClient* gconf_client = gconf_client_get_default();;
-  g_assert(GCONF_IS_CLIENT(gconf_client));
 
   /* Don't bother with anything but application windows, dialogs
    * and confirmation notes.  We simply don't have any other type
@@ -1108,7 +1105,6 @@ lp_forecast (MBWindowManager *wm, MBWindowManagerClient *client)
     }
 
   g_ptr_array_free (stack, TRUE);
-  g_object_unref(gconf_client);
 }
 
 static void
