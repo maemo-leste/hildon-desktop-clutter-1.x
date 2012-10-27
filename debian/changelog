@@ -1,3 +1,10 @@
+hildon-desktop (1:2.2.142-24) unstable; urgency=low
+
+  * Fixes: UI glitch - show BTN_BG_LEFT_ATTACHED_PRESSED instead of BTN_BG_LEFT_PRESSED while in the APP state.
+  * Improved whitelist functionality.
+
+ -- Tomasz Pieniążek <t.pieniazek@gazeta.pl>  Sat, 27 Oct 2012 21:04:00 +0200
+
 hildon-desktop (1:2.2.142-23) unstable; urgency=low
 
   * Small fixes.
