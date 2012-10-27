@@ -704,7 +704,9 @@ hd_title_bar_left_pressed(HdTitleBar *bar, gboolean pressed)
 
   if (pressed)
     {
-      if (CLUTTER_ACTOR_IS_VISIBLE(priv->buttons[BTN_BG_ATTACHED]))
+      gboolean is_app_state = STATE_IS_APP (hd_render_manager_get_state());
+
+      if (CLUTTER_ACTOR_IS_VISIBLE(priv->buttons[BTN_BG_ATTACHED]) || is_app_state)
         {
           clutter_actor_hide(priv->buttons[BTN_BG_LEFT_PRESSED]);
           clutter_actor_show(priv->buttons[BTN_BG_LEFT_ATTACHED_PRESSED]);
@@ -762,8 +764,7 @@ hd_title_bar_set_full_width(HdTitleBar *bar, gboolean full_size)
                                 clutter_actor_get_width(priv->buttons[BTN_SEPARATOR_LEFT]));
           else
             clutter_actor_set_x(priv->buttons[BTN_SEPARATOR_LEFT],
-                                hd_title_bar_get_button_width(bar) -
-                                clutter_actor_get_width(priv->buttons[BTN_SEPARATOR_LEFT]));
+                                hd_title_bar_get_button_width(bar));
         }
       else
         clutter_actor_hide(priv->buttons[BTN_SEPARATOR_LEFT]);
