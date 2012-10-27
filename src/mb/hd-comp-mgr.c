@@ -1087,14 +1087,23 @@ lp_forecast (MBWindowManager *wm, MBWindowManagerClient *client)
         continue;
 
       mb_wm_client_update_portrait_flags (c, portrait_freshness_counter);
-      if ((!hd_transition_get_int("thp_tweaks", "forcerotation", 0) 
+
+      gboolean whitelisted = hd_comp_mgr_is_whitelisted(wm, c);
+      gboolean blacklisted = hd_comp_mgr_is_blacklisted(wm, c);
+
+      if (((!hd_transition_get_int("thp_tweaks", "forcerotation", 0)
+              && !whitelisted)
               && !c->portrait_supported)
               || hd_comp_mgr_is_orientationlock_enabled (wm, c)
+              || blacklisted
               || hd_launcher_is_editor_in_landscape ())
         {
           hd_transition_rotate_screen (wm, FALSE);
           break;
         }
+      else if (whitelisted)
+        /* Do not rotate the topmost window, fixes window's dialogs handling. */
+        break;
       else if (!c->portrait_requested_inherited)
         break;
       else if (c->portrait_requested)
@@ -3287,10 +3296,7 @@ hd_comp_mgr_may_be_portrait (HdCompMgr *hmgr, gboolean assume_requested)
           break;
         }
 
-      gboolean is_whitelisted = FALSE;
-
-      if(c == hd_comp_mgr_determine_current_app() && hd_comp_mgr_is_whitelisted(wm, c))
-        is_whitelisted = TRUE;
+      gboolean is_whitelisted = hd_comp_mgr_is_whitelisted(wm, c);
 
       if (((!hd_transition_get_int("thp_tweaks", "forcerotation", 0)
               && !is_whitelisted)
@@ -3304,8 +3310,8 @@ hd_comp_mgr_may_be_portrait (HdCompMgr *hmgr, gboolean assume_requested)
       if (!c->portrait_requested && !c->portrait_requested_inherited)
         { /* Client explicity !REQUESTED portrait, obey. */
           PORTRAIT ("PROHIBITED");
-          if (!hd_transition_get_int("thp_tweaks", "forcerotation", 0)
-              || !is_whitelisted
+          if ((!hd_transition_get_int("thp_tweaks", "forcerotation", 0)
+              && !is_whitelisted)
               || hd_comp_mgr_is_orientationlock_enabled (wm, c)
               || hd_launcher_is_editor_in_landscape ())
               return FALSE;
@@ -3772,7 +3778,7 @@ hd_comp_mgr_is_whitelisted(MBWindowManager *wm, MBWindowManagerClient *c)
   gchar *wname = NULL;
   gboolean is_on_whitelist = FALSE;
 
-  if ((!c) || !HD_IS_APP (c) || !MB_WINDOW_MANAGER(wm) || c == wm->desktop)
+  if ((!c) || !MB_WINDOW_MANAGER(wm) || c == wm->desktop)
     return FALSE;
 
   whitelist = g_strdup(hd_transition_get_string("thp_tweaks", "whitelist", ""));
