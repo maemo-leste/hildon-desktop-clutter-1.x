@@ -3847,8 +3847,8 @@ hd_comp_mgr_is_blacklisted(MBWindowManager *wm, MBWindowManagerClient *c)
     return FALSE;
 
   /* Let's check if the window is on the whitelist. */
-  if (hd_comp_mgr_is_whitelisted(wm, c))
-    return FALSE;
+  //if (hd_comp_mgr_is_whitelisted(wm, c))
+  //  return FALSE;
 
   blacklist = g_strdup (hd_transition_get_string ("thp_tweaks", "blacklist", ""));
   memset (&class_hint, 0, sizeof (XClassHint));
