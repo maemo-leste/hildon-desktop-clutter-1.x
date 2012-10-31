@@ -1082,6 +1082,9 @@ lp_forecast (MBWindowManager *wm, MBWindowManagerClient *client)
 
   /* Find the topmost interesting client and see its portrait preferences. */
   portrait_freshness_counter++;
+
+  gboolean force_rotation = hd_transition_get_int("thp_tweaks", "forcerotation", 0);
+
   for (l = 0; stack->pdata[l] != wm->desktop; l++)
     {
       g_assert (l < stack->len);
@@ -1097,9 +1100,7 @@ lp_forecast (MBWindowManager *wm, MBWindowManagerClient *client)
       gboolean whitelisted = hd_comp_mgr_is_whitelisted(wm, c);
       gboolean blacklisted = hd_comp_mgr_is_blacklisted(wm, c);
 
-      if (((!hd_transition_get_int("thp_tweaks", "forcerotation", 0)
-              && !whitelisted)
-              && !c->portrait_supported)
+      if (((!force_rotation && !whitelisted) && !c->portrait_supported)
               || hd_comp_mgr_is_orientationlock_enabled (wm, c)
               || blacklisted
               || hd_launcher_is_editor_in_landscape ())
@@ -1107,9 +1108,6 @@ lp_forecast (MBWindowManager *wm, MBWindowManagerClient *client)
           hd_transition_rotate_screen (wm, FALSE);
           break;
         }
-      else if (whitelisted)
-        /* Do not rotate the topmost window, fixes window's dialogs handling. */
-        break;
       else if (!c->portrait_requested_inherited)
         break;
       else if (c->portrait_requested)
@@ -1117,6 +1115,9 @@ lp_forecast (MBWindowManager *wm, MBWindowManagerClient *client)
           hd_transition_rotate_screen (wm, TRUE);
           break;
         }
+      else if (whitelisted)
+        /* Do not rotate the topmost window, fixes window's dialogs handling. */
+        break;
     }
 
   g_ptr_array_free (stack, TRUE);
