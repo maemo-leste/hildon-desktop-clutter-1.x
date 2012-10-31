@@ -2074,9 +2074,9 @@ hd_comp_mgr_map_notify (MBWMCompMgr *mgr, MBWindowManagerClient *c)
       /* Move to HDRM_STATE_HOME even if we don't have a loading screen,
        * otherwise we hide the launcher and go to a broken state. */
       if(STATE_IS_PORTRAIT (hd_render_manager_get_state () ))
-	      hd_render_manager_set_state (HDRM_STATE_HOME_PORTRAIT);
+        hd_render_manager_set_state (HDRM_STATE_HOME_PORTRAIT);
       else
-		  hd_render_manager_set_state (HDRM_STATE_HOME);
+        hd_render_manager_set_state (HDRM_STATE_HOME);
 
       hd_launcher_hide ();
       return;
@@ -2186,10 +2186,10 @@ hd_comp_mgr_map_notify (MBWMCompMgr *mgr, MBWindowManagerClient *c)
                 HdWmClientTypeAppMenu |
                 HdWmClientTypeStatusMenu)))
     {
-			if(STATE_IS_PORTRAIT(hd_render_manager_get_state()))
-	      hd_render_manager_set_state(HDRM_STATE_HOME_EDIT_DLG_PORTRAIT);
-			else
-				hd_render_manager_set_state(HDRM_STATE_HOME_EDIT_DLG);
+      if (STATE_IS_PORTRAIT (hd_render_manager_get_state ()))
+        hd_render_manager_set_state(HDRM_STATE_HOME_EDIT_DLG_PORTRAIT);
+      else
+        hd_render_manager_set_state(HDRM_STATE_HOME_EDIT_DLG);
     }
 
   /*
@@ -2205,10 +2205,10 @@ hd_comp_mgr_map_notify (MBWMCompMgr *mgr, MBWindowManagerClient *c)
             HDRM_STATE_LAUNCHER | HDRM_STATE_LAUNCHER_PORTRAIT |
             HDRM_STATE_TASK_NAV | HDRM_STATE_TASK_NAV_PORTRAIT))
         {
-            if(STATE_IS_PORTRAIT (hd_render_manager_get_state () ))
-	      		hd_render_manager_set_state (HDRM_STATE_HOME_PORTRAIT);
-            else
-                hd_render_manager_set_state (HDRM_STATE_HOME);
+          if (STATE_IS_PORTRAIT (hd_render_manager_get_state ()))
+            hd_render_manager_set_state (HDRM_STATE_HOME_PORTRAIT);
+          else
+            hd_render_manager_set_state (HDRM_STATE_HOME);
 
           if (hd_comp_mgr_client_is_maximized(c->window->geometry))
             /*
@@ -2265,10 +2265,10 @@ hd_comp_mgr_map_notify (MBWMCompMgr *mgr, MBWindowManagerClient *c)
             HDRM_STATE_LAUNCHER | HDRM_STATE_LAUNCHER_PORTRAIT |
             HDRM_STATE_TASK_NAV | HDRM_STATE_TASK_NAV_PORTRAIT))
         {
-            if(STATE_IS_PORTRAIT (hd_render_manager_get_state () ))
-                hd_render_manager_set_state (HDRM_STATE_HOME_PORTRAIT);
-            else
-                hd_render_manager_set_state (HDRM_STATE_HOME);
+          if (STATE_IS_PORTRAIT (hd_render_manager_get_state ()))
+            hd_render_manager_set_state (HDRM_STATE_HOME_PORTRAIT);
+          else
+            hd_render_manager_set_state (HDRM_STATE_HOME);
         }
       hd_home_add_status_menu (HD_HOME (priv->home), actor);
       priv->status_menu_client = c;
@@ -2285,7 +2285,7 @@ hd_comp_mgr_map_notify (MBWMCompMgr *mgr, MBWindowManagerClient *c)
        * added to the switcher.  This can be considered a shortcoming. */
       if (STATE_NEED_WHOLE_SCREEN_INPUT(hd_render_manager_get_state()))
         {
-          if (STATE_IS_PORTRAIT(hd_render_manager_get_state()))
+          if (STATE_IS_PORTRAIT(hd_render_manager_get_state ()))
             hd_render_manager_set_state(HDRM_STATE_HOME_PORTRAIT);
           else
             hd_render_manager_set_state(HDRM_STATE_HOME);
@@ -2712,10 +2712,10 @@ hd_comp_mgr_reconsider_compositing (MBWMCompMgr *mgr)
     {
       if (c && c == mgr->wm->desktop)
         {
-            if(STATE_IS_PORTRAIT (hdrm_state ))
-                hd_render_manager_set_state (HDRM_STATE_HOME_PORTRAIT);
-            else
-                hd_render_manager_set_state (HDRM_STATE_HOME);
+          if(STATE_IS_PORTRAIT (hdrm_state ))
+            hd_render_manager_set_state (HDRM_STATE_HOME_PORTRAIT);
+          else
+            hd_render_manager_set_state (HDRM_STATE_HOME);
         }
       else if (c)
         {
@@ -2799,10 +2799,10 @@ hd_comp_mgr_unmap_notify (MBWMCompMgr *mgr, MBWindowManagerClient *c)
         }
       if (!grab_spoil)
         {
-            if(STATE_IS_PORTRAIT(hdrm_state))
-                hd_render_manager_set_state(HDRM_STATE_HOME_EDIT_PORTRAIT);
-            else
-                hd_render_manager_set_state(HDRM_STATE_HOME_EDIT);
+          if(STATE_IS_PORTRAIT(hdrm_state))
+            hd_render_manager_set_state(HDRM_STATE_HOME_EDIT_PORTRAIT);
+          else
+            hd_render_manager_set_state(HDRM_STATE_HOME_EDIT);
         }
     }
 
@@ -3314,7 +3314,7 @@ hd_comp_mgr_may_be_portrait (HdCompMgr *hmgr, gboolean assume_requested)
               && !is_whitelisted)
               || hd_comp_mgr_is_orientationlock_enabled (wm, c)
               || hd_launcher_is_editor_in_landscape ())
-              return FALSE;
+            return FALSE;
         }
     }
 
@@ -3487,10 +3487,10 @@ hd_comp_mgr_client_supports_portrait (MBWindowManagerClient *mbwmc)
   /* Don't mess with hd_comp_mgr_should_be_portrait()'s @counter. */
   mb_wm_client_update_portrait_flags (mbwmc, G_MAXUINT); 
 
-  if(hd_comp_mgr_is_whitelisted(mbwmc->wmref, mbwmc))
+  if (hd_comp_mgr_is_whitelisted(mbwmc->wmref, mbwmc))
     return TRUE;
 
-  if(hd_comp_mgr_is_blacklisted(mbwmc->wmref, mbwmc))
+  if (hd_comp_mgr_is_blacklisted(mbwmc->wmref, mbwmc))
     return FALSE;
 
   return hd_transition_get_int("thp_tweaks", "forcerotation", 0) ?
