@@ -1456,7 +1456,7 @@ void hd_render_manager_set_state(HDRMStateEnum state)
                    * we can be in HDRM_STATE_HOME_PORTRAIT state,
                    * which is *meant* to be transitional.  NB#158934 */
                    if (hd_dbus_state_before_tklock == HDRM_STATE_HOME_PORTRAIT)
-                    hd_dbus_state_before_tklock = HDRM_STATE_HOME;										
+                    hd_dbus_state_before_tklock = HDRM_STATE_HOME;
                 }
 
               g_debug("%s: return to state %s before tklock\n", __func__,
@@ -1554,31 +1554,8 @@ void hd_render_manager_set_state(HDRMStateEnum state)
               else
                 {
                   /* Keep current orientation for next HOME transition ... */
-                  HdRunningAppState next_home_state =
-                    (STATE_IS_PORTRAIT (oldstate) ?
-                      HDRM_STATE_HOME_PORTRAIT : HDRM_STATE_HOME);
-
-
-                  /* ... unless it's from LAUNCHER_POTRAIT, in which case go
-                   * directly to landscaped HOME.
-                   *
-                   * This is valid until HOME in portrait mode will be fully
-                   * implemented (not only a temporary state).
-                   *
-                   * Fixes a transition from LAUNCHER_POTRAIT to HOME_PORTRAIT
-                   * where HOME was showed in portrait mode when actually it
-                   * does not support it (ie very ugly result), forcing HOME
-                   * in landscape */
-
-									//TODO: remove this part of code
-                 // if (oldstate != HDRM_STATE_LAUNCHER_PORTRAIT)
-                //    next_home_state = HDRM_STATE_HOME;
-
-                //  next_home_state =
-                //    (HDRM_STATE_LAUNCHER_PORTRAIT == oldstate ?
-                //      HDRM_STATE_HOME : next_home_state);		
-
-                  state = priv->state = next_home_state;
+                  state = priv->state = (STATE_IS_PORTRAIT (oldstate) ?
+                                             HDRM_STATE_HOME_PORTRAIT : HDRM_STATE_HOME);
                 }
 
               g_debug("you must have meant STATE %s -> STATE %s",
