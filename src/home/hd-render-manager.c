@@ -1632,7 +1632,6 @@ void hd_render_manager_set_state(HDRMStateEnum state)
                       else
                         actor = NULL;
                     }
-
                   if (actor)
                     {
                       /* Make the tasw fully opaque as it might have been made

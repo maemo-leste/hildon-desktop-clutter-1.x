@@ -701,10 +701,10 @@ hd_comp_mgr_client_property_changed (XPropertyEvent *event, HdCompMgr *hmgr)
             hd_switcher_remove_window_actor (priv->switcher_group,
                                              actor, cclient);
           hd_home_set_live_background (HD_HOME (priv->home), c);
-         	if(STATE_IS_PORTRAIT (hd_render_manager_get_state ()))
-	       		hd_render_manager_set_state (HDRM_STATE_HOME_PORTRAIT);
-					else
-		        hd_render_manager_set_state (HDRM_STATE_HOME);
+          if(STATE_IS_PORTRAIT (hd_render_manager_get_state ()))
+            hd_render_manager_set_state (HDRM_STATE_HOME_PORTRAIT);
+          else
+            hd_render_manager_set_state (HDRM_STATE_HOME);
           hd_launcher_hide ();
         }
       return False;
@@ -862,6 +862,10 @@ hd_comp_mgr_client_property_changed (XPropertyEvent *event, HdCompMgr *hmgr)
   else
     return True;
 
+  /* Whitelist support. Override the real window's flags.*/
+  if (hd_comp_mgr_is_whitelisted (wm, c))
+    value = 1;
+
   if (event->atom == wm->atoms[MBWM_ATOM_HILDON_PORTRAIT_MODE_REQUEST])
     hd_task_navigator_update_win_orientation(event->window, TRUE);
   else if (event->atom == wm->atoms[MBWM_ATOM_HILDON_PORTRAIT_MODE_SUPPORT])
@@ -874,8 +878,10 @@ hd_comp_mgr_client_property_changed (XPropertyEvent *event, HdCompMgr *hmgr)
   if (STATE_IS_PORTRAIT (hd_render_manager_get_state()))
     { /* Portrait => landscape? */
       hd_app_mgr_mce_activate_accel_if_needed (FALSE);
-      if (value <= 0 && !hd_comp_mgr_should_be_portrait (hmgr))
+      if (value <= 0 && !hd_comp_mgr_should_be_portrait (hmgr)) {
+        PORTRAIT ("UNPORTRAIT");
         hd_render_manager_set_state_unportrait ();
+      }
     }
   else if (STATE_IS_PORTRAIT_CAPABLE (hd_render_manager_get_state()))
     { /* Landscape => portrait? */
@@ -3229,6 +3235,8 @@ hd_comp_mgr_may_be_portrait (HdCompMgr *hmgr, gboolean assume_requested)
   MBWindowManager *wm;
   MBWindowManagerClient *c;
   gboolean any_supports, any_requests;
+  gboolean is_whitelisted = FALSE;
+  gboolean force_rotation = hd_transition_get_int("thp_tweaks", "forcerotation", 0);
 
   /* Invalidate all cached, inherited portrait flags at once. */
   portrait_freshness_counter++;
@@ -3277,7 +3285,10 @@ hd_comp_mgr_may_be_portrait (HdCompMgr *hmgr, gboolean assume_requested)
 
       /* Check if current app is blacklisted. If it's then prevent it from portrait. */
       if((c == hd_comp_mgr_determine_current_app()) && hd_comp_mgr_is_blacklisted(wm, c))
-        return FALSE;
+        {
+          PORTRAIT ("BLACKLISTED");
+          return FALSE;
+        }
 
       /*
        * This is a workaround for the fullscreen incoming call dialog.
@@ -3296,28 +3307,40 @@ hd_comp_mgr_may_be_portrait (HdCompMgr *hmgr, gboolean assume_requested)
           break;
         }
 
-      gboolean is_whitelisted = hd_comp_mgr_is_whitelisted(wm, c);
+      /*
+       * If orientation lock is enabled, go to landscape.
+       * Also, if necessary freeze the desktop in landscape mode, when we are in
+       * the desktop's edit mode.
+       */
+      if (hd_comp_mgr_is_orientationlock_enabled (wm, c)
+          || hd_launcher_is_editor_in_landscape ())
+        {
+          PORTRAIT ("ORIENTATION LOCK");
+          return FALSE;
+        }
 
-      if (((!hd_transition_get_int("thp_tweaks", "forcerotation", 0)
-              && !is_whitelisted)
-              && !c->portrait_supported)
-              || hd_comp_mgr_is_orientationlock_enabled (wm, c)
-              || hd_launcher_is_editor_in_landscape ())
-        return FALSE;
+      if (hd_comp_mgr_is_whitelisted(wm, c))
+        is_whitelisted = TRUE;
+      PORTRAIT ("IS WHITELISTED? %d", is_whitelisted);
+
+      if (!force_rotation && !is_whitelisted && !c->portrait_supported)
+        {
+          PORTRAIT ("PORTRAIT UNSUPPORTED");
+          return FALSE;
+        }
 
       any_supports  = TRUE;
       any_requests |= c->portrait_requested != 0;
       if (!c->portrait_requested && !c->portrait_requested_inherited)
         { /* Client explicity !REQUESTED portrait, obey. */
-          PORTRAIT ("PROHIBITED");
-          if ((!hd_transition_get_int("thp_tweaks", "forcerotation", 0)
-              && !is_whitelisted)
-              || hd_comp_mgr_is_orientationlock_enabled (wm, c)
-              || hd_launcher_is_editor_in_landscape ())
-            return FALSE;
+          PORTRAIT ("PROHIBITED?");
+          if (!force_rotation && !is_whitelisted)
+            {
+              PORTRAIT ("PORTRAIT PROHIBITED");
+              return FALSE;
+            }
         }
     }
-
   any_requests |= assume_requested && any_supports;
   PORTRAIT ("SHOULD BE: %d", any_requests);
   return any_requests;
@@ -3363,8 +3386,8 @@ hd_comp_mgr_should_be_portrait (HdCompMgr *hmgr)
 
       /* Let's honour orientation lock, prevents freezing desktop in portrait
        * mode */
-      gboolean orientation_lock = gconf_client_get_bool (priv->gconf_client, 
-																												GCONF_KEY_ORIENTATION_LOCK, NULL);
+      gboolean orientation_lock = gconf_client_get_bool (priv->gconf_client,
+                                                         GCONF_KEY_ORIENTATION_LOCK, NULL);
 
       /* hd_comp_mgr_may_be_portrait tells also if there's an app _requesting_ 
        * portrait mode (mostly call-ui) */
@@ -3476,6 +3499,7 @@ hd_comp_mgr_portrait_or_not_portrait (MBWMCompMgr *mgr,
           (!priv->pip_enabled || !priv->pip_portrait ||
            !hd_comp_mgr_can_be_portrait(HD_COMP_MGR (mgr))))
           {
+            PORTRAIT ("UNPORTRAIT pip_enabled: %d, pip_portrait: %d", priv->pip_enabled, priv->pip_portrait);
             hd_render_manager_set_state_unportrait ();
           }
     }
@@ -3796,9 +3820,10 @@ hd_comp_mgr_is_whitelisted(MBWindowManager *wm, MBWindowManagerClient *c)
   if (class_hint.res_name)
     XFree(class_hint.res_name);
 
-
   if (g_strrstr(whitelist, wname))
     is_on_whitelist = TRUE;
+
+  PORTRAIT ("WHITELIST WNAME %s", wname);
 
   g_free(whitelist);
   g_free(wname);
