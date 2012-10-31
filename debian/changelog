@@ -1,3 +1,12 @@
+hildon-desktop (1:2.2.143-1) unstable; urgency=low
+
+  * Formatting fixes.
+  * Improved whitelist and blacklist functionalities.
+  * Added more debug output - PORTRAIT(...).
+  * Removed unused code.
+
+ -- Tomasz Pieniążek <t.pieniazek@gazeta.pl>  Sat, 31 Oct 2012 19:57:00 +0200
+
 hildon-desktop (1:2.2.142-24) unstable; urgency=low
 
   * Fixes: UI glitch - show BTN_BG_LEFT_ATTACHED_PRESSED instead of BTN_BG_LEFT_PRESSED while in the APP state.
