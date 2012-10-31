@@ -96,14 +96,14 @@ hd_render_manager_state_get_type (void)
         { HDRM_STATE_AFTER_TKLOCK, "HDRM_STATE_AFTER_TKLOCK", "After tklock" },
         { HDRM_STATE_LAUNCHER_PORTRAIT,       "HDRM_STATE_LAUNCHER_PORTRAIT",
           "Task launcher in portrait mode" },
-	{ HDRM_STATE_TASK_NAV_PORTRAIT,       "HDRM_STATE_TASK_NAV_PORTRAIT",
-	  "Task switcher in portrait mode" },
+        { HDRM_STATE_TASK_NAV_PORTRAIT,       "HDRM_STATE_TASK_NAV_PORTRAIT",
+          "Task switcher in portrait mode" },
         { HDRM_STATE_LOADING_PORTRAIT,        "HDRM_STATE_LOADING_PORTRAIT",
           "Loading in portrait mode" },
         { HDRM_STATE_LOADING_SUBWIN_PORTRAIT, "HDRM_STATE_LOADING_SUBWIN_PORTRAIT",
           "Loading Subwindow in portrait mode" },
-	{ HDRM_STATE_HOME_EDIT_PORTRAIT, "HDRM_STATE_HOME_EDIT_PORTRAIT", "Home edit in portrait mode" },
-	{ HDRM_STATE_HOME_EDIT_DLG_PORTRAIT, "HDRM_STATE_HOME_EDIT_DLG_PORTRAIT", "Home edit dialog in portrait mode" },	
+        { HDRM_STATE_HOME_EDIT_PORTRAIT, "HDRM_STATE_HOME_EDIT_PORTRAIT", "Home edit in portrait mode" },
+        { HDRM_STATE_HOME_EDIT_DLG_PORTRAIT, "HDRM_STATE_HOME_EDIT_DLG_PORTRAIT", "Home edit dialog in portrait mode" },
         { 0, NULL, NULL }
       };
 
