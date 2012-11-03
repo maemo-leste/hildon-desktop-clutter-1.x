@@ -4,6 +4,8 @@ hildon-desktop (1:2.2.143-1) unstable; urgency=low
   * Improved whitelist and blacklist functionalities.
   * Added more debug output - PORTRAIT(...).
   * Removed unused code.
+  * Updated transitions.ini.
+  * Faster, without visual glitches, switching to an application in portrait mode from the task switcher.
 
  -- Tomasz Pieniążek <t.pieniazek@gazeta.pl>  Sat, 31 Oct 2012 19:57:00 +0200
 
