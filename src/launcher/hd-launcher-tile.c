@@ -280,8 +280,9 @@ hd_launcher_tile_set_icon_name (HdLauncherTile *tile,
 {
   HdLauncherTilePrivate *priv = HD_LAUNCHER_TILE_GET_PRIVATE (tile);
   GtkIconTheme *icon_theme;
-  GtkIconInfo *info;
   GdkPixbuf *pixbuf;
+  GtkIconInfo *info = NULL;
+  const gchar *fname;
 
   if (priv->icon_name)
     {
@@ -293,6 +294,8 @@ hd_launcher_tile_set_icon_name (HdLauncherTile *tile,
     /* Set the default if none was passed. */
     priv->icon_name = g_strdup (HD_LAUNCHER_DEFAULT_ICON);
 
+  fname = priv->icon_name;
+
   /* Recreate the icon actor */
   if (priv->icon)
     {
@@ -300,34 +303,55 @@ hd_launcher_tile_set_icon_name (HdLauncherTile *tile,
       priv->icon = NULL;
     }
 
-  icon_theme = gtk_icon_theme_get_default();
-  info = gtk_icon_theme_lookup_icon(icon_theme, priv->icon_name,
-                                    HD_LAUNCHER_TILE_ICON_REAL_SIZE,
-                                    GTK_ICON_LOOKUP_NO_SVG);
-  if (info == NULL)
+  /* The desktop file contains path to the icon. */
+  if (g_file_test (fname, G_FILE_TEST_EXISTS)
+        && (g_strrstr (priv->icon_name, ".png") != NULL))
     {
-      /* Try to get the default icon. */
-      g_free (priv->icon_name);
-      priv->icon_name = g_strdup (HD_LAUNCHER_DEFAULT_ICON);
+      fname = priv->icon_name;
+    }
+  else
+    {
+      /* Try to get the 64x64 icon. */
+      icon_theme = gtk_icon_theme_get_default();
       info = gtk_icon_theme_lookup_icon(icon_theme, priv->icon_name,
                                         HD_LAUNCHER_TILE_ICON_REAL_SIZE,
                                         GTK_ICON_LOOKUP_NO_SVG);
-    }
-  if (info == NULL)
-    {
-      g_warning ("%s: couldn't find icon %s\n", __FUNCTION__, priv->icon_name);
-      g_free (priv->icon_name);
-      priv->icon_name = NULL;
-      return;
-    }
 
-  const gchar *fname = gtk_icon_info_get_filename(info);
-  if (fname == NULL)
-    {
-      g_warning ("%s: couldn't get icon %s\n", __FUNCTION__, priv->icon_name);
-      g_free (priv->icon_name);
-      priv->icon_name = NULL;
-      return;
+      if (info == NULL)
+        {
+          /* Try to get the Harmattan (80x80) icon. The icon will be scaled 
+           * down to 64x64. */
+          info = gtk_icon_theme_lookup_icon(icon_theme, priv->icon_name,
+                                            HD_LAUNCHER_TILE_ICON_REAL_SIZE_HARMATTAN_COMP,
+                                            GTK_ICON_LOOKUP_NO_SVG);
+        }
+
+      if (info == NULL)
+        {
+          /* Try to get the default icon. */
+          g_free (priv->icon_name);
+          priv->icon_name = g_strdup (HD_LAUNCHER_DEFAULT_ICON);
+          info = gtk_icon_theme_lookup_icon(icon_theme, priv->icon_name,
+                                            HD_LAUNCHER_TILE_ICON_REAL_SIZE,
+                                            GTK_ICON_LOOKUP_NO_SVG);
+        }
+
+      if (info == NULL)
+        {
+          g_warning ("%s: couldn't find icon %s\n", __FUNCTION__, priv->icon_name);
+          g_free (priv->icon_name); 
+          priv->icon_name = NULL;
+          return;
+        }
+
+      fname = gtk_icon_info_get_filename(info);
+      if (fname == NULL)
+        {
+          g_warning ("%s: couldn't get icon %s\n", __FUNCTION__, priv->icon_name);
+          g_free (priv->icon_name);
+          priv->icon_name = NULL;
+          return;
+        }
     }
 
   /* We must expand these images so there is a 1 pixel transparent
@@ -336,6 +360,7 @@ hd_launcher_tile_set_icon_name (HdLauncherTile *tile,
    * isn't actually guaranteed to be the correct size.  */
   pixbuf = gdk_pixbuf_new_from_file_at_size(fname,
       HD_LAUNCHER_TILE_ICON_REAL_SIZE, HD_LAUNCHER_TILE_ICON_REAL_SIZE, 0);
+
   if (pixbuf)
     {
       gint w = gdk_pixbuf_get_width(pixbuf);
@@ -376,8 +401,6 @@ hd_launcher_tile_set_icon_name (HdLauncherTile *tile,
       (HD_LAUNCHER_TILE_WIDTH - HD_LAUNCHER_TILE_ICON_SIZE) / 2, 0);
   clutter_container_add_actor (CLUTTER_CONTAINER(tile), priv->icon);
 
-  gtk_icon_info_free(info);
-
   if (priv->icon_glow)
     /* free the old one */
     clutter_actor_destroy (CLUTTER_ACTOR (priv->icon_glow));
@@ -394,6 +417,8 @@ hd_launcher_tile_set_icon_name (HdLauncherTile *tile,
   clutter_actor_lower_bottom(CLUTTER_ACTOR(priv->icon_glow));
 
   clutter_actor_hide(CLUTTER_ACTOR(priv->icon_glow));
+
+  gtk_icon_info_free(info);
 }
 
 void

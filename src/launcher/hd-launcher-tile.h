@@ -85,6 +85,8 @@ void hd_launcher_tile_activate(ClutterActor       *actor);
  * around the icons. */
 #define HD_LAUNCHER_TILE_ICON_REAL_SIZE (64)
 #define HD_LAUNCHER_TILE_ICON_SIZE (HD_LAUNCHER_TILE_ICON_REAL_SIZE+2)
+/* For compatibility with the Harmattan icons (80x80). */
+#define HD_LAUNCHER_TILE_ICON_REAL_SIZE_HARMATTAN_COMP (80)
 /* The glow is a little bigger than the icon, so we don't get clipped edges*/
 #define HD_LAUNCHER_TILE_GLOW_SIZE (80)
 /* Maximum amount we can drag without deselecting the currently
