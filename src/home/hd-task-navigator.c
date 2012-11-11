@@ -1413,6 +1413,9 @@ check_and_clip (ClutterActor * actor, gint appwgw, gint appwgh)
   EffectClosure *closure;
   gint appwgw_now,appwgh_now;
 
+  if (!actor)
+    return;
+
   clutter_actor_get_clip (actor, NULL, NULL, &appwgw_now,&appwgh_now);
 
   if (appwgw_now != appwgw || appwgh_now != appwgh)
@@ -4567,6 +4570,9 @@ hd_task_navigator_app_portrait_capable(Thumbnail * thumb)
     thumb->win->wm,
     thumb->win->xwindow
     );
+
+  if (!c)
+    return FALSE;
 
   return
       ((thumb->portrait_supported ||
