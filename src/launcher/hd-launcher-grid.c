@@ -441,7 +441,7 @@ _hd_launcher_grid_layout_row   (HdLauncherGrid *grid,
   if (hd_launcher_grid_is_portrait (grid))
     {
       guint icons_width = HD_LAUNCHER_TILE_WIDTH * HD_LAUNCHER_GRID_MAX_COLUMNS_PORTRAIT +
-        h_spacing * (HD_LAUNCHER_GRID_MAX_COLUMNS_PORTRAIT-1);
+                            h_spacing * (HD_LAUNCHER_GRID_MAX_COLUMNS_PORTRAIT-1);
 
       cur_x = (HD_LAUNCHER_PAGE_HEIGHT - icons_width) / 2;
       allocated = MIN (HD_LAUNCHER_GRID_MAX_COLUMNS_PORTRAIT, *remaining);
@@ -449,7 +449,7 @@ _hd_launcher_grid_layout_row   (HdLauncherGrid *grid,
   else
     {
       guint icons_width = HD_LAUNCHER_TILE_WIDTH * HD_LAUNCHER_GRID_MAX_COLUMNS_LANDSCAPE +
-        h_spacing * (HD_LAUNCHER_GRID_MAX_COLUMNS_LANDSCAPE-1);
+                            h_spacing * (HD_LAUNCHER_GRID_MAX_COLUMNS_LANDSCAPE-1);
 
       cur_x = (HD_LAUNCHER_PAGE_WIDTH - icons_width) / 2;
       allocated = MIN (HD_LAUNCHER_GRID_MAX_COLUMNS_LANDSCAPE, *remaining);

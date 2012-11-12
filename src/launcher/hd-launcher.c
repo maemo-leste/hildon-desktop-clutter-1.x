@@ -540,6 +540,17 @@ _hd_launcher_editor_destroyed (GtkWidget  *widget,
   priv->editor_done = FALSE;
   priv->is_editor_in_landscape = FALSE;
 
+  /* Reset the launcher's layout. */
+  if (STATE_IS_PORTRAIT (hd_render_manager_get_state ()))
+    {
+      /* The launcher's grid is in landscape mode when coming
+       * from the editor. Reset the portraited variable and update
+       * the layout. */
+
+      priv->portraited = FALSE;
+      hd_launcher_update_orientation (TRUE);
+    }
+
   if (priv->editor)
     {
       priv->editor = NULL;

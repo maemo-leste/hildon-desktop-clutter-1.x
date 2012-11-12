@@ -456,13 +456,14 @@ hd_launcher_editor_init (HdLauncherEditor *editor)
                                  renderer,
                                  "text", COL_LABEL);
 
-  if(STATE_IS_PORTRAIT (hd_render_manager_get_state ())) {
-    gtk_icon_view_set_columns (GTK_ICON_VIEW (priv->icon_view), 3);
+  if(STATE_IS_PORTRAIT (hd_render_manager_get_state ())) 
+    {
+      gtk_icon_view_set_columns (GTK_ICON_VIEW (priv->icon_view), 3);
 
-    /* Force portrait mode */
-    hildon_gtk_window_set_portrait_flags(GTK_WINDOW(editor), 
-      HILDON_PORTRAIT_MODE_REQUEST);
-  }
+      /* Force portrait mode */
+      hildon_gtk_window_set_portrait_flags(GTK_WINDOW(editor), 
+                                            HILDON_PORTRAIT_MODE_REQUEST);
+    }
   else
     gtk_icon_view_set_columns (GTK_ICON_VIEW (priv->icon_view), 5);
 
