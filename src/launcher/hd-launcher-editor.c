@@ -113,25 +113,46 @@ _hd_launcher_editor_load (HdLauncherEditor *editor)
       GdkPixbuf *pixbuf = NULL;
 
       icon_name = hd_launcher_item_get_icon_name (item);
-      if (icon_name)
+
+      /* The desktop file contains path to the icon. */
+      if (g_file_test (icon_name, G_FILE_TEST_EXISTS)
+            && (g_strrstr (icon_name, ".png") != NULL))
         {
-          icon_info = gtk_icon_theme_lookup_icon (icon_theme,
-                                      icon_name,
-                                      HD_LAUNCHER_TILE_ICON_REAL_SIZE,
-                                      GTK_ICON_LOOKUP_NO_SVG);
+          icon_fname = icon_name;
         }
-      if (icon_info == NULL)
+      else
         {
-          /* Try to load the default icon. */
-          icon_info = gtk_icon_theme_lookup_icon(icon_theme,
-                                            HD_LAUNCHER_DEFAULT_ICON,
-                                            HD_LAUNCHER_TILE_ICON_REAL_SIZE,
-                                            GTK_ICON_LOOKUP_NO_SVG);
+          /* Try to get the 64x64 icon. */
+          if (icon_name)
+            {
+              icon_info = gtk_icon_theme_lookup_icon (icon_theme,
+                                          icon_name,
+                                          HD_LAUNCHER_TILE_ICON_REAL_SIZE,
+                                          GTK_ICON_LOOKUP_NO_SVG);
+            }
+          if (icon_info == NULL)
+            {
+              /* Try to get the Harmattan (80x80) icon. The icon will be scaled 
+               * down to 64x64. */
+              icon_info = gtk_icon_theme_lookup_icon(icon_theme, 
+                                                icon_name,
+                                                HD_LAUNCHER_TILE_ICON_REAL_SIZE_HARMATTAN_COMP,
+                                                GTK_ICON_LOOKUP_NO_SVG);
+            }
+          if (icon_info == NULL)
+            {
+              /* Try to load the default icon. */
+              icon_info = gtk_icon_theme_lookup_icon(icon_theme,
+                                                HD_LAUNCHER_DEFAULT_ICON,
+                                                HD_LAUNCHER_TILE_ICON_REAL_SIZE,
+                                                GTK_ICON_LOOKUP_NO_SVG);
+            }
+          if (icon_info)
+            {
+              icon_fname = gtk_icon_info_get_filename (icon_info);
+            }
         }
-      if (icon_info)
-        {
-          icon_fname = gtk_icon_info_get_filename (icon_info);
-        }
+
       if (icon_fname)
         {
           pixbuf = gdk_pixbuf_new_from_file_at_size(icon_fname,
