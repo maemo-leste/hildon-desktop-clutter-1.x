@@ -5,8 +5,10 @@ hildon-desktop (1:2.2.144-1) unstable; urgency=low
   * Fixes: BMO #12660: Hildon Menu should scale images when are too big to be displayed.
   * Fixes: BMO #12576: hildon-desktop crashed after failed SDL png load.
   * New: Added support for launching apps in portrait mode, when the device lies flat. Works with Hildon/Gtk+ based applications (but not with Qt-based).
+  * New: Launcher editor supports loading 80x80 icons and passing over icon's direct path in the desktop file.
+  * Fixes: Layout of the launcher when coming from the editor in portrait mode.
 
- -- Tomasz Pieniążek <t.pieniazek@gazeta.pl>  Thu, 11 Nov 2012 17:49:00 +0200
+ -- Tomasz Pieniążek <t.pieniazek@gazeta.pl>  Thu, 12 Nov 2012 19:01:00 +0200
 
 hildon-desktop (1:2.2.143-1) unstable; urgency=low
 
