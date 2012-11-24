@@ -71,7 +71,7 @@ GType hd_launcher_get_type (void) G_GNUC_CONST;
 
 HdLauncher   *hd_launcher_get (void);
 
-void          hd_launcher_show (gboolean top_page);
+void          hd_launcher_show (gboolean is_top_page);
 void          hd_launcher_hide (void);
 void          hd_launcher_hide_final (void);
 void          hd_launcher_transition_stop(void);

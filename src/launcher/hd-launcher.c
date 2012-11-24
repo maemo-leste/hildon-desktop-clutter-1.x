@@ -339,18 +339,18 @@ hd_launcher_update_orientation (gboolean portraited)
 
 /* hd_launcher_show:
  *
- * When the top_page is TRUE, the active_page private variable is set to top_page.
+ * When the is_top_page is TRUE, the active_page private variable is set to top_page.
  * Otherwise it keeps the old value.
  *
  * Fixes BMO #12177: Autorotate disfunction using Catorise.
  */
 void
-hd_launcher_show (gboolean top_page)
+hd_launcher_show (gboolean is_top_page)
 {
   ClutterActor *self = CLUTTER_ACTOR (hd_launcher_get ());
   HdLauncherPrivate *priv = HD_LAUNCHER_GET_PRIVATE (self);
 
-  if (top_page)
+  if (is_top_page)
     {
       /* Make sure we hide all pages when we start,
        * to ensure that we can't get into any bad state */
