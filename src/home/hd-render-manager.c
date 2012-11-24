@@ -1710,7 +1710,7 @@ void hd_render_manager_set_state(HDRMStateEnum state)
           mb_wm_client_focus (cmgr->wm->desktop);
 
           /* finally show, in any case, the launcher */
-          hd_launcher_show();
+          hd_launcher_show (!STATE_IS_LAUNCHER (oldstate));
         }
       else if (STATE_IS_LAUNCHER (oldstate))
         {
