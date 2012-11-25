@@ -1,8 +1,9 @@
 hildon-desktop (1:2.2.145-1) unstable; urgency=low
 
   * Fixes: BMO #12177: Autorotate disfunction using Catorise.
+  * Fixes: http://talk.maemo.org/showpost.php?p=1298147&postcount=980: QTLockscreen's orientation problem.
 
- -- Tomasz Pieniążek <t.pieniazek@gazeta.pl>  Sat, 24 Nov 2012 15:49:36 +0200
+ -- Tomasz Pieniążek <t.pieniazek@gazeta.pl>  Sat, 25 Nov 2012 14:43:00 +0200
 
 hildon-desktop (1:2.2.144-1) unstable; urgency=low
 
