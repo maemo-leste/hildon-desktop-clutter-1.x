@@ -3327,14 +3327,13 @@ hd_comp_mgr_may_be_portrait (HdCompMgr *hmgr, gboolean assume_requested)
        * everything underneath, even if that's still visible in
        * clutter sense.  This is an evidence that we just cannot
        * rely on visibility checking entirely. TODO remove later
+       * Part 1/2.
        */
-      if (c->portrait_requested > 1
-          || (c->portrait_requested && c->window
-              && c->window->ewmh_state & MBWMClientWindowEWMHStateFullscreen))
+      if (c->portrait_requested > 1)
         {
           any_supports  = TRUE;
           any_requests |= c->portrait_requested != 0;
-          PORTRAIT ("DEMANDED");
+          PORTRAIT ("DEMANDED (PART 1)");
           break;
         }
 
@@ -3370,6 +3369,22 @@ hd_comp_mgr_may_be_portrait (HdCompMgr *hmgr, gboolean assume_requested)
               PORTRAIT ("PORTRAIT PROHIBITED");
               return FALSE;
             }
+        }
+      /*
+       * This is a workaround for the fullscreen incoming call dialog.
+       * Since it's fullscreen we can safely assume it will cover
+       * everything underneath, even if that's still visible in
+       * clutter sense.  This is an evidence that we just cannot
+       * rely on visibility checking entirely. TODO remove later
+       * Part 2/2.
+       */
+      if (c->portrait_requested && c->window
+              && c->window->ewmh_state & MBWMClientWindowEWMHStateFullscreen)
+        {
+          any_supports  = TRUE;
+          any_requests |= c->portrait_requested != 0;
+          PORTRAIT ("DEMANDED (PART 2)");
+          break;
         }
     }
   any_requests |= assume_requested && any_supports;
