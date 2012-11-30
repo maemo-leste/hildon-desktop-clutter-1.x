@@ -3922,7 +3922,7 @@ hd_comp_mgr_is_blacklisted(MBWindowManager *wm, MBWindowManagerClient *c)
    * when the application window is going to be rotated.
    * MCE! I'm looking at you!
    */
-  if (g_strrstr(blacklist, wname))// && !(c->portrait_supported || c->portrait_requested))
+  if (g_strrstr(blacklist, wname) && !(c->portrait_supported || c->portrait_requested))
     blacklisted = TRUE;
 
   if (c->stacked_below && (wname == NULL))

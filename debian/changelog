@@ -2,8 +2,9 @@ hildon-desktop (1:2.2.145-1) unstable; urgency=low
 
   * Fixes: BMO #12177: Autorotate disfunction using Catorise.
   * Fixes: http://talk.maemo.org/showpost.php?p=1298147&postcount=980: QTLockscreen's orientation problem.
+  * Fixes: Do not allow to blacklist a window with PORTRAIT flag.
 
- -- Tomasz Pieniążek <t.pieniazek@gazeta.pl>  Sat, 25 Nov 2012 14:43:00 +0200
+ -- Tomasz Pieniążek <t.pieniazek@gazeta.pl>  Sat, 30 Nov 2012 18:03:00 +0200
 
 hildon-desktop (1:2.2.144-1) unstable; urgency=low
 
