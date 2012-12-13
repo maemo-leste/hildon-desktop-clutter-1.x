@@ -3555,7 +3555,7 @@ gboolean
 hd_comp_mgr_client_supports_portrait (MBWindowManagerClient *mbwmc)
 {
   /* Don't mess with hd_comp_mgr_should_be_portrait()'s @counter. */
-  mb_wm_client_update_portrait_flags (mbwmc, G_MAXUINT); 
+  mb_wm_client_update_portrait_flags (mbwmc, G_MAXUINT);
 
   if (hd_comp_mgr_is_whitelisted(mbwmc->wmref, mbwmc))
     return TRUE;

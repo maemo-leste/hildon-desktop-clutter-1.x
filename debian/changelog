@@ -1,3 +1,9 @@
+hildon-desktop (1:2.2.145-2) unstable; urgency=low
+
+  * ...
+
+ -- Tomasz Pieniążek <t.pieniazek@gazeta.pl>  Sat, 30 Nov 2012 18:03:00 +0200
+
 hildon-desktop (1:2.2.145-1) unstable; urgency=low
 
   * Fixes: BMO #12177: Autorotate disfunction using Catorise.
