@@ -2501,12 +2501,7 @@ hd_comp_mgr_map_notify (MBWMCompMgr *mgr, MBWindowManagerClient *c)
       /* and make sure we're in app mode and not transitioning as
        * we'll want to show this new app right away*/
       if (!STATE_IS_APP(hd_render_manager_get_state()))
-        {
-          if (STATE_IS_PORTRAIT (hd_render_manager_get_state ()))
-            hd_render_manager_set_state(HDRM_STATE_APP_PORTRAIT);
-          else
-            hd_render_manager_set_state(HDRM_STATE_APP);
-        }
+        hd_render_manager_set_state(HDRM_STATE_APP);
       hd_render_manager_stop_transition();
       /* This forces the decors to be redone, taking into account the
        * stack index. */
@@ -2529,12 +2524,7 @@ hd_comp_mgr_map_notify (MBWMCompMgr *mgr, MBWindowManagerClient *c)
         /* and make sure we're in app mode and not transitioning as
          * we'll want to show this new app right away*/
         if (!STATE_IS_APP(hd_render_manager_get_state()))
-          {
-            if (STATE_IS_PORTRAIT (hd_render_manager_get_state ()))
-              hd_render_manager_set_state(HDRM_STATE_APP_PORTRAIT);
-            else
-              hd_render_manager_set_state(HDRM_STATE_APP);
-          }
+            hd_render_manager_set_state(HDRM_STATE_APP);
         hd_render_manager_stop_transition();
         /* This forces the decors to be redone, taking into account the
          * stack index. */
@@ -2595,12 +2585,7 @@ hd_comp_mgr_map_notify (MBWMCompMgr *mgr, MBWindowManagerClient *c)
       /* and make sure we're in app mode and not transitioning as
        * we'll want to show this new app right away*/
       if (!STATE_IS_APP(hd_render_manager_get_state()))
-        {
-          if (STATE_IS_PORTRAIT (hd_render_manager_get_state ()))
-            hd_render_manager_set_state(HDRM_STATE_APP_PORTRAIT);
-          else
-            hd_render_manager_set_state(HDRM_STATE_APP);
-        }
+        hd_render_manager_set_state(HDRM_STATE_APP);
       hd_render_manager_stop_transition();
       /* This forces the decors to be redone, taking into account the
        * stack index. */
@@ -2615,12 +2600,7 @@ hd_comp_mgr_map_notify (MBWMCompMgr *mgr, MBWindowManagerClient *c)
       /* and make sure we're in app mode and not transitioning as
        * we'll want to show this new app right away*/
       if (!STATE_IS_APP(hd_render_manager_get_state()))
-        {
-          if (STATE_IS_PORTRAIT (hd_render_manager_get_state ()))
-            hd_render_manager_set_state(HDRM_STATE_APP_PORTRAIT);
-          else
-            hd_render_manager_set_state(HDRM_STATE_APP);
-        }
+        hd_render_manager_set_state(HDRM_STATE_APP);
       hd_render_manager_stop_transition();
       /* This forces the decors to be redone, taking into account the
        * stack index. */
@@ -2663,12 +2643,7 @@ hd_comp_mgr_map_notify (MBWMCompMgr *mgr, MBWindowManagerClient *c)
       /* and make sure we're in app mode and not transitioning as
        * we'll want to show this new app right away*/
       if (!STATE_IS_APP(hd_render_manager_get_state()))
-        {
-          if (STATE_IS_PORTRAIT (hd_render_manager_get_state ()))
-            hd_render_manager_set_state(HDRM_STATE_APP_PORTRAIT);
-          else
-            hd_render_manager_set_state(HDRM_STATE_APP);
-        }
+        hd_render_manager_set_state(HDRM_STATE_APP);
       hd_render_manager_stop_transition();
 
       /* This forces the decors to be redone, taking into account the
@@ -3159,12 +3134,7 @@ hd_comp_mgr_restack (MBWMCompMgr * mgr)
           !(MB_WM_CLIENT_CLIENT_TYPE(current_client) &
                                      MBWMClientTypeDesktop) &&
           !STATE_IS_APP(hd_render_manager_get_state()))
-        {
-          if (STATE_IS_PORTRAIT (hd_render_manager_get_state ()))
-            hd_render_manager_set_state(HDRM_STATE_APP_PORTRAIT);
-          else
-            hd_render_manager_set_state(HDRM_STATE_APP);
-        }
+        hd_render_manager_set_state(HDRM_STATE_APP);
     }
 
   /* Decide about portraitification in case a blocking window was unmapped. */
