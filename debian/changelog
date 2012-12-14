@@ -1,4 +1,4 @@
-hildon-desktop (1:2.2.146-1~unreleased) unstable; urgency=low
+hildon-desktop (1:2.2.146-1) unstable; urgency=low
 
   * Fixes: Portrait (dialog) windows handling.
   * Fixes: i'm [not] gonna create 0x0 frame window and play hide and catch with you, have a good time.
