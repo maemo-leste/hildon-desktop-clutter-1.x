@@ -1,3 +1,9 @@
+hildon-desktop (1:2.2.146-1) unstable; urgency=low
+
+  * Fixes: Portrait (dialog) windows handling.
+
+ -- Tomasz Pieniążek <t.pieniazek@gazeta.pl>  Sat, 14 Dec 2012 10:16:00 +0200
+
 hildon-desktop (1:2.2.145-2) unstable; urgency=low
 
   * Build-Depends: Increase required version of the libmatchbox2-dev.

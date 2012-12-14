@@ -1115,7 +1115,7 @@ lp_forecast (MBWindowManager *wm, MBWindowManagerClient *client)
           hd_transition_rotate_screen (wm, TRUE);
           break;
         }
-      else if (whitelisted)
+      else if (whitelisted || c->portrait_supported)
         /* Do not rotate the topmost window, fixes window's dialogs handling. */
         break;
     }
