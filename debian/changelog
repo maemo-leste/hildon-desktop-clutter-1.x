@@ -1,6 +1,7 @@
 hildon-desktop (1:2.2.147-1) unstable; urgency=low
 
-  * New: Improvements related to the new Qt's rotation mechanism.
+  * Improvements related to the new Qt's rotation mechanism.
+  * Update window's thumb (task nav) on client portrait property changed.
 
  -- Tomasz Pieniążek <t.pieniazek@gazeta.pl>  Sat, 22 Dec 2012 16:37:00 +0200
 
