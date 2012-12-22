@@ -4594,15 +4594,17 @@ find_thumb_from_xwindow(Window xwindow)
 }
 
 void
-hd_task_navigator_update_win_orientation(Window xwindow, gboolean portrait)
+hd_task_navigator_update_win_orientation (Window xwindow, gboolean portrait)
 {
-  if (!STATE_IS_TASK_NAV(hd_render_manager_get_state ()) || !IS_PORTRAIT || (portrait == -1))
+  if (!(STATE_IS_TASK_NAV (hd_render_manager_get_state ())
+        || STATE_IS_APP (hd_render_manager_get_state ()))
+           || !IS_PORTRAIT)
     /* We do not care, get out of here */
     return;
 
   Thumbnail * thumb = find_thumb_from_xwindow(xwindow);
 
-  if(thumb)
+  if (thumb)
     {
       guint appwgw,appwgh;
       guint wprison, hprison;
@@ -4612,37 +4614,41 @@ hd_task_navigator_update_win_orientation(Window xwindow, gboolean portrait)
 
       appwgw = App_window_geometry_height+HD_COMP_MGR_TOP_MARGIN;
       appwgh = App_window_geometry_width-HD_COMP_MGR_TOP_MARGIN;
-      const Flyops *ops=&Fly_at_once;
+      const Flyops *ops = &Fly_at_once;
 
       /* Stop the animation, otherwise effects do not work*/
-      if ( animation_in_progress (Fly_effect_timeline) )
+      if (animation_in_progress (Fly_effect_timeline))
         {
           stop_animation (Fly_effect_timeline);
           g_assert (!animation_in_progress (Fly_effect_timeline));
         }
 
-      if(portrait)
+      if (portrait > 0)
         {
-          hd_task_navigator_set_disable_portrait(thumb,False);
+          hd_task_navigator_set_disable_portrait (thumb, False);
           thumb->portrait_supported = TRUE;
-          ops->rotate_z(thumb->windows,0.0f,0);
-          ops->move(thumb->windows,0,0);
+          ops->rotate_z (thumb->windows, 0.0f, 0);
+          ops->move (thumb->windows, 0, 0);
           ops->scale (thumb->prison,
               (gdouble)wprison / appwgw,
               (gdouble)hprison / appwgh);
         }
       else
         {
-          hd_task_navigator_set_disable_portrait(thumb,True);
-          guint adj=HD_COMP_MGR_TOP_MARGIN;
+          /* portrait = 0 - there's no support for the portrait mode
+           * portrait = -1 - portrait flag removed from the window */
+          hd_task_navigator_set_disable_portrait (thumb, True);
+          guint adj = HD_COMP_MGR_TOP_MARGIN;
           thumb->portrait_supported = FALSE;
-          ops->rotate_z(thumb->windows,90.0f,0);
-          ops->move(thumb->windows,appwgw,adj);
+          ops->rotate_z (thumb->windows, 90.0f, 0);
+          ops->move (thumb->windows, appwgw,adj);
           ops->scale (thumb->prison,
                 (gdouble)wprison / (appwgw-adj),
                 (gdouble)hprison / (appwgh+adj));
         }
-      mb_wm_client_geometry_mark_dirty(mb_wm_managed_client_from_xwindow(thumb->win->wm,thumb->win->xwindow));
+
+      layout (thumb->thwin, FALSE);
+      mb_wm_client_geometry_mark_dirty (mb_wm_managed_client_from_xwindow (thumb->win->wm, thumb->win->xwindow));
     }
 }
 

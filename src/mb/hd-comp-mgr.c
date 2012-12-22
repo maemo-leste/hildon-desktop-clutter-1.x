@@ -851,21 +851,20 @@ hd_comp_mgr_client_property_changed (XPropertyEvent *event, HdCompMgr *hmgr)
     {
       if (!(c = mb_wm_managed_client_from_xwindow (wm, event->window)))
         return False;
+
       value = c->window->portrait_supported;
+      hd_task_navigator_update_win_orientation(event->window, value);
     }
   else if (event->atom == wm->atoms[MBWM_ATOM_HILDON_PORTRAIT_MODE_REQUEST])
     {
       if (!(c = mb_wm_managed_client_from_xwindow (wm, event->window)))
         return False;
+
       value = c->window->portrait_requested;
+      hd_task_navigator_update_win_orientation(event->window, value);
     }
   else
     return True;
-
-  if (event->atom == wm->atoms[MBWM_ATOM_HILDON_PORTRAIT_MODE_REQUEST])
-    hd_task_navigator_update_win_orientation(event->window, TRUE);
-  else if (event->atom == wm->atoms[MBWM_ATOM_HILDON_PORTRAIT_MODE_SUPPORT])
-    hd_task_navigator_update_win_orientation(event->window, value);
 
   /* Switch HDRM state if we need to.  Don't consider changing the state if
    * it is approved by the new value of the property.  We must reconsider
