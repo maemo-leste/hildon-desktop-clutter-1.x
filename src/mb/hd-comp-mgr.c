@@ -862,10 +862,6 @@ hd_comp_mgr_client_property_changed (XPropertyEvent *event, HdCompMgr *hmgr)
   else
     return True;
 
-  /* Whitelist support. Override the real window's flags.*/
-  if (hd_comp_mgr_is_whitelisted (wm, c))
-    value = 1;
-
   if (event->atom == wm->atoms[MBWM_ATOM_HILDON_PORTRAIT_MODE_REQUEST])
     hd_task_navigator_update_win_orientation(event->window, TRUE);
   else if (event->atom == wm->atoms[MBWM_ATOM_HILDON_PORTRAIT_MODE_SUPPORT])
@@ -1095,9 +1091,12 @@ lp_forecast (MBWindowManager *wm, MBWindowManagerClient *client)
         /* Leaving EDIT_DLG state would close hildon-home dialogs. */
         continue;
 
-      mb_wm_client_update_portrait_flags (c, portrait_freshness_counter);
-
+      /* Check if the window is whitelisted. If it's, set
+       * MBWM_ATOM_HILDON_PORTRAIT_MODE_SUPPORT flag. */
       gboolean whitelisted = hd_comp_mgr_is_whitelisted(wm, c);
+      /* Refresh PORTRAIT flags. */
+      mb_wm_client_update_portrait_flags (c, portrait_freshness_counter);
+      /* Check if the window is blacklisted. */
       gboolean blacklisted = hd_comp_mgr_is_blacklisted(wm, c);
 
       if (((!force_rotation && !whitelisted) && !c->portrait_supported)
@@ -1110,7 +1109,7 @@ lp_forecast (MBWindowManager *wm, MBWindowManagerClient *client)
         }
       else if (!c->portrait_requested_inherited)
         break;
-      else if (c->portrait_requested)
+      else if (c->portrait_requested && !hd_app_mgr_slide_is_open ())
         {
           hd_transition_rotate_screen (wm, TRUE);
           break;
@@ -3280,6 +3279,10 @@ hd_comp_mgr_may_be_portrait (HdCompMgr *hmgr, gboolean assume_requested)
          */
         continue;
 
+      if (hd_comp_mgr_is_whitelisted(wm, c))
+        is_whitelisted = TRUE;
+      PORTRAIT ("IS WHITELISTED? %d", is_whitelisted);
+
       /* Get @portrait_supported/requested updated. */
       mb_wm_client_update_portrait_flags (c, portrait_freshness_counter);
       PORTRAIT ("SUPPORT IS %d", c->portrait_supported);
@@ -3318,10 +3321,6 @@ hd_comp_mgr_may_be_portrait (HdCompMgr *hmgr, gboolean assume_requested)
           PORTRAIT ("ORIENTATION LOCK");
           return FALSE;
         }
-
-      if (hd_comp_mgr_is_whitelisted(wm, c))
-        is_whitelisted = TRUE;
-      PORTRAIT ("IS WHITELISTED? %d", is_whitelisted);
 
       if (!force_rotation && !is_whitelisted && !c->portrait_supported)
         {
@@ -3430,7 +3429,7 @@ hd_comp_mgr_should_be_portrait (HdCompMgr *hmgr)
     }
   else
     {
-      return hd_comp_mgr_may_be_portrait(hmgr, FALSE);
+      return hd_comp_mgr_may_be_portrait(hmgr, FALSE) && !hd_app_mgr_slide_is_open ();
     }
 }
 
@@ -3448,20 +3447,20 @@ hd_comp_mgr_can_be_portrait (HdCompMgr *hmgr)
     }
   else if (STATE_IS_TASK_NAV (hd_render_manager_get_state ()))
     {
-      return hd_app_mgr_slide_is_open();
+      return hd_app_mgr_slide_is_open ();
     }
   else if (STATE_IS_HOME (hd_render_manager_get_state ()))
     {
-      return hd_app_mgr_slide_is_open();
+      return hd_app_mgr_slide_is_open ();
     }
   else if (STATE_IS_EDIT_MODE (hd_render_manager_get_state ()))
     {
-      return hd_app_mgr_slide_is_open();
+      return hd_app_mgr_slide_is_open ();
     }
   else
     {
-      /* compute it normally if not in LAUNCHER */
-      return hd_comp_mgr_may_be_portrait(hmgr, TRUE);
+      /* Compute it normally and check if the hwkbd is closed. */
+      return hd_comp_mgr_may_be_portrait (hmgr, TRUE) && !hd_app_mgr_slide_is_open ();
     }
 }
 
@@ -3524,10 +3523,15 @@ hd_comp_mgr_portrait_or_not_portrait (MBWMCompMgr *mgr,
 gboolean
 hd_comp_mgr_client_supports_portrait (MBWindowManagerClient *mbwmc)
 {
+  gboolean is_whitelisted = FALSE;
+
+  if (hd_comp_mgr_is_whitelisted(mbwmc->wmref, mbwmc))
+    is_whitelisted = TRUE;
+
   /* Don't mess with hd_comp_mgr_should_be_portrait()'s @counter. */
   mb_wm_client_update_portrait_flags (mbwmc, G_MAXUINT);
 
-  if (hd_comp_mgr_is_whitelisted(mbwmc->wmref, mbwmc))
+  if (is_whitelisted)
     return TRUE;
 
   if (hd_comp_mgr_is_blacklisted(mbwmc->wmref, mbwmc))
@@ -3818,14 +3822,19 @@ hd_comp_mgr_is_whitelisted(MBWindowManager *wm, MBWindowManagerClient *c)
   gchar *wname = NULL;
   gboolean is_on_whitelist = FALSE;
 
-  if ((!c) || !MB_WINDOW_MANAGER(wm) || c == wm->desktop)
+  if ((!c) || !HD_IS_APP (c) || !MB_WINDOW_MANAGER(wm) || c == wm->desktop)
     return FALSE;
+
+  if (c->portrait_supported || c->portrait_requested)
+  {
+      PORTRAIT ("Whitelist: Portrait mode is already supported.");
+      return FALSE;
+  }
 
   whitelist = g_strdup(hd_transition_get_string("thp_tweaks", "whitelist", ""));
   memset(&class_hint, 0, sizeof(XClassHint));
   mb_wm_util_async_trap_x_errors (wm->xdpy);
   ret = XGetClassHint (wm->xdpy, c->window->xwindow, &class_hint);
-	mb_wm_util_async_untrap_x_errors ();	
 
   if (ret && class_hint.res_class)
     wname = g_strdup(class_hint.res_name);
@@ -3839,7 +3848,24 @@ hd_comp_mgr_is_whitelisted(MBWindowManager *wm, MBWindowManagerClient *c)
   if (g_strrstr(whitelist, wname))
     is_on_whitelist = TRUE;
 
-  PORTRAIT ("WHITELIST WNAME %s", wname);
+  if (is_on_whitelist)
+  {
+      /* Set the MBWM_ATOM_HILDON_PORTRAIT_MODE_SUPPORT flag, so we can skip all that stuff later. */
+      guint32 on_desktop = 1;
+
+      XChangeProperty (c->wmref->xdpy,
+                       c->window->xwindow,
+                       wm->atoms[MBWM_ATOM_HILDON_PORTRAIT_MODE_SUPPORT],
+                       XA_CARDINAL,
+                       32,
+                       PropModeReplace,
+                       (const guchar *) &on_desktop,
+                       1);
+  }
+
+  mb_wm_util_async_untrap_x_errors ();
+
+  PORTRAIT ("Whitelist: WName %s; Supp: %d; Req: %d", wname, c->portrait_supported, c->portrait_requested);
 
   g_free(whitelist);
   g_free(wname);
