@@ -3821,13 +3821,13 @@ hd_comp_mgr_is_whitelisted(MBWindowManager *wm, MBWindowManagerClient *c)
   gchar *wname = NULL;
   gboolean is_on_whitelist = FALSE;
 
-  if ((!c) || !HD_IS_APP (c) || !MB_WINDOW_MANAGER(wm) || c == wm->desktop)
+  if ((!c) || !MB_WINDOW_MANAGER(wm) || c == wm->desktop)
     return FALSE;
 
   if (c->portrait_supported || c->portrait_requested)
   {
       PORTRAIT ("Whitelist: Portrait mode is already supported.");
-      return FALSE;
+      return TRUE;
   }
 
   whitelist = g_strdup(hd_transition_get_string("thp_tweaks", "whitelist", ""));
