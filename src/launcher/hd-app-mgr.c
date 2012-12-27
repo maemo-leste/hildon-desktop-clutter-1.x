@@ -2200,7 +2200,7 @@ hd_app_mgr_mce_activate_accel_if_needed (gboolean update_portraitness)
       if ((reply = dbus_connection_send_with_reply_and_block (
                                           conn, msg, -1, NULL)) != NULL)
         {
-          if (STATE_IS_PORTRAIT (hd_render_manager_get_state ()) && 
+          if (STATE_IS_PORTRAIT (hd_render_manager_get_state ()) &&
                 _hd_app_mgr_dbus_check_value (reply, MCE_ORIENTATION_UNKNOWN))
             {
               priv->portrait = TRUE;
