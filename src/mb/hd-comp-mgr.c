@@ -3865,6 +3865,10 @@ hd_comp_mgr_is_blacklisted(MBWindowManager *wm, MBWindowManagerClient *c)
   if ((!c) || !HD_IS_APP (c) || !MB_WINDOW_MANAGER(wm) || c == wm->desktop)
     return FALSE;
 
+  /* Do not lock to landscape a window which supports portrait mode. */
+  if (c->portrait_supported || c->portrait_requested)
+      return FALSE;
+
   /* We don't want blacklisted windows when forcerotation == 0. */
   if (!hd_transition_get_int("thp_tweaks", "forcerotation", 0))
     return FALSE;
@@ -3877,7 +3881,7 @@ hd_comp_mgr_is_blacklisted(MBWindowManager *wm, MBWindowManagerClient *c)
   memset (&class_hint, 0, sizeof (XClassHint));
   mb_wm_util_async_trap_x_errors (wm->xdpy);
   ret = XGetClassHint (wm->xdpy, c->window->xwindow, &class_hint);
-	mb_wm_util_async_untrap_x_errors ();	
+  mb_wm_util_async_untrap_x_errors ();
 
   if (ret && class_hint.res_class)
     wname = g_strdup (class_hint.res_name);
@@ -3891,15 +3895,7 @@ hd_comp_mgr_is_blacklisted(MBWindowManager *wm, MBWindowManagerClient *c)
   if (class_hint.res_name)
     XFree(class_hint.res_name);
 
-  /* 
-   * Commenting out part of the following code
-   * fixes BMO #12629: blacklisting works not as it should. 
-   * All in all, the problem is with Qt based apps, which sets 
-   * portrait_supported and portrait_requested flags
-   * when the application window is going to be rotated.
-   * MCE! I'm looking at you!
-   */
-  if (g_strrstr(blacklist, wname) && !(c->portrait_supported || c->portrait_requested))
+  if (g_strrstr(blacklist, wname))
     blacklisted = TRUE;
 
   if (c->stacked_below && (wname == NULL))
@@ -3951,7 +3947,7 @@ hd_comp_mgr_is_callui_window (MBWindowManager *wm, MBWindowManagerClient *c)
   memset(&class_hint, 0, sizeof(XClassHint));
   mb_wm_util_async_trap_x_errors (wm->xdpy);
   ret = XGetClassHint (wm->xdpy, c->window->xwindow, &class_hint);
-	mb_wm_util_async_untrap_x_errors ();	
+  mb_wm_util_async_untrap_x_errors ();
 
   if (ret && class_hint.res_class)
     wname = g_strdup(class_hint.res_name);
