@@ -2937,9 +2937,9 @@ hd_comp_mgr_effect (MBWMCompMgr                *mgr,
                    && c->window->xwindow == hd_wm_current_app_is (NULL, 0)
                    && !hd_wm_has_modal_blockers (mgr->wm)
                    && !c->transient_for)
-	  {
-		hd_render_manager_set_state (HDRM_STATE_TASK_NAV);
-	  }
+            {
+              hd_render_manager_set_state (HDRM_STATE_TASK_NAV);
+            }
           else
             {
               HdCompMgrClient *hclient = HD_COMP_MGR_CLIENT (c->cm_client);

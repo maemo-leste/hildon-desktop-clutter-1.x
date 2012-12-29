@@ -383,7 +383,7 @@ hd_switcher_clicked (HdSwitcher *switcher)
   else if (STATE_IS_LAUNCHER (hd_render_manager_get_state()))
     {
       g_debug("hd_switcher_clicked: show switcher, switcher=%p\n", switcher);
-	hd_render_manager_set_state(HDRM_STATE_TASK_NAV);
+      hd_render_manager_set_state(HDRM_STATE_TASK_NAV);
     }
   else if (hd_task_navigator_is_empty())
 	hd_render_manager_set_state(HDRM_STATE_LAUNCHER);
