@@ -1656,7 +1656,6 @@ void hd_render_manager_set_state(HDRMStateEnum state)
                                              (ClutterEffectCompleteFunc)zoom_out_completed,
                                              cmgrcc);
                 }
-              /* Stop transitioning, otherwise the task nav will crash. */
               else if (
                        (oldstate == HDRM_STATE_NON_COMPOSITED && state == HDRM_STATE_TASK_NAV_PORTRAIT) ||
                        (oldstate == HDRM_STATE_NON_COMP_PORT && state == HDRM_STATE_TASK_NAV)
