@@ -1771,7 +1771,7 @@ void hd_render_manager_set_state(HDRMStateEnum state)
       if ( (oldstate == HDRM_STATE_HOME_EDIT_DLG) || (oldstate == HDRM_STATE_HOME_EDIT_DLG_PORTRAIT))
         hd_home_remove_dialogs(priv->home);
 
-      if(oldstate == HDRM_STATE_TASK_NAV_PORTRAIT && STATE_ONE_OF(state, HDRM_STATE_APP | HDRM_STATE_APP_PORTRAIT) && hd_comp_mgr_should_be_portrait (priv->comp_mgr))
+      if(oldstate == HDRM_STATE_TASK_NAV_PORTRAIT && STATE_ONE_OF(state, HDRM_STATE_APP | HDRM_STATE_APP_PORTRAIT) && hd_comp_mgr_can_be_portrait (priv->comp_mgr))
       {
         priv->state = state = HDRM_STATE_APP_PORTRAIT;
         hd_task_navigator_update_orientation(TRUE);
