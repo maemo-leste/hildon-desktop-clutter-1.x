@@ -371,7 +371,7 @@ hd_wm_activate_zoomed_client (MBWindowManager *wm,
   gboolean ret = wm_class->client_activate (wm, c);
 
   if (STATE_IS_PORTRAIT (hd_render_manager_get_state ()))
-    hd_render_manager_set_state (HDRM_STATE_APP_PORTRAIT);  
+    hd_render_manager_set_state (HDRM_STATE_APP_PORTRAIT);
   else
     hd_render_manager_set_state (HDRM_STATE_APP);
 

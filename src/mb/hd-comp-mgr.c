@@ -3379,14 +3379,14 @@ hd_comp_mgr_should_be_portrait (HdCompMgr *hmgr)
   * we need to check it explicitely */
   if (STATE_IS_LAUNCHER (hd_render_manager_get_state ()))
     {
-      if (hd_app_mgr_ui_can_rotate () && hd_app_mgr_is_portrait ())
+      if (hd_app_mgr_ui_can_rotate () && hd_app_mgr_is_portrait () && !hd_app_mgr_slide_is_open ())
         return TRUE;
       else
         return FALSE;
     }
   else if (STATE_IS_TASK_NAV (hd_render_manager_get_state ()))
     {
-      if(hd_task_navigator_mode())
+      if (hd_app_mgr_ui_can_rotate () && hd_app_mgr_is_portrait () && !hd_app_mgr_slide_is_open ())
         return TRUE;
       else
         return FALSE;
@@ -3404,7 +3404,7 @@ hd_comp_mgr_should_be_portrait (HdCompMgr *hmgr)
 
       /* hd_comp_mgr_may_be_portrait tells also if there's an app _requesting_ 
        * portrait mode (mostly call-ui) */
-      if ((hd_home_is_portrait_capable () && !orientation_lock) || hd_comp_mgr_may_be_portrait(hmgr, FALSE))
+      if ((hd_home_is_portrait_capable () && !orientation_lock) || hd_comp_mgr_may_be_portrait (hmgr, FALSE))
         return TRUE;
       else
         return FALSE;
@@ -3417,17 +3417,19 @@ hd_comp_mgr_should_be_portrait (HdCompMgr *hmgr)
 
       /* Check if we are in portrait desktop edit mode and block screen orientation 
        * if it's true */
-      gboolean is_edit_portrait = (hd_render_manager_get_state () == HDRM_STATE_HOME_EDIT_PORTRAIT 
-                                  || hd_render_manager_get_state () == HDRM_STATE_HOME_EDIT_DLG_PORTRAIT);
+      gboolean is_edit_portrait = STATE_ONE_OF (hd_render_manager_get_state (),
+                                                 HDRM_STATE_HOME_EDIT_PORTRAIT |
+                                                 HDRM_STATE_HOME_EDIT_PORTRAIT
+                                               );
 
-      if ((hd_home_is_portrait_capable () || is_edit_portrait) && is_edit_portrait)
+      if (hd_home_is_portrait_capable () && is_edit_portrait)
         return TRUE;
       else
         return FALSE;
     }
   else
     {
-      return hd_comp_mgr_may_be_portrait(hmgr, FALSE) && !hd_app_mgr_slide_is_open ();
+      return hd_comp_mgr_may_be_portrait (hmgr, FALSE) && !hd_app_mgr_slide_is_open ();
     }
 }
 
@@ -3445,15 +3447,15 @@ hd_comp_mgr_can_be_portrait (HdCompMgr *hmgr)
     }
   else if (STATE_IS_TASK_NAV (hd_render_manager_get_state ()))
     {
-      return hd_app_mgr_slide_is_open ();
+      return !hd_app_mgr_slide_is_open ();
     }
   else if (STATE_IS_HOME (hd_render_manager_get_state ()))
     {
-      return hd_app_mgr_slide_is_open ();
+      return !hd_app_mgr_slide_is_open ();
     }
   else if (STATE_IS_EDIT_MODE (hd_render_manager_get_state ()))
     {
-      return hd_app_mgr_slide_is_open ();
+      return !hd_app_mgr_slide_is_open ();
     }
   else
     {

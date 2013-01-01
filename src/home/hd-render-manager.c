@@ -1442,7 +1442,10 @@ void hd_render_manager_set_state(HDRMStateEnum state)
                 {
                   /* We can't switch to application if there's none
                    * in the switcher. */
-                  hd_dbus_state_before_tklock = HDRM_STATE_HOME;
+                  if (STATE_IS_PORTRAIT (hd_dbus_state_before_tklock))
+                    hd_dbus_state_before_tklock = HDRM_STATE_HOME_PORTRAIT;
+                  else
+                    hd_dbus_state_before_tklock = HDRM_STATE_HOME;
                 }
               else if (hd_comp_mgr_should_be_portrait (priv->comp_mgr))
                 {
@@ -1482,13 +1485,13 @@ void hd_render_manager_set_state(HDRMStateEnum state)
         }
 
       if (state == HDRM_STATE_AFTER_TKLOCK)
-			{
-        /* this happens if the state before tklock could not be used */
-				if(STATE_IS_PORTRAIT (priv->state))
-	        priv->state = state = HDRM_STATE_HOME_PORTRAIT;
-				else
-					priv->state = state = HDRM_STATE_HOME;
-			}
+        {
+          /* this happens if the state before tklock could not be used */
+          if (STATE_IS_PORTRAIT (priv->state))
+            priv->state = state = HDRM_STATE_HOME_PORTRAIT;
+          else
+            priv->state = state = HDRM_STATE_HOME;
+        }
 
       if (!hd_dbus_tklock_on)
         hd_dbus_state_before_tklock = HDRM_STATE_UNDEFINED;
@@ -1519,21 +1522,21 @@ void hd_render_manager_set_state(HDRMStateEnum state)
 	}
 
       /* Return the actor if we used it for loading. */
-      if (STATE_IS_LOADING(oldstate) &&
+      if (STATE_IS_LOADING (oldstate) &&
           priv->loading_image)
         {
-          hd_render_manager_set_loading(NULL);
+          hd_render_manager_set_loading (NULL);
         }
 
       /* Goto HOME instead if tasw is not appropriate for some reason. */
-      if (STATE_IS_TASK_NAV(state))
+      if (STATE_IS_TASK_NAV (state))
         {
           gboolean goto_tasw_now, goto_tasw_later;
 
           goto_tasw_now = goto_tasw_later = FALSE;
-          if (!hd_task_navigator_is_empty() && !hd_wm_has_modal_blockers (wm))
+          if (!hd_task_navigator_is_empty () && !hd_wm_has_modal_blockers (wm))
             {
-                goto_tasw_now   = TRUE;
+              goto_tasw_now   = TRUE;
             }
 
           if (!goto_tasw_now)
@@ -1545,10 +1548,10 @@ void hd_render_manager_set_state(HDRMStateEnum state)
                * and hope that we will recover if we eventually shouldn't.
                * This is to avoid a visible roundtrip to p->l->p if we should.
                */
-
               if (goto_tasw_later && STATE_ONE_OF (oldstate,
                     (HDRM_STATE_APP_PORTRAIT | HDRM_STATE_NON_COMP_PORT)))
                 {
+                  /* TODO: Not used, remove later. */
                   state = priv->state = HDRM_STATE_APP;
                 }
               else
@@ -1586,20 +1589,23 @@ void hd_render_manager_set_state(HDRMStateEnum state)
       /* Enter or leave the task switcher. */
       if (STATE_NEED_TASK_NAV (state))
         {
-          gboolean tasknav_ui_can_rotate=hd_app_mgr_ui_can_rotate() && !hd_app_mgr_slide_is_open();
-
-          if(STATE_IS_TASK_NAV (oldstate))
+          /* Should the task nav be in portrait mode? */
+          gboolean should_be_portrait = hd_comp_mgr_should_be_portrait (priv->comp_mgr);
+          /* Set appropriate state. */
+          if (STATE_IS_TASK_NAV (oldstate))
             {
               state = priv->state = STATE_IS_PORTRAIT(state) &&
-                  tasknav_ui_can_rotate ? HDRM_STATE_TASK_NAV_PORTRAIT : HDRM_STATE_TASK_NAV;
+                should_be_portrait ? HDRM_STATE_TASK_NAV_PORTRAIT : HDRM_STATE_TASK_NAV;
             }
           else
             {
               state = priv->state = hd_app_mgr_is_portrait() &&
-                  tasknav_ui_can_rotate ? HDRM_STATE_TASK_NAV_PORTRAIT : HDRM_STATE_TASK_NAV;
+                should_be_portrait ? HDRM_STATE_TASK_NAV_PORTRAIT : HDRM_STATE_TASK_NAV;
             }
-
-          hd_task_navigator_rotate(STATE_IS_PORTRAIT(state));
+          /* Update the task nav's layout. */
+          hd_task_navigator_rotate (STATE_IS_PORTRAIT (state));
+          /* Update the launcher's layout, pip (portrait if possible) flags and hwkbd status. */
+          hd_task_navigator_update_orientation (STATE_IS_PORTRAIT (state));
 
           /* Zoom out if possible.  Otherwise if not coming from launcher
            * scroll it back to the top. */
@@ -1615,9 +1621,7 @@ void hd_render_manager_set_state(HDRMStateEnum state)
                 {
                   cmgrcc = MB_WM_COMP_MGR_CLUTTER_CLIENT (mbwmc->cm_client);
                   if (cmgrcc)
-                    {
                       actor = mb_wm_comp_mgr_clutter_client_get_actor (cmgrcc);
-                    }
 
                   if (actor &&
                           hd_task_navigator_has_window (priv->task_nav, actor))
@@ -1629,48 +1633,47 @@ void hd_render_manager_set_state(HDRMStateEnum state)
                       clutter_actor_show (actor);
                     }
                   else
-                    {
                       actor = NULL;
-                    }
                 }
               /* Don't zoom when transitioning from landscape app -> portraited tasknav */
               if (
-                      actor &&
-                      ( (!STATE_IS_PORTRAIT (oldstate) && state != HDRM_STATE_TASK_NAV_PORTRAIT) ||
-                        (STATE_IS_PORTRAIT (oldstate) && state == HDRM_STATE_TASK_NAV_PORTRAIT) )
-                      )
+                  actor &&
+                    ( (!STATE_IS_PORTRAIT (oldstate) && state != HDRM_STATE_TASK_NAV_PORTRAIT) ||
+                      (STATE_IS_PORTRAIT (oldstate) && state == HDRM_STATE_TASK_NAV_PORTRAIT) )
+                    )
                 {
                   /* Make the tasw fully opaque as it might have been made
-                       * transparent while exiting it. */
-                  clutter_actor_set_opacity(CLUTTER_ACTOR(priv->task_nav), 255);
-                  range_set(&priv->task_nav_opacity, 1);
+                   * transparent while exiting it. */
+                  clutter_actor_set_opacity (CLUTTER_ACTOR (priv->task_nav), 255);
+                  range_set (&priv->task_nav_opacity, 1);
 
                   /* Make sure we stop any active transitions, as these don't
-                       * work well with task_nav (esp. subview transitions where
-                       * task nav takes only the frontmost - NB#120171) */
+                   * work well with task_nav (esp. subview transitions where
+                   * task nav takes only the frontmost - NB#120171) */
                   hd_transition_stop(priv->comp_mgr, mbwmc);
 
                   /* Make sure @cmgrcc stays around as long as needed. */
                   mb_wm_object_ref (MB_WM_OBJECT (cmgrcc));
-                  hd_task_navigator_zoom_out(priv->task_nav, actor,
+                  hd_task_navigator_zoom_out (priv->task_nav, actor,
                                              (ClutterEffectCompleteFunc)zoom_out_completed,
                                              cmgrcc);
                 }
               else if (
                        (oldstate == HDRM_STATE_NON_COMPOSITED && state == HDRM_STATE_TASK_NAV_PORTRAIT) ||
                        (oldstate == HDRM_STATE_NON_COMP_PORT && state == HDRM_STATE_TASK_NAV)
-                       )
+                      )
                 {
                   /* Make the tasw fully opaque as it might have been made
-                       * transparent while exiting it. */
-                  clutter_actor_set_opacity(CLUTTER_ACTOR(priv->task_nav), 255);
-                  range_set(&priv->task_nav_opacity, 1);
+                   * transparent while exiting it. Otherwise the task nav will crash. */
+                  clutter_actor_set_opacity (CLUTTER_ACTOR (priv->task_nav), 255);
+                  range_set (&priv->task_nav_opacity, 1);
 
-                  hd_title_bar_update_now(priv->title_bar);
+                  hd_title_bar_update_now (priv->title_bar);
                 }
             }
           else if (!STATE_IS_LAUNCHER (oldstate))
-            hd_task_navigator_scroll_back(priv->task_nav);
+            hd_task_navigator_scroll_back (priv->task_nav);
+
           if (oldstate != state)
             {
               hd_transition_rotate_screen (wm, STATE_IS_PORTRAIT (state));
@@ -1689,38 +1692,19 @@ void hd_render_manager_set_state(HDRMStateEnum state)
            * ie an accellerometer event or
            * hd_render_manager_set_state_portrait/unportrait */
 
-          /* first check if the LAUNCHER can rotate, or show it only in
-           * LANDSCAPE */
-          if (hd_app_mgr_ui_can_rotate())
-            {
-              gboolean app_mgr_is_portrait = hd_app_mgr_is_portrait();
+          /* Should the launcher be in portrait mode? */
+          gboolean should_be_portrait = hd_comp_mgr_should_be_portrait (priv->comp_mgr);
+          /* Set appropriate state. */
+          if (should_be_portrait && !STATE_IS_PORTRAIT (state))
+            priv->state = state = HDRM_STATE_LAUNCHER_PORTRAIT;
+          else if (!should_be_portrait && STATE_IS_PORTRAIT (state))
+            priv->state = state = HDRM_STATE_LAUNCHER;
 
-              /* back-compatibility check for _set_state(LAUNCHER) when
-               * actually should be LAUNCHER_PORTRAIT
-               * it also does some additional checks before setting the
-               * 'right' state in @priv. */
-              if (app_mgr_is_portrait && !STATE_IS_PORTRAIT (state) &&
-                  !hd_app_mgr_slide_is_open ())
-                priv->state = state = HDRM_STATE_LAUNCHER_PORTRAIT;
-              else if (!app_mgr_is_portrait && STATE_IS_PORTRAIT (state))
-                priv->state = state = HDRM_STATE_LAUNCHER;
-
-              /* after fixing @priv->state real value, check if we are
-               * actually transitioning to the same state. It should not be
-               * needed but in some corner cases it avoids the launcher to
-               * show a transition as it were "appearing" again, while
-               * actually it was already showing */
-              if (oldstate != state)
-                {
-                  hd_transition_rotate_screen (wm, STATE_IS_PORTRAIT (state));
-                  hd_launcher_update_orientation (STATE_IS_PORTRAIT (state));
-                }
-            }
-          else
+          /* If necessary, rotate the screen and update the launcher's layout. */
+          if (oldstate != state)
             {
-              /* UI rotation disabled, ensure the laucher in landscape mode
-               * state */
-              hd_launcher_update_orientation (FALSE);
+              hd_transition_rotate_screen (wm, STATE_IS_PORTRAIT (state));
+              hd_launcher_update_orientation (STATE_IS_PORTRAIT (state));
             }
 
           /* unfocus any applet */
@@ -1731,7 +1715,7 @@ void hd_render_manager_set_state(HDRMStateEnum state)
         }
       else if (STATE_IS_LAUNCHER (oldstate))
         {
-          hd_launcher_hide();
+          hd_launcher_hide ();
         }
 
       if ( (state == HDRM_STATE_HOME_EDIT) || (state == HDRM_STATE_HOME_EDIT_PORTRAIT))
@@ -1761,26 +1745,14 @@ void hd_render_manager_set_state(HDRMStateEnum state)
         mb_wm_handle_show_desktop(wm, STATE_NEED_DESKTOP(state));
 
       if (STATE_SHOW_APPLETS(state) != STATE_SHOW_APPLETS(oldstate))
-				{
-        hd_comp_mgr_update_applets_on_current_desktop_property (
-                                                       HD_COMP_MGR (cmgr));
-				}
+        {
+          hd_comp_mgr_update_applets_on_current_desktop_property (HD_COMP_MGR (cmgr));
+        }
 
       /* if we have moved away from the home edit dialog mode, then
        * we must make sure there are no home edit dialogs left around */
       if ( (oldstate == HDRM_STATE_HOME_EDIT_DLG) || (oldstate == HDRM_STATE_HOME_EDIT_DLG_PORTRAIT))
         hd_home_remove_dialogs(priv->home);
-
-      if(oldstate == HDRM_STATE_TASK_NAV_PORTRAIT && STATE_ONE_OF(state, HDRM_STATE_APP | HDRM_STATE_APP_PORTRAIT) && hd_comp_mgr_can_be_portrait (priv->comp_mgr))
-      {
-        priv->state = state = HDRM_STATE_APP_PORTRAIT;
-        hd_task_navigator_update_orientation(TRUE);
-      }
-      if(oldstate == HDRM_STATE_TASK_NAV && STATE_ONE_OF(state, HDRM_STATE_APP | HDRM_STATE_APP_PORTRAIT) && !hd_comp_mgr_should_be_portrait (priv->comp_mgr))
-      {
-        priv->state = state = HDRM_STATE_APP;
-        hd_task_navigator_update_orientation(FALSE);
-      }
 
       /* Divert state change if going to some portrait-capable mode.
        * Allow for APP_PORTRAIT <=> HOME_PORTRAIT too. */

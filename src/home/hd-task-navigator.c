@@ -4531,6 +4531,7 @@ hd_task_navigator_activate (int x, int y, int close)
 	  }
 }
 
+/* FIXME: not used anymore. */
 int
 hd_task_navigator_mode(void)
 {
