@@ -1442,10 +1442,7 @@ void hd_render_manager_set_state(HDRMStateEnum state)
                 {
                   /* We can't switch to application if there's none
                    * in the switcher. */
-                  if (STATE_IS_PORTRAIT (hd_dbus_state_before_tklock))
-                    hd_dbus_state_before_tklock = HDRM_STATE_HOME_PORTRAIT;
-                  else
-                    hd_dbus_state_before_tklock = HDRM_STATE_HOME;
+                  hd_dbus_state_before_tklock = HDRM_STATE_HOME;
                 }
               else if (hd_comp_mgr_should_be_portrait (priv->comp_mgr))
                 {
