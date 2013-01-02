@@ -984,7 +984,8 @@ void hd_render_manager_sync_clutter_before ()
     clutter_actor_hide(priv->operator);
 
   if (STATE_SHOW_STATUS_AREA (priv->state) &&
-       (priv->previous_state == HDRM_STATE_LAUNCHER))
+       (priv->previous_state == HDRM_STATE_LAUNCHER) &&
+       (priv->state == HDRM_STATE_LOADING))
     hd_render_manager_update_status_area(TRUE);
   else
     hd_render_manager_update_status_area(FALSE);
@@ -1686,6 +1687,7 @@ void hd_render_manager_set_state(HDRMStateEnum state)
             {
               hd_transition_rotate_screen (wm, STATE_IS_PORTRAIT (state));
               hd_launcher_update_orientation (STATE_IS_PORTRAIT (state));
+              hd_app_mgr_update_orientation();
             }
 
           /* unfocus any applet */
