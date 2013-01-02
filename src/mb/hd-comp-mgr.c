@@ -3354,7 +3354,7 @@ hd_comp_mgr_may_be_portrait (HdCompMgr *hmgr, gboolean assume_requested)
 
       if (!(MB_WM_CLIENT_CLIENT_TYPE (c) & MBWMClientTypeDialog) &&
              !(MB_WM_CLIENT_CLIENT_TYPE (c) & HdWmClientTypeStatusMenu))
-        /* Remove dialog_on_top flag. */
+        /* Remove client_is_dialog flag. */
         client_is_dialog = FALSE;
 
       if (!c->portrait_requested && !c->portrait_requested_inherited)
