@@ -5,10 +5,12 @@ hildon-desktop (1:2.2.147-1) unstable; urgency=low
   * Task navigator fixes (crashes, black background, etc.).
   * Many fixes related to the rotation mechanism (e.g. properly displayed black loading screens).
   * Reduced number of state changes (for example, when launching an application from portrait launcher).
+  * HdRenderManager: code cleanup.
+  * Hide status area when transitioning from HDRM_STATE_LAUNCHER to portrait STATE_SHOW_STATUS_AREA.
   * Fixes: Bugs reported by hxka.
   * Fixes: BMO #12629: blacklisting works not as it should.
 
- -- Tomasz Pieniążek <t.pieniazek@gazeta.pl>  Sat, 02 Jan 2013 00:15:00 +0200
+ -- Tomasz Pieniążek <t.pieniazek@gazeta.pl>  Sat, 02 Jan 2013 15:25:00 +0200
 
 hildon-desktop (1:2.2.146-2) unstable; urgency=low
 
