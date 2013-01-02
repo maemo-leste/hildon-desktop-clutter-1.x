@@ -983,7 +983,11 @@ void hd_render_manager_sync_clutter_before ()
   else
     clutter_actor_hide(priv->operator);
 
-  hd_render_manager_update_status_area(FALSE);
+  if (STATE_SHOW_STATUS_AREA (priv->state) &&
+       (priv->previous_state == HDRM_STATE_LAUNCHER))
+    hd_render_manager_update_status_area(TRUE);
+  else
+    hd_render_manager_update_status_area(FALSE);
 
   if (STATE_TOOLBAR_FOREGROUND(priv->state))
     btn_state |= HDTB_VIS_FOREGROUND;
@@ -1094,6 +1098,10 @@ void hd_render_manager_sync_clutter_after ()
   if (STATE_SHOW_OPERATOR(priv->state) &&
       (priv->previous_state == HDRM_STATE_LAUNCHER_PORTRAIT))
     clutter_actor_show (priv->operator);
+
+  if (STATE_SHOW_STATUS_AREA (priv->state)
+       && (priv->previous_state == HDRM_STATE_LAUNCHER))
+    hd_render_manager_update_status_area(FALSE);
 
   if (STATE_BLUR_BUTTONS(priv->state) &&
       clutter_actor_get_parent(CLUTTER_ACTOR(priv->blur_front)) !=
