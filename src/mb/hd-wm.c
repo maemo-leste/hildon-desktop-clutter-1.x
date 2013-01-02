@@ -432,10 +432,15 @@ hd_wm_client_activate (MBWindowManager * wm,
 
           /* Remove hd_comp_mgr_client_supports_portrait(c) for launching Qt-based apps 
            * in portrait mode, when the device lies flat. */
-          if (STATE_IS_PORTRAIT (state) && hd_comp_mgr_client_supports_portrait(c))
+          if (STATE_IS_PORTRAIT (state) && hd_comp_mgr_client_supports_portrait (c))
             hd_render_manager_set_state (HDRM_STATE_APP_PORTRAIT);
           else
-            hd_render_manager_set_state (HDRM_STATE_APP);
+            {
+              if (hd_comp_mgr_client_requests_portrait (c))
+                hd_render_manager_set_state (HDRM_STATE_APP_PORTRAIT);
+              else
+                hd_render_manager_set_state (HDRM_STATE_APP);
+            }
 
           /*
            * Roughly for the same reason as in hd-comp-mgr.c,

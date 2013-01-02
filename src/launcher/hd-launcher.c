@@ -889,11 +889,12 @@ hd_launcher_transition_loading_timeout()
    * starting failed */
   if (hd_task_navigator_has_apps())
     hd_render_manager_set_state(HDRM_STATE_TASK_NAV);
-  else {
-		if(priv->portraited)
+  else
+    {
+      if(priv->portraited)
 	    hd_render_manager_set_state (HDRM_STATE_HOME_PORTRAIT);
-		else
-			hd_render_manager_set_state (HDRM_STATE_HOME);
+      else
+        hd_render_manager_set_state (HDRM_STATE_HOME);
 	}
   return FALSE; // don't call again
 }
@@ -1098,16 +1099,16 @@ hd_launcher_transition_app_start (HdLauncherApp *item)
    * the timeline is called */
   hd_launcher_transition_new_frame(priv->launch_transition,
                                    0, launcher);
-  if (STATE_IS_APP(hd_render_manager_get_state()))
+  if (STATE_IS_APP (hd_render_manager_get_state ()))
     {
-      if (STATE_IS_PORTRAIT(hd_render_manager_get_state()))
+      if (STATE_IS_PORTRAIT (hd_render_manager_get_state ()))
         hd_render_manager_set_state (HDRM_STATE_LOADING_SUBWIN_PORTRAIT);
       else
         hd_render_manager_set_state (HDRM_STATE_LOADING_SUBWIN);
     }
   else
     {
-      if (STATE_IS_PORTRAIT(hd_render_manager_get_state()))
+      if (STATE_IS_PORTRAIT (hd_render_manager_get_state ()))
         hd_render_manager_set_state (HDRM_STATE_LOADING_PORTRAIT);
       else
         hd_render_manager_set_state (HDRM_STATE_LOADING);

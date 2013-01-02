@@ -138,6 +138,7 @@ gboolean hd_comp_mgr_can_be_portrait (HdCompMgr *hmgr);
 void     hd_comp_mgr_portrait_or_not_portrait (MBWMCompMgr *mgr,
                                                MBWindowManagerClient *c);
 gboolean hd_comp_mgr_client_supports_portrait (MBWindowManagerClient *mbwmc);
+gboolean hd_comp_mgr_client_requests_portrait (MBWindowManagerClient *mbwmc);
 
 Atom hd_comp_mgr_get_atom (HdCompMgr *hmgr, HdAtoms id);
 
