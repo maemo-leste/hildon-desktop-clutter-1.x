@@ -1528,35 +1528,11 @@ void hd_render_manager_set_state(HDRMStateEnum state)
       /* Goto HOME instead if tasw is not appropriate for some reason. */
       if (STATE_IS_TASK_NAV (state))
         {
-          gboolean goto_tasw_now, goto_tasw_later;
-
-          goto_tasw_now = goto_tasw_later = FALSE;
-          if (!hd_task_navigator_is_empty () && !hd_wm_has_modal_blockers (wm))
+          if (hd_task_navigator_is_empty () || hd_wm_has_modal_blockers (wm))
             {
-              goto_tasw_now   = TRUE;
-            }
-
-          if (!goto_tasw_now)
-            {
-              /*
-               * It may not be very intuitive what we're doing if in APP state
-               * you have a sysmodal and hit CTRL-Backspace (we go to HOME),
-               * but whatever.  Try to stick with portrait if we were there
-               * and hope that we will recover if we eventually shouldn't.
-               * This is to avoid a visible roundtrip to p->l->p if we should.
-               */
-              if (goto_tasw_later && STATE_ONE_OF (oldstate,
-                    (HDRM_STATE_APP_PORTRAIT | HDRM_STATE_NON_COMP_PORT)))
-                {
-                  /* TODO: Not used, remove later. */
-                  state = priv->state = HDRM_STATE_APP;
-                }
-              else
-                {
-                  /* Keep current orientation for next HOME transition ... */
-                  state = priv->state = (STATE_IS_PORTRAIT (oldstate) ?
-                                             HDRM_STATE_HOME_PORTRAIT : HDRM_STATE_HOME);
-                }
+              /* Keep current orientation for next HOME transition ... */
+              state = priv->state = (STATE_IS_PORTRAIT (oldstate) ?
+                                       HDRM_STATE_HOME_PORTRAIT : HDRM_STATE_HOME);
 
               g_debug("you must have meant STATE %s -> STATE %s",
                       hd_render_manager_state_str(oldstate),
@@ -1566,7 +1542,7 @@ void hd_render_manager_set_state(HDRMStateEnum state)
             }
           else
             /* unfocus any applet */
-          mb_wm_client_focus (cmgr->wm->desktop);
+            mb_wm_client_focus (cmgr->wm->desktop);
         }
       else
         /* There may not be any rotation in progress in which case this
