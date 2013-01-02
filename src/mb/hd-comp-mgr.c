@@ -3239,6 +3239,7 @@ hd_comp_mgr_may_be_portrait (HdCompMgr *hmgr, gboolean assume_requested)
   gboolean any_supports, any_requests;
   gboolean is_whitelisted = FALSE;
   gboolean force_rotation = hd_transition_get_int("thp_tweaks", "forcerotation", 0);
+  gboolean client_is_app = FALSE;
 
   /* Invalidate all cached, inherited portrait flags at once. */
   portrait_freshness_counter++;
@@ -3249,6 +3250,13 @@ hd_comp_mgr_may_be_portrait (HdCompMgr *hmgr, gboolean assume_requested)
 
   for (c = wm->stack_top; c && c != wm->desktop; c = c->stacked_below)
     {
+      /* Check if there's a client which supports or request
+       * portrait mode. Make sure it's an application. */
+       if ((any_supports || any_requests) && client_is_app)
+       /* Do not iterate more, there's a client which supports
+        * portrait mode. */
+         break;
+
       PORTRAIT ("CLIENT %p", c);
       PORTRAIT ("IS IGNORABLE?");
       if (MB_WM_CLIENT_CLIENT_TYPE (c) & HdWmClientTypeStatusArea)
@@ -3332,6 +3340,15 @@ hd_comp_mgr_may_be_portrait (HdCompMgr *hmgr, gboolean assume_requested)
 
       any_supports  = TRUE;
       any_requests |= c->portrait_requested != 0;
+
+      /* Client supports portrait mode. Check if it's an application. */
+      if (MB_WM_CLIENT_CLIENT_TYPE (c) & MBWMClientTypeApp)
+        client_is_app = TRUE;
+
+      PORTRAIT ("CLIENT IS AN APP: %d", client_is_app);
+
+      /* FIXME: decide later what should be done with the following code. */
+#ifdef 0
       if (!c->portrait_requested && !c->portrait_requested_inherited)
         { /* Client explicity !REQUESTED portrait, obey. */
           PORTRAIT ("PROHIBITED?");
@@ -3341,6 +3358,8 @@ hd_comp_mgr_may_be_portrait (HdCompMgr *hmgr, gboolean assume_requested)
               return FALSE;
             }
         }
+#endif
+
       /*
        * This is a workaround for the fullscreen incoming call dialog.
        * Since it's fullscreen we can safely assume it will cover
