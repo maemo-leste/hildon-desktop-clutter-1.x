@@ -3239,7 +3239,6 @@ hd_comp_mgr_may_be_portrait (HdCompMgr *hmgr, gboolean assume_requested)
   gboolean any_supports, any_requests;
   gboolean is_whitelisted = FALSE;
   gboolean force_rotation = hd_transition_get_int("thp_tweaks", "forcerotation", 0);
-  gboolean client_is_dialog = FALSE;
 
   /* Invalidate all cached, inherited portrait flags at once. */
   portrait_freshness_counter++;
@@ -3250,14 +3249,6 @@ hd_comp_mgr_may_be_portrait (HdCompMgr *hmgr, gboolean assume_requested)
 
   for (c = wm->stack_top; c && c != wm->desktop; c = c->stacked_below)
     {
-      /* Check if there's a client which supports or request
-       * portrait mode. Make sure it's not a dialog, status
-       * menu or virtual keyboard. */
-      if ((any_supports || any_requests) && !client_is_dialog)
-        /* Do not iterate more, there's a client which supports
-         * portrait mode. */
-        break;
-
       PORTRAIT ("CLIENT %p", c);
       PORTRAIT ("IS IGNORABLE?");
       if (MB_WM_CLIENT_CLIENT_TYPE (c) & HdWmClientTypeStatusArea)
@@ -3289,14 +3280,6 @@ hd_comp_mgr_may_be_portrait (HdCompMgr *hmgr, gboolean assume_requested)
          * taken into account.
          */
         continue;
-
-      if ((MB_WM_CLIENT_CLIENT_TYPE (c) & MBWMClientTypeDialog) ||
-             (MB_WM_CLIENT_CLIENT_TYPE (c) & HdWmClientTypeStatusMenu))
-        /* Dialogs with portrait support on top of the window
-         * which works only in landscape, should not change the state
-         * to the portrait one. The same rule applies to the status
-         * menu. */
-        client_is_dialog = TRUE;
 
       /* Get @portrait_supported/requested updated. */
       mb_wm_client_update_portrait_flags (c, portrait_freshness_counter);
@@ -3344,30 +3327,18 @@ hd_comp_mgr_may_be_portrait (HdCompMgr *hmgr, gboolean assume_requested)
       if (!force_rotation && !is_whitelisted && !c->portrait_supported)
         {
           PORTRAIT ("PORTRAIT UNSUPPORTED");
-
-          if (client_is_dialog)
-            /* If a dialog or a window under the dialog do not support
-             * portrait mode, rotate to landscape. */
-            return FALSE;
-          else
-            continue;
+          return FALSE;
         }
 
       any_supports  = TRUE;
       any_requests |= c->portrait_requested != 0;
-
-      if (!(MB_WM_CLIENT_CLIENT_TYPE (c) & MBWMClientTypeDialog) &&
-             !(MB_WM_CLIENT_CLIENT_TYPE (c) & HdWmClientTypeStatusMenu))
-        /* Remove client_is_dialog flag. */
-        client_is_dialog = FALSE;
-
       if (!c->portrait_requested && !c->portrait_requested_inherited)
         { /* Client explicity !REQUESTED portrait, obey. */
           PORTRAIT ("PROHIBITED?");
           if (!force_rotation && !is_whitelisted)
             {
               PORTRAIT ("PORTRAIT PROHIBITED");
-              continue;
+              return FALSE;
             }
         }
       /*
