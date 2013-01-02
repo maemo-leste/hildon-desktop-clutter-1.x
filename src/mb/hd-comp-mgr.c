@@ -3348,7 +3348,7 @@ hd_comp_mgr_may_be_portrait (HdCompMgr *hmgr, gboolean assume_requested)
       PORTRAIT ("CLIENT IS AN APP: %d", client_is_app);
 
       /* FIXME: decide later what should be done with the following code. */
-#ifdef 0
+#if 0
       if (!c->portrait_requested && !c->portrait_requested_inherited)
         { /* Client explicity !REQUESTED portrait, obey. */
           PORTRAIT ("PROHIBITED?");
