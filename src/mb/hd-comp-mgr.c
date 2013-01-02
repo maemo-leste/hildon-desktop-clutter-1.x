@@ -3029,6 +3029,10 @@ hd_comp_mgr_effect (MBWMCompMgr                *mgr,
             }
           /* We're now showing this app, so remove our app
            * starting screen if we had one */
+
+          /* make sure to hide the loading screen and go to a sane state */
+          hd_launcher_stop_loading_transition ();
+          hd_render_manager_set_loading (NULL);
           hd_launcher_window_created();
           app->map_effect_before = TRUE;
         }

@@ -885,6 +885,7 @@ hd_launcher_transition_loading_timeout()
 	HdLauncherPrivate *priv = HD_LAUNCHER_GET_PRIVATE (hd_launcher_get ());
 
   hd_launcher_stop_loading_transition();
+  hd_render_manager_set_loading (NULL);
   /* Change state back to switcher (if other apps exist) or home if the app
    * starting failed */
   if (hd_task_navigator_has_apps())

@@ -983,13 +983,6 @@ void hd_render_manager_sync_clutter_before ()
   else
     clutter_actor_hide(priv->operator);
 
-  if (STATE_SHOW_STATUS_AREA (priv->state) &&
-       (priv->previous_state == HDRM_STATE_LAUNCHER) &&
-       (priv->state == HDRM_STATE_LOADING))
-    hd_render_manager_update_status_area(TRUE);
-  else
-    hd_render_manager_update_status_area(FALSE);
-
   if (STATE_TOOLBAR_FOREGROUND(priv->state))
     btn_state |= HDTB_VIS_FOREGROUND;
 
@@ -1059,6 +1052,12 @@ void hd_render_manager_sync_clutter_before ()
       STATE_IS_NON_COMP (priv->previous_state))
     hd_render_manager_set_visibilities();
 
+  if ((priv->previous_state == HDRM_STATE_LOADING) &&
+         (priv->state == HDRM_STATE_APP_PORTRAIT))
+    hd_render_manager_update_status_area(TRUE);
+  else
+    hd_render_manager_update_status_area(FALSE);
+
   /* Now look at what buttons we have showing, and add each visible button X
    * to the X input viewport. FIXME: Do we need this now HdTitleBar does it? */
   hd_render_manager_set_input_viewport();
@@ -1100,8 +1099,8 @@ void hd_render_manager_sync_clutter_after ()
       (priv->previous_state == HDRM_STATE_LAUNCHER_PORTRAIT))
     clutter_actor_show (priv->operator);
 
-  if (STATE_SHOW_STATUS_AREA (priv->state)
-       && (priv->previous_state == HDRM_STATE_LAUNCHER))
+  if ((priv->previous_state == HDRM_STATE_LOADING) &&
+         (priv->state == HDRM_STATE_APP_PORTRAIT))
     hd_render_manager_update_status_area(FALSE);
 
   if (STATE_BLUR_BUTTONS(priv->state) &&
@@ -1528,11 +1527,11 @@ void hd_render_manager_set_state(HDRMStateEnum state)
 	}
 
       /* Return the actor if we used it for loading. */
-      if (STATE_IS_LOADING (oldstate) &&
+   /*   if (STATE_IS_LOADING (oldstate) &&
           priv->loading_image)
         {
           hd_render_manager_set_loading (NULL);
-        }
+        }*/
 
       /* Goto HOME instead if tasw is not appropriate for some reason. */
       if (STATE_IS_TASK_NAV (state))
