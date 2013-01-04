@@ -1526,12 +1526,16 @@ void hd_render_manager_set_state(HDRMStateEnum state)
           hd_render_manager_restack();
 	}
 
-      /* Return the actor if we used it for loading. */
-   /*   if (STATE_IS_LOADING (oldstate) &&
-          priv->loading_image)
+      /* Return the actor if we used it for loading.
+       * Sometimes the loading screen orientation is different than an app's
+       * window, so keep the loading screen as long as possible to avoid
+       * showing the previous window from the stack (which may not support
+       * all screen orientations) on screen rotation. The loading screen should
+       * be hidden after the window is mapped or on time out. */
+      if (STATE_IS_LOADING (oldstate) && !STATE_IS_APP (state) && priv->loading_image)
         {
           hd_render_manager_set_loading (NULL);
-        }*/
+        }
 
       /* Goto HOME instead if tasw is not appropriate for some reason. */
       if (STATE_IS_TASK_NAV (state))
