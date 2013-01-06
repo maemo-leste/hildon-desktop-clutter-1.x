@@ -3312,7 +3312,7 @@ hd_comp_mgr_may_be_portrait (HdCompMgr *hmgr, gboolean assume_requested)
         {
           any_supports  = TRUE;
           any_requests |= c->portrait_requested != 0;
-          PORTRAIT ("DEMANDED (PART 1)");
+          PORTRAIT ("DEMANDED (>1) (PART 1)");
           break;
         }
 
@@ -3371,9 +3371,13 @@ hd_comp_mgr_may_be_portrait (HdCompMgr *hmgr, gboolean assume_requested)
       if (c->portrait_requested && c->window
               && c->window->ewmh_state & MBWMClientWindowEWMHStateFullscreen)
         {
-          any_supports  = TRUE;
-          any_requests |= c->portrait_requested != 0;
-          PORTRAIT ("DEMANDED (PART 2)");
+          PORTRAIT ("DEMANDED (>1) (PART 2)");
+          break;
+        }
+      else if (c->portrait_requested)
+        {
+          /* Client explicity REQUESTED portrait mode. */
+          PORTRAIT ("DEMANDED");
           break;
         }
     }
