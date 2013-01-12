@@ -1,4 +1,4 @@
-hildon-desktop (1:2.2.148-1) unstable; urgency=low
+hildon-desktop (1:2.2.147.90-1) unstable; urgency=low
 
   * Another try to improve hd_comp_mgr_may_be_portrait.
   * Loading screen fixes.
