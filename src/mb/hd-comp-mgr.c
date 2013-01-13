@@ -38,6 +38,7 @@
 #include "hd-animation-actor.h"
 #include "hd-render-manager.h"
 #include "hd-title-bar.h"
+#include "hd-orientation-lock.h"
 #include "launcher/hd-app-mgr.h"
 #include "launcher/hd-launcher-editor.h"
 
@@ -67,7 +68,6 @@
 #define OPERATOR_APPLET_ID         "_HILDON_OPERATOR_APPLET"
 #define STAMP_DIR                  "/tmp/hildon-desktop/"
 #define STAMP_FILE                 STAMP_DIR "desktop-started.stamp"
-#define GCONF_KEY_ORIENTATION_LOCK "/apps/osso/hildon-desktop/orientation_lock"
 #define GCONF_KEY_DESKTOP_ORIENTATION_LOCK "/apps/osso/hildon-desktop/desktop_orientation_lock"
 
 #if 0
@@ -582,7 +582,10 @@ hd_comp_mgr_init (MBWMObject *obj, va_list vap)
                    cmgr->wm->main_ctx, None, PropertyNotify,
                    (MBWMXEventFunc)hd_comp_mgr_client_property_changed, cmgr);
 
-  hd_render_manager_set_state(HDRM_STATE_HOME);
+  if (hd_orientation_lock_is_locked_to_portrait ())
+    hd_render_manager_set_state(HDRM_STATE_HOME_PORTRAIT);
+  else
+    hd_render_manager_set_state(HDRM_STATE_HOME);
 
 
   /* Get D-Bus proxy for mce calls */
@@ -3426,8 +3429,7 @@ hd_comp_mgr_should_be_portrait (HdCompMgr *hmgr)
 
       /* Let's honour orientation lock, prevents freezing desktop in portrait
        * mode */
-      gboolean orientation_lock = gconf_client_get_bool (priv->gconf_client,
-                                                         GCONF_KEY_ORIENTATION_LOCK, NULL);
+      gboolean orientation_lock = hd_orientation_lock_is_locked_to_landscape ();
 
       /* hd_comp_mgr_may_be_portrait tells also if there's an app _requesting_ 
        * portrait mode (mostly call-ui) */
@@ -4010,21 +4012,14 @@ hd_comp_mgr_is_callui_window (MBWindowManager *wm, MBWindowManagerClient *c)
 gboolean
 hd_comp_mgr_is_orientationlock_enabled (MBWindowManager *wm, MBWindowManagerClient *c)
 {
-  /* GConf client for orientation lock. */
-  GConfClient* gconf_client = gconf_client_get_default();;
-  g_assert(GCONF_IS_CLIENT(gconf_client));
-
-  gboolean ret_value = gconf_client_get_bool (gconf_client, GCONF_KEY_ORIENTATION_LOCK, NULL);
-  g_object_unref(gconf_client);
-
-  if (!ret_value)
+  if (!hd_orientation_lock_is_locked_to_landscape ())
     /* Orientation lock is disabled. */
     return FALSE;
 
   /* Do not try to lock call-ui window. */
   if (hd_comp_mgr_is_callui_window (wm, c))
-    ret_value = FALSE;
+    return FALSE;
 
-  return ret_value;
+  return TRUE;
 }
 

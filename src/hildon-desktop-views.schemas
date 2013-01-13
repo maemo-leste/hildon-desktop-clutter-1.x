@@ -71,7 +71,17 @@
       <type>bool</type>
       <default>false</default>
       <locale name="C">
-        <short>Set to true to lock orientation to landscape mode</short>
+        <short>Set to true to lock orientation to landscape or portrait mode. Orientation depends on the orientation_lock_position key.</short>
+      </locale>
+    </schema>
+    <schema>
+      <key>/schemas/apps/osso/hildon-desktop/orientation_lock_position</key>
+      <applyto>/apps/osso/hildon-desktop/orientation_lock_position</applyto>
+      <owner>hildon-desktop</owner>
+      <type>bool</type>
+      <default>false</default>
+      <locale name="C">
+        <short>If set to true, orientation lock will lock window to portrait, otherwise to landscape</short>
       </locale>
     </schema>
     <schema>

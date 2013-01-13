@@ -50,6 +50,7 @@
 #include "home/hd-home-view-container.h"
 #include "hd-transition.h"
 #include "hd-wm.h"
+#include "hd-orientation-lock.h"
 
 #undef  G_LOG_DOMAIN
 #define G_LOG_DOMAIN "hd-app-mgr"
@@ -1922,7 +1923,10 @@ hd_app_mgr_ui_can_rotate (void)
 {
   HdAppMgrPrivate *priv = HD_APP_MGR_GET_PRIVATE (hd_app_mgr_get ());
 
-  return priv->ui_can_rotate;
+  if (!priv->ui_can_rotate && hd_orientation_lock_is_locked_to_portrait ())
+    return TRUE;
+  else
+    return priv->ui_can_rotate;
 }
 
 static gboolean
@@ -2079,8 +2083,11 @@ hd_app_mgr_dbus_signal_handler (DBusConnection *conn,
                                   MCE_DEVICE_ORIENTATION_SIG) &&
                !_hd_app_mgr_dbus_check_value (msg,MCE_ORIENTATION_UNKNOWN) )
         {
-          priv->portrait = _hd_app_mgr_dbus_check_value (msg,
-                                           MCE_ORIENTATION_PORTRAIT);
+          if (hd_orientation_lock_is_locked_to_portrait ())
+            priv->portrait = TRUE;
+          else
+            priv->portrait = _hd_app_mgr_dbus_check_value (msg,
+                                             MCE_ORIENTATION_PORTRAIT);
 
           /* CallUI shouldn't appear when in LAUNCHER AND TL can rotate, but
            * should appear when TL cannot rotate. */
@@ -2207,8 +2214,11 @@ hd_app_mgr_mce_activate_accel_if_needed (gboolean update_portraitness)
             }
           else
             {
-              priv->portrait = _hd_app_mgr_dbus_check_value (reply,
-                                                  MCE_ORIENTATION_PORTRAIT);
+              if (hd_orientation_lock_is_locked_to_portrait ())
+                priv->portrait = TRUE;
+              else
+                priv->portrait = _hd_app_mgr_dbus_check_value (reply,
+                                                    MCE_ORIENTATION_PORTRAIT);
             }
           dbus_message_unref (reply);
         }
@@ -2265,6 +2275,15 @@ hd_app_mgr_gconf_value_changed (GConfClient *client,
     {
       priv->slide_closed = !value;
 
+      /* Should UI be able to rotate?
+       * Related to the orientation lock (locking to portrait mode). */
+      gboolean allow_ui_to_rotate;
+
+      if (!priv->ui_can_rotate && hd_orientation_lock_is_locked_to_portrait ())
+        allow_ui_to_rotate = TRUE;
+      else
+        allow_ui_to_rotate = priv->ui_can_rotate;
+
       /* If in LAUNCHER_PORTRAIT with the slide/hkb open, turn it into
        * landscape mode
        * If in LAUNCHER with closed slide and device's oriented portrait go to
@@ -2282,7 +2301,7 @@ hd_app_mgr_gconf_value_changed (GConfClient *client,
           hd_render_manager_set_state (hd_render_manager_get_state () == HDRM_STATE_LAUNCHER_PORTRAIT?HDRM_STATE_LAUNCHER:HDRM_STATE_TASK_NAV);
           priv->portrait = portrait;
         }
-      else if (priv->slide_closed && priv->portrait && priv->ui_can_rotate &&
+      else if (priv->slide_closed && priv->portrait && allow_ui_to_rotate &&
         STATE_ONE_OF(hd_render_manager_get_state () , HDRM_STATE_LAUNCHER | HDRM_STATE_TASK_NAV))
           hd_render_manager_set_state (hd_render_manager_get_state () == HDRM_STATE_LAUNCHER?HDRM_STATE_LAUNCHER_PORTRAIT:HDRM_STATE_TASK_NAV_PORTRAIT);
       else
