@@ -913,7 +913,7 @@ void hd_render_manager_sync_clutter_before ()
         hd_home_update_layout (priv->home);
         break;
       case HDRM_STATE_HOME_EDIT:
-			case HDRM_STATE_HOME_EDIT_PORTRAIT:
+      case HDRM_STATE_HOME_EDIT_PORTRAIT:
         blur |= HDRM_BLUR_HOME; /* fall through intentionally */
       case HDRM_STATE_HOME_EDIT_DLG:
       case HDRM_STATE_HOME_EDIT_DLG_PORTRAIT:
@@ -1380,11 +1380,13 @@ void hd_render_manager_set_state(HDRMStateEnum state)
             hd_render_manager_state_str(priv->state),
             hd_render_manager_state_str(state));
 
-  if(conf_disable_edit) {
-	  if ((state==HDRM_STATE_HOME_EDIT)||(state==HDRM_STATE_HOME_EDIT_PORTRAIT)) {
-		  state=priv->state;
-	  }
-  }
+  if (conf_disable_edit)
+    {
+      if ((state == HDRM_STATE_HOME_EDIT) || (state == HDRM_STATE_HOME_EDIT_PORTRAIT))
+        {
+          state = priv->state;
+        }
+    }
 
   if (!cmgr)
   {
@@ -1788,10 +1790,10 @@ void hd_render_manager_set_state(HDRMStateEnum state)
       /* Signal the state has changed. */
       g_object_notify (G_OBJECT (render_manager), "state");
 
-      if ((   state==HDRM_STATE_APP || state==HDRM_STATE_APP_PORTRAIT
+      if ((   state==HDRM_STATE_APP  || state==HDRM_STATE_APP_PORTRAIT
            || state==HDRM_STATE_HOME || state==HDRM_STATE_HOME_PORTRAIT
-						|| state==HDRM_STATE_HOME_EDIT_DLG 
-						|| state==HDRM_STATE_HOME_EDIT_DLG_PORTRAIT)
+           || state==HDRM_STATE_HOME_EDIT_DLG
+           || state==HDRM_STATE_HOME_EDIT_DLG_PORTRAIT)
            && !hd_transition_rotation_will_change_state ())
         {
 
@@ -2252,7 +2254,7 @@ void hd_render_manager_restack()
     ClutterActor *highest_maximized = 0;
 
     n_elements = clutter_group_get_n_children(CLUTTER_GROUP(priv->home_blur));
-    for (i=n_elements-1;i>=0;i--)
+    for (i = n_elements-1; i >= 0; i--)
       {
         ClutterActor *child =
           clutter_group_get_nth_child(CLUTTER_GROUP(priv->home_blur), i);
