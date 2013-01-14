@@ -1765,7 +1765,7 @@ hd_home_update_layout (HdHome * home)
       _hd_home_do_normal_layout(home);
       break;
     case HDRM_STATE_HOME_EDIT:
-		case HDRM_STATE_HOME_EDIT_PORTRAIT:
+    case HDRM_STATE_HOME_EDIT_PORTRAIT:
     case HDRM_STATE_HOME_EDIT_DLG:
     case HDRM_STATE_HOME_EDIT_DLG_PORTRAIT:
       _hd_home_do_edit_layout(home);
@@ -2593,41 +2593,40 @@ update_edge_indication_visibility (HdHome *home,
 void
 hd_home_show_edge_indication (HdHome *home)
 {
-	HdHomePrivate *priv = home->priv;
+  HdHomePrivate *priv = home->priv;
 
-	if(STATE_IS_PORTRAIT (hd_render_manager_get_state()))
-		{
-      if(priv->vertical_scrolling)
+  if (STATE_IS_PORTRAIT (hd_render_manager_get_state ()))
+    {
+      if (priv->vertical_scrolling)
         {
-    			clutter_actor_set_size(priv->edge_indication_left, 
-	    														HD_COMP_MGR_PORTRAIT_HEIGHT, HD_EDGE_INDICATION_WIDTH);
-	    		clutter_actor_set_position (priv->edge_indication_left, 0, HD_COMP_MGR_TOP_MARGIN);
-	    		clutter_actor_set_size(priv->edge_indication_right, 
-	    														HD_COMP_MGR_PORTRAIT_HEIGHT, HD_EDGE_INDICATION_WIDTH);
-	    		clutter_actor_set_position (priv->edge_indication_right, 0, HD_COMP_MGR_PORTRAIT_HEIGHT - HD_EDGE_INDICATION_WIDTH);
+          clutter_actor_set_size (priv->edge_indication_left, HD_COMP_MGR_PORTRAIT_HEIGHT,
+                                  HD_EDGE_INDICATION_WIDTH);
+          clutter_actor_set_position (priv->edge_indication_left, 0, HD_COMP_MGR_TOP_MARGIN);
+          clutter_actor_set_size (priv->edge_indication_right, HD_COMP_MGR_PORTRAIT_HEIGHT,
+                                  HD_EDGE_INDICATION_WIDTH);
+          clutter_actor_set_position (priv->edge_indication_right, 0,
+                                      HD_COMP_MGR_PORTRAIT_HEIGHT - HD_EDGE_INDICATION_WIDTH);
         }
       else
         {
-    			clutter_actor_set_size(priv->edge_indication_left, 
-	    														HD_EDGE_INDICATION_WIDTH, HD_COMP_MGR_PORTRAIT_HEIGHT);
-	    		clutter_actor_set_position (priv->edge_indication_left, 0, 0);
-	    		clutter_actor_set_size(priv->edge_indication_right, 
-	    														HD_EDGE_INDICATION_WIDTH, HD_COMP_MGR_PORTRAIT_HEIGHT);
-	    		clutter_actor_set_position (priv->edge_indication_right, HD_COMP_MGR_PORTRAIT_WIDTH - HD_EDGE_INDICATION_WIDTH, 0);    
+          clutter_actor_set_size(priv->edge_indication_left, HD_EDGE_INDICATION_WIDTH, HD_COMP_MGR_PORTRAIT_HEIGHT);
+          clutter_actor_set_position (priv->edge_indication_left, 0, 0);
+          clutter_actor_set_size (priv->edge_indication_right, HD_EDGE_INDICATION_WIDTH, HD_COMP_MGR_PORTRAIT_HEIGHT);
+          clutter_actor_set_position (priv->edge_indication_right, HD_COMP_MGR_PORTRAIT_WIDTH - HD_EDGE_INDICATION_WIDTH, 0);
         }
-		}
-	else
-		{
-			clutter_actor_set_size(priv->edge_indication_left, 
-															HD_EDGE_INDICATION_WIDTH, HD_COMP_MGR_LANDSCAPE_HEIGHT);
-			clutter_actor_set_position (priv->edge_indication_left, 0, 0);
-			clutter_actor_set_size(priv->edge_indication_right, 
-															HD_EDGE_INDICATION_WIDTH, HD_COMP_MGR_LANDSCAPE_HEIGHT);
-			clutter_actor_set_position (priv->edge_indication_right, HD_COMP_MGR_LANDSCAPE_WIDTH - HD_EDGE_INDICATION_WIDTH, 0);
-		}
+    }
+  else
+    {
+      clutter_actor_set_size (priv->edge_indication_left, HD_EDGE_INDICATION_WIDTH,
+                              HD_COMP_MGR_LANDSCAPE_HEIGHT);
+      clutter_actor_set_position (priv->edge_indication_left, 0, 0);
+      clutter_actor_set_size (priv->edge_indication_right, HD_EDGE_INDICATION_WIDTH,
+                              HD_COMP_MGR_LANDSCAPE_HEIGHT);
+      clutter_actor_set_position (priv->edge_indication_right,
+                                  HD_COMP_MGR_LANDSCAPE_WIDTH - HD_EDGE_INDICATION_WIDTH, 0);
+    }
 
-  update_edge_indication_visibility (home,
-                                     EDGE_INDICATION_OPACITY_WIDGET_MOVING,
+  update_edge_indication_visibility (home,EDGE_INDICATION_OPACITY_WIDGET_MOVING,
                                      EDGE_INDICATION_OPACITY_WIDGET_MOVING);
 }
 
@@ -2761,22 +2760,19 @@ hd_home_unregister_applet (HdHome       *home,
 }
 
 HdHomeViewContainer *hd_home_get_view_container(HdHome *home) {
-	return HD_HOME_VIEW_CONTAINER (home->priv->view_container);
+  return HD_HOME_VIEW_CONTAINER (home->priv->view_container);
 }
 
 void
 hd_home_update_applets_position (HdHome *home)
 {
-	HdHomePrivate *priv = home->priv;
-	int i;
+  HdHomePrivate *priv = home->priv;
+  int i;
 
   for (i = 0; i < MAX_VIEWS; i++)
     {
-      ClutterActor *view;
-
-      view = hd_home_view_container_get_view (HD_HOME_VIEW_CONTAINER (priv->view_container),
-                                              i);
-			hd_home_view_change_applets_position(HD_HOME_VIEW (view));
+      ClutterActor *view = hd_home_view_container_get_view (HD_HOME_VIEW_CONTAINER (priv->view_container), i);
+      hd_home_view_change_applets_position (HD_HOME_VIEW (view));
     }
 }
 
@@ -2788,27 +2784,24 @@ hd_home_update_wallpaper(HdHome *home)
 
   for (i = 0; i < MAX_VIEWS; i++)
     {
-      ClutterActor *view;
-
-      view = hd_home_view_container_get_view (HD_HOME_VIEW_CONTAINER (priv->view_container),
-                                              i);
-      hd_home_view_change_wallpaper(HD_HOME_VIEW (view));
+      ClutterActor *view = hd_home_view_container_get_view (HD_HOME_VIEW_CONTAINER (priv->view_container), i);
+      hd_home_view_change_wallpaper (HD_HOME_VIEW (view));
     }
 }
 
 gboolean
 hd_home_is_portrait_capable (void)
 {
-	return hd_app_mgr_is_portrait () && !hd_app_mgr_slide_is_open ();
+  return hd_app_mgr_is_portrait () && !hd_app_mgr_slide_is_open ();
 }
 
 void
 hd_home_resize_view_container (ClutterActor *actor, GParamSpec *unused,
                                ClutterActor *stage)
 {
-  clutter_actor_set_size(actor,
-                         hd_comp_mgr_get_current_screen_width (),
-                         hd_comp_mgr_get_current_screen_height ());
+  clutter_actor_set_size (actor,
+                          hd_comp_mgr_get_current_screen_width (),
+                          hd_comp_mgr_get_current_screen_height ());
 }
 
 gboolean
