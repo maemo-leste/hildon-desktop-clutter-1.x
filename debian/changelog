@@ -2,8 +2,9 @@ hildon-desktop (1:2.2.149-1) unstable; urgency=low
 
   * New HdOrientationLock class. Provides possibility to lock a window in portrait mode.
   * Formatting fixes.
+  * Fixed layout of the titlebar in certain scenarios.
 
- -- Tomasz Pieniążek <t.pieniazek@gazeta.pl>  Sun, 14 Jan 2013 18:47:00 +0200
+ -- Tomasz Pieniążek <t.pieniazek@gazeta.pl>  Sun, 14 Jan 2013 20:34:00 +0200
 
 hildon-desktop (1:2.2.148-1) unstable; urgency=low
 
