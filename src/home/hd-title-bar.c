@@ -434,8 +434,10 @@ status_area_is_visible (void)
 }
 
 gint
-hd_title_bar_get_button_width(HdTitleBar *bar) {
+hd_title_bar_get_button_width(HdTitleBar *bar)
+{
   HdTitleBarPrivate *priv = bar->priv;
+
   if (priv->current_state & HDTB_VIS_SMALL_BUTTONS)
     return HD_COMP_MGR_TOP_RIGHT_BTN_WIDTH_SMALL;
   else
@@ -733,11 +735,14 @@ hd_title_bar_set_full_width(HdTitleBar *bar, gboolean full_size)
 {
   HdTitleBarPrivate *priv;
   ClutterActor *status_area;
+
   if (!HD_IS_TITLE_BAR(bar))
     return;
+
   priv = bar->priv;
 
   status_area = hd_render_manager_get_status_area();
+  HDRMStateEnum hd_render_state = hd_render_manager_get_state();
 
   hd_title_bar_set_button_positions(bar);
 
@@ -752,14 +757,44 @@ hd_title_bar_set_full_width(HdTitleBar *bar, gboolean full_size)
       clutter_actor_set_width(priv->title_bg,
           hd_comp_mgr_get_current_screen_width ());
 
+      /* In portrait desktop edit mode move the BTN_MENU image slightly off-screen.
+       * Then the width of the BTN_MENU will be almost equal to
+       * HD_COMP_MGR_TOP_RIGHT_BTN_WIDTH_SMALL. */
+      if (hd_render_state == HDRM_STATE_HOME_EDIT_PORTRAIT)
+        {
+          clutter_actor_set_x(priv->buttons[BTN_MENU], (HD_COMP_MGR_TOP_RIGHT_BTN_WIDTH_SMALL -
+                              HD_COMP_MGR_TOP_RIGHT_BTN_WIDTH) / 2);
+        }
+      else
+        {
+          clutter_actor_set_x(priv->buttons[BTN_MENU], 0);
+        }
+
       /* set up separator positions */
       if (priv->state & HDTB_VIS_BTN_LEFT_MASK)
         {
           clutter_actor_show(priv->buttons[BTN_SEPARATOR_LEFT]);
           if (CLUTTER_ACTOR_IS_VISIBLE (priv->buttons[BTN_MENU]))
-            clutter_actor_set_x(priv->buttons[BTN_SEPARATOR_LEFT],
-                                clutter_actor_get_width(priv->buttons[BTN_MENU]) -
-                                clutter_actor_get_width(priv->buttons[BTN_SEPARATOR_LEFT]));
+            {
+              /* In portrait mode apply the offset. Thanks to that the width of the BTN_MENU
+               * will be equal to HD_COMP_MGR_TOP_RIGHT_BTN_WIDTH_SMALL. */
+              if (hd_render_state == HDRM_STATE_HOME_EDIT_PORTRAIT)
+                {
+                  int offset = HD_COMP_MGR_TOP_RIGHT_BTN_WIDTH -
+                               HD_COMP_MGR_TOP_RIGHT_BTN_WIDTH_SMALL;
+
+                  clutter_actor_set_x(priv->buttons[BTN_SEPARATOR_LEFT],
+                                      clutter_actor_get_width(priv->buttons[BTN_MENU]) -
+                                      clutter_actor_get_width(priv->buttons[BTN_SEPARATOR_LEFT]) -
+                                      offset + 2);
+                }
+              else
+                {
+                  clutter_actor_set_x(priv->buttons[BTN_SEPARATOR_LEFT],
+                                      clutter_actor_get_width(priv->buttons[BTN_MENU]) -
+                                      clutter_actor_get_width(priv->buttons[BTN_SEPARATOR_LEFT]) + 2);
+                }
+            }
           else
             clutter_actor_set_x(priv->buttons[BTN_SEPARATOR_LEFT],
                                 hd_title_bar_get_button_width(bar) - 
@@ -898,8 +933,8 @@ hd_title_bar_set_for_edit_mode(HdTitleBar *bar)
   state |= HDTB_VIS_BTN_DONE;
   state |= HDTB_VIS_FULL_WIDTH;
 
-	if(priv->state & HDTB_VIS_SMALL_BUTTONS)
-		state |= HDTB_VIS_SMALL_BUTTONS;
+  if (priv->state & HDTB_VIS_SMALL_BUTTONS)
+    state |= HDTB_VIS_SMALL_BUTTONS;
 
   hd_title_bar_set_state_real(bar, state);
 
@@ -1054,8 +1089,10 @@ static void hd_title_bar_set_title (HdTitleBar *bar,
                                     gboolean waiting)
 {
   HdTitleBarPrivate *priv;
+
   if (!HD_IS_TITLE_BAR(bar))
     return;
+
   priv = bar->priv;
 
   if (title)
@@ -1068,17 +1105,12 @@ static void hd_title_bar_set_title (HdTitleBar *bar,
                   - hd_title_bar_get_button_width(bar)
                   - (waiting ? HD_THEME_IMG_PROGRESS_SIZE : 0);
 
-      int title_margin;
-      /* Fixes title graphics glitch in portrait edit mode */
-      if(hd_render_manager_get_state () == HDRM_STATE_HOME_EDIT_PORTRAIT)
-        title_margin = HD_TITLE_BAR_TITLE_MARGIN + 2 * HD_TITLE_BAR_TITLE_MARGIN_SMALL;
-      else
-        title_margin = (priv->state & HDTB_VIS_SMALL_BUTTONS) ?
-                        (HD_TITLE_BAR_TITLE_MARGIN_SMALL) :
-                        HD_TITLE_BAR_TITLE_MARGIN;
+      int title_margin = (priv->state & HDTB_VIS_SMALL_BUTTONS) ?
+                          HD_TITLE_BAR_TITLE_MARGIN_SMALL : HD_TITLE_BAR_TITLE_MARGIN;
 
       if (priv->state & HDTB_VIS_BTN_LEFT_MASK)
         x_start += hd_title_bar_get_button_width(bar);
+
       status_area = hd_render_manager_get_status_area();
       if (status_area_is_visible())
         x_start += clutter_actor_get_width(status_area);
