@@ -184,12 +184,15 @@ hd_dialog_request_geometry (MBWindowManagerClient *client,
     return False;*/
 
   if(
-     (STATE_IS_PORTRAIT(hd_render_manager_get_state())
-      || hd_comp_mgr_is_portrait()
-      || hd_transition_is_rotating_to_portrait())
-     && hd_task_navigator_get_disable_portrait(client)
-  )
-      return False;
+     (   hd_comp_mgr_is_portrait ()
+      || hd_transition_is_rotating_to_portrait ())
+     && hd_task_navigator_get_disable_portrait (client)
+     && STATE_IS_PORTRAIT (hd_render_manager_get_state ())
+     && STATE_IS_TASK_NAV (hd_render_manager_get_state ())
+    )
+  {
+    return False;
+  }
 
   /*
    * When we get an internal geometry request, like from the layout manager,
