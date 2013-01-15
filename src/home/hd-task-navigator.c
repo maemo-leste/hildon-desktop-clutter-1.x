@@ -4648,7 +4648,7 @@ hd_task_navigator_update_win_orientation (Window xwindow, gboolean portrait)
                 (gdouble)hprison / (appwgh+adj));
         }
 
-      layout (thumb->thwin, FALSE);
+      layout_thumbs (thumb->thwin);
       mb_wm_client_geometry_mark_dirty (mb_wm_managed_client_from_xwindow (thumb->win->wm, thumb->win->xwindow));
     }
 }
