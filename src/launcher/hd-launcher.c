@@ -1156,6 +1156,7 @@ hd_launcher_transition_is_playing(void)
 void hd_launcher_window_created(void)
 {
   hd_launcher_stop_loading_transition();
+  hd_render_manager_set_loading (NULL);
 }
 
 static void

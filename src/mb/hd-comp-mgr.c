@@ -2075,8 +2075,7 @@ hd_comp_mgr_map_notify (MBWMCompMgr *mgr, MBWindowManagerClient *c)
       if (STATE_IS_LOADING(hd_render_manager_get_state ()))
         {
           /* make sure to hide the loading screen and go to a sane state */
-          hd_launcher_stop_loading_transition ();
-          hd_render_manager_set_loading (NULL);
+          hd_launcher_window_created ();
         }
       /* Move to HDRM_STATE_HOME even if we don't have a loading screen,
        * otherwise we hide the launcher and go to a broken state. */
@@ -3034,8 +3033,6 @@ hd_comp_mgr_effect (MBWMCompMgr                *mgr,
            * starting screen if we had one */
 
           /* make sure to hide the loading screen and go to a sane state */
-          hd_launcher_stop_loading_transition ();
-          hd_render_manager_set_loading (NULL);
           hd_launcher_window_created();
           app->map_effect_before = TRUE;
         }
