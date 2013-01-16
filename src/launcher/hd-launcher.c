@@ -299,6 +299,9 @@ _hd_launcher_update_orientation_cb (GQuark key_id,
 
   g_assert (HD_IS_LAUNCHER_PAGE (page));
 
+  /* Scrolling animation delays screen rotation. */
+  hd_launcher_page_stop_scrolling (page);
+
   grid = HD_LAUNCHER_GRID (hd_launcher_page_get_grid (page));
   /* actual layout update for the grid, reordering and resizing tiles */
   hd_launcher_grid_set_portrait (grid, portraited);

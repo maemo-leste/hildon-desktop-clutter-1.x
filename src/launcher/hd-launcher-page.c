@@ -528,7 +528,7 @@ void hd_launcher_page_set_drag_distance(HdLauncherPage *page, float d)
   HdLauncherPagePrivate *priv;
 
   if (!HD_IS_LAUNCHER_PAGE(page))
-      return;
+    return;
 
   priv = HD_LAUNCHER_PAGE_GET_PRIVATE (page);
   priv->drag_distance = d;
@@ -551,4 +551,15 @@ hd_launcher_page_activate(ClutterActor *actor, int p)
 {
   HdLauncherPagePrivate *priv = HD_LAUNCHER_PAGE_GET_PRIVATE (actor);
   hd_launcher_grid_activate (priv->grid, p);
+}
+
+void
+hd_launcher_page_stop_scrolling(HdLauncherPage *page)
+{
+  if (!HD_IS_LAUNCHER_PAGE(page))
+    return;
+
+  HdLauncherPagePrivate *priv = HD_LAUNCHER_PAGE_GET_PRIVATE (page);
+
+  tidy_finger_scroll_stop (TIDY_FINGER_SCROLL(priv->scroller));
 }
