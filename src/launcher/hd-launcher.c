@@ -843,10 +843,10 @@ hd_launcher_populate_tree_finished (HdLauncherTree *tree, gpointer data)
    * the screen until the user opens the power menu */
   if (STATE_IS_LAUNCHER (hd_render_manager_get_state ()))
     {
-      if(priv->portraited)
-	      hd_render_manager_set_state (HDRM_STATE_HOME_PORTRAIT);
-			else
-				hd_render_manager_set_state (HDRM_STATE_HOME);
+      if (priv->portraited)
+        hd_render_manager_set_state (HDRM_STATE_HOME_PORTRAIT);
+      else
+        hd_render_manager_set_state (HDRM_STATE_HOME);
     }
 
   /* First we traverse the list and create all the categories,
@@ -1269,15 +1269,21 @@ hd_launcher_key_pressed (HdLauncher *self,
   return TRUE;
 }
 
-void 
-hd_launcher_activate(int p) {
-	HdLauncherPrivate *priv = HD_LAUNCHER_GET_PRIVATE (hd_launcher_get ());
-	if (hd_render_manager_get_state () != HDRM_STATE_LAUNCHER) return;
-	if(p==-1) {
-		hd_launcher_back_button_clicked();
-		return;
-	}
-	hd_launcher_page_activate(priv->active_page, p);
+void
+hd_launcher_activate (int p)
+{
+  HdLauncherPrivate *priv = HD_LAUNCHER_GET_PRIVATE (hd_launcher_get ());
+
+  if (hd_render_manager_get_state () != HDRM_STATE_LAUNCHER)
+    return;
+
+  if (p == -1)
+    {
+      hd_launcher_back_button_clicked();
+      return;
+    }
+
+  hd_launcher_page_activate(priv->active_page, p);
 }
 
 gboolean

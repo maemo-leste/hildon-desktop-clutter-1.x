@@ -1001,12 +1001,15 @@ _hd_launcher_grid_blocker_release_cb (ClutterActor *actor,
 
 void hd_launcher_grid_activate(ClutterActor *actor, int p)
 {
-	HdLauncherGridPrivate *priv = HD_LAUNCHER_GRID_GET_PRIVATE (actor);
-	GList *l;
-	l=priv->tiles;
-	while((p>0) && l) {
-		l=l->next;
-		p--;
-	}
-	if(l && !p) hd_launcher_tile_activate(l->data);
+  HdLauncherGridPrivate *priv = HD_LAUNCHER_GRID_GET_PRIVATE (actor);
+  GList *l = priv->tiles;
+
+  while ((p > 0) && l)
+    {
+      l=l->next;
+      p--;
+    }
+
+  if (l && !p)
+    hd_launcher_tile_activate (l->data);
 }

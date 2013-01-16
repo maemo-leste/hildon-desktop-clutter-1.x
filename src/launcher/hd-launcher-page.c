@@ -547,7 +547,8 @@ float hd_launcher_page_get_drag_distance(HdLauncherPage *page)
 }
 
 void
-hd_launcher_page_activate(ClutterActor *actor, int p) {
-	HdLauncherPagePrivate *priv = HD_LAUNCHER_PAGE_GET_PRIVATE (actor);
-	hd_launcher_grid_activate(priv->grid, p);
+hd_launcher_page_activate(ClutterActor *actor, int p)
+{
+  HdLauncherPagePrivate *priv = HD_LAUNCHER_PAGE_GET_PRIVATE (actor);
+  hd_launcher_grid_activate (priv->grid, p);
 }
