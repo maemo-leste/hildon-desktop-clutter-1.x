@@ -315,6 +315,9 @@ _hd_launcher_update_orientation_cb (GQuark key_id,
   else
     clutter_actor_set_size (scroller, HD_LAUNCHER_PAGE_WIDTH,
         HD_LAUNCHER_PAGE_HEIGHT);
+
+  /* Update the 'empty label' position. */
+  hd_launcher_page_update_emptylabel (page);
 }
 
 /* hd_launcher_update_orientation:

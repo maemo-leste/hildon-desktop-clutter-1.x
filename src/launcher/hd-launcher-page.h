@@ -86,6 +86,7 @@ const char *hd_launcher_page_get_transition_string(
 
 void hd_launcher_page_activate(ClutterActor *actor, int p);
 void hd_launcher_page_stop_scrolling(HdLauncherPage *page);
+void hd_launcher_page_update_emptylabel (HdLauncherPage *page);
 
 /* Fixed sizes.
  * FIXME: These should come from getting the screen size

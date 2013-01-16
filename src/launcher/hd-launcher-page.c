@@ -198,6 +198,8 @@ hd_launcher_page_constructed (GObject *object)
   HdLauncherPagePrivate *priv = HD_LAUNCHER_PAGE_GET_PRIVATE (object);
   guint x1, y1;
   guint label_width, label_height;
+  guint page_width = HD_LAUNCHER_PAGE_WIDTH;
+  guint page_height = HD_LAUNCHER_PAGE_HEIGHT;
 
   /* Create the label that says this page is empty */
   hd_gtk_style_get_text_color (HD_GTK_BUTTON_SINGLETON,
@@ -216,9 +218,17 @@ hd_launcher_page_constructed (GObject *object)
                                     PANGO_WRAP_WORD);
 
   clutter_actor_get_size(priv->empty_label, &label_width, &label_height);
+
+  /* In portrait mode page witdh and height values are switched. */
+  if (STATE_IS_PORTRAIT (hd_render_manager_get_state ()))
+    {
+      page_width = HD_LAUNCHER_PAGE_HEIGHT;
+      page_height = HD_LAUNCHER_PAGE_WIDTH;
+    }
+
   /* Position the 'empty label' item in the centre */
-  x1 = (HD_LAUNCHER_PAGE_WIDTH - label_width) / 2;
-  y1 = ((HD_LAUNCHER_PAGE_HEIGHT - HD_LAUNCHER_PAGE_YMARGIN - label_height)/2) +
+  x1 = (page_width - label_width) / 2;
+  y1 = ((page_height - HD_LAUNCHER_PAGE_YMARGIN - label_height)/2) +
         HD_LAUNCHER_PAGE_YMARGIN;
   clutter_actor_set_position (priv->empty_label, x1, y1);
   clutter_container_add_actor (CLUTTER_CONTAINER (page), priv->empty_label);
@@ -227,8 +237,8 @@ hd_launcher_page_constructed (GObject *object)
   priv->scroller = tidy_finger_scroll_new (TIDY_FINGER_SCROLL_MODE_KINETIC);
   clutter_container_add_actor (CLUTTER_CONTAINER (page),
                                priv->scroller);
-  clutter_actor_set_size(priv->scroller, HD_LAUNCHER_PAGE_WIDTH,
-                                         HD_LAUNCHER_PAGE_HEIGHT);
+  clutter_actor_set_size(priv->scroller, page_width,
+                                         page_height);
 
   priv->grid = hd_launcher_grid_new ();
   clutter_container_add_actor (CLUTTER_CONTAINER (priv->scroller),
@@ -562,4 +572,38 @@ hd_launcher_page_stop_scrolling(HdLauncherPage *page)
   HdLauncherPagePrivate *priv = HD_LAUNCHER_PAGE_GET_PRIVATE (page);
 
   tidy_finger_scroll_stop (TIDY_FINGER_SCROLL(priv->scroller));
+}
+
+/* Updates the 'empty label' position according to the launcher's
+ * screen orientation. */
+void
+hd_launcher_page_update_emptylabel (HdLauncherPage *page)
+{
+  if (!HD_IS_LAUNCHER_PAGE(page))
+    return;
+
+  HdLauncherPagePrivate *priv = HD_LAUNCHER_PAGE_GET_PRIVATE (page);
+  guint x1, y1;
+  guint label_width, label_height;
+  guint page_width = HD_LAUNCHER_PAGE_WIDTH;
+  guint page_height = HD_LAUNCHER_PAGE_HEIGHT;
+
+  if (!priv->empty_label)
+    return;
+
+  clutter_actor_get_size(priv->empty_label, &label_width, &label_height);
+
+  /* In portrait mode page witdh and height values are switched. */
+  if (STATE_IS_PORTRAIT (hd_render_manager_get_state ()))
+    {
+      page_width = HD_LAUNCHER_PAGE_HEIGHT;
+      page_height = HD_LAUNCHER_PAGE_WIDTH;
+    }
+
+  /* Position the 'empty label' item in the centre */
+  x1 = (page_width - label_width) / 2;
+  y1 = ((page_height - HD_LAUNCHER_PAGE_YMARGIN - label_height)/2) +
+        HD_LAUNCHER_PAGE_YMARGIN;
+
+  clutter_actor_set_position (priv->empty_label, x1, y1);
 }
