@@ -577,7 +577,7 @@ hd_launcher_page_stop_scrolling(HdLauncherPage *page)
 /* Updates the 'empty label' position according to the launcher's
  * screen orientation. */
 void
-hd_launcher_page_update_emptylabel (HdLauncherPage *page)
+hd_launcher_page_update_emptylabel (HdLauncherPage *page, gboolean is_portrait)
 {
   if (!HD_IS_LAUNCHER_PAGE(page))
     return;
@@ -585,20 +585,13 @@ hd_launcher_page_update_emptylabel (HdLauncherPage *page)
   HdLauncherPagePrivate *priv = HD_LAUNCHER_PAGE_GET_PRIVATE (page);
   guint x1, y1;
   guint label_width, label_height;
-  guint page_width = HD_LAUNCHER_PAGE_WIDTH;
-  guint page_height = HD_LAUNCHER_PAGE_HEIGHT;
+  guint page_width = is_portrait ? HD_LAUNCHER_PAGE_HEIGHT : HD_LAUNCHER_PAGE_WIDTH;
+  guint page_height = is_portrait ? HD_LAUNCHER_PAGE_WIDTH : HD_LAUNCHER_PAGE_HEIGHT;
 
   if (!priv->empty_label)
     return;
 
   clutter_actor_get_size(priv->empty_label, &label_width, &label_height);
-
-  /* In portrait mode page witdh and height values are switched. */
-  if (STATE_IS_PORTRAIT (hd_render_manager_get_state ()))
-    {
-      page_width = HD_LAUNCHER_PAGE_HEIGHT;
-      page_height = HD_LAUNCHER_PAGE_WIDTH;
-    }
 
   /* Position the 'empty label' item in the centre */
   x1 = (page_width - label_width) / 2;

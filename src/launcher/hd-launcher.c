@@ -317,7 +317,7 @@ _hd_launcher_update_orientation_cb (GQuark key_id,
         HD_LAUNCHER_PAGE_HEIGHT);
 
   /* Update the 'empty label' position. */
-  hd_launcher_page_update_emptylabel (page);
+  hd_launcher_page_update_emptylabel (page, portraited);
 }
 
 /* hd_launcher_update_orientation:
