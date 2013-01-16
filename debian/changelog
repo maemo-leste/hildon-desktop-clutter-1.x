@@ -3,9 +3,12 @@ hildon-desktop (1:2.2.150~1) unstable; urgency=low
   * [UNRELEASED]
   * Fixed: thumb is partially transparent/clipped when the task navigator changes orientation.
   * Fixed: instead of a dialog window only blurred background is visible.
+  * Fixed: do not delay screen rotation when the launcher page is being scrolled.
+  * Fixed: the launcher's 'empty label' is partially off-screen in portrait mode.
+  * hd_launcher_window_created() should be enough to hide the loading screen.
   * Formatting fixes.
 
- -- Tomasz Pieniążek <t.pieniazek@gazeta.pl>  Sun, 15 Jan 2013 21:11:00 +0200
+ -- Tomasz Pieniążek <t.pieniazek@gazeta.pl>  Sun, 16 Jan 2013 15:18:00 +0200
 
 hildon-desktop (1:2.2.149-1) unstable; urgency=low
 
