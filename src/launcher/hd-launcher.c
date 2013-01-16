@@ -656,13 +656,15 @@ hd_launcher_populate_tree_starting (HdLauncherTree *tree, gpointer data)
 {
   HdLauncher *launcher = HD_LAUNCHER (data);
   HdLauncherPrivate *priv = HD_LAUNCHER_GET_PRIVATE (launcher);
+
   if (STATE_IS_LAUNCHER (hd_render_manager_get_state ()))
     {
-      if(priv->portraited)
-	      hd_render_manager_set_state (HDRM_STATE_HOME_PORTRAIT);
-			else
-				hd_render_manager_set_state (HDRM_STATE_HOME);
+      if (priv->portraited)
+        hd_render_manager_set_state (HDRM_STATE_HOME_PORTRAIT);
+      else
+        hd_render_manager_set_state (HDRM_STATE_HOME);
     }
+
   priv->active_page = NULL;
 
   if (priv->current_traversal)
