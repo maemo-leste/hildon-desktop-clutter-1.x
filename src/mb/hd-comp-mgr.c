@@ -3441,14 +3441,9 @@ hd_comp_mgr_should_be_portrait (HdCompMgr *hmgr)
       if (gconf_client_get_bool (priv->gconf_client, GCONF_KEY_DESKTOP_ORIENTATION_LOCK, NULL))
         return FALSE;
 
-      /* Check if we are in portrait desktop edit mode and block screen orientation 
+      /* Check if we are in portrait desktop edit mode and lock screen orientation
        * if it's true */
-      gboolean is_edit_portrait = STATE_ONE_OF (hd_render_manager_get_state (),
-                                                 HDRM_STATE_HOME_EDIT_PORTRAIT |
-                                                 HDRM_STATE_HOME_EDIT_PORTRAIT
-                                               );
-
-      if (hd_home_is_portrait_capable () && is_edit_portrait)
+      if (STATE_IS_PORTRAIT (hd_render_manager_get_state ()))
         return TRUE;
       else
         return FALSE;
@@ -3481,7 +3476,12 @@ hd_comp_mgr_can_be_portrait (HdCompMgr *hmgr)
     }
   else if (STATE_IS_EDIT_MODE (hd_render_manager_get_state ()))
     {
-      return !hd_app_mgr_slide_is_open ();
+      /* Check if we are in portrait desktop edit mode and lock screen orientation
+       * if it's true */
+      if (STATE_IS_PORTRAIT (hd_render_manager_get_state ()))
+        return TRUE;
+      else
+        return FALSE;
     }
   else
     {
