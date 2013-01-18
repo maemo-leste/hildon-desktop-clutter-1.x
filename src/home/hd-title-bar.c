@@ -1454,15 +1454,16 @@ hd_title_bar_top_right_clicked (HdTitleBar *bar)
 static void
 hd_title_bar_top_right_press (HdTitleBar *bar)
 {
-  hd_title_bar_right_pressed(bar, TRUE);
+  hd_title_bar_right_pressed (bar, TRUE);
 
-  if ( (hd_render_manager_get_state() == HDRM_STATE_HOME_EDIT) 
-			|| (hd_render_manager_get_state() == HDRM_STATE_HOME_EDIT_PORTRAIT)) 
-	{
-		if(hd_comp_mgr_is_portrait ())
-      hd_render_manager_set_state (HDRM_STATE_HOME_PORTRAIT);
-		else
-			hd_render_manager_set_state (HDRM_STATE_HOME);
+  if ((hd_render_manager_get_state () == HDRM_STATE_HOME_EDIT) ||
+      (hd_render_manager_get_state () == HDRM_STATE_HOME_EDIT_PORTRAIT)
+     )
+    {
+      if (hd_home_is_portrait_capable ())
+        hd_render_manager_set_state (HDRM_STATE_HOME_PORTRAIT);
+      else
+        hd_render_manager_set_state (HDRM_STATE_HOME);
 	}
 
   g_signal_emit (bar, signals[PRESS_TOP_RIGHT], 0);

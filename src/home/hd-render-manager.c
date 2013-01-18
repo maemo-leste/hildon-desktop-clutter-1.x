@@ -1052,8 +1052,10 @@ void hd_render_manager_sync_clutter_before ()
       STATE_IS_NON_COMP (priv->previous_state))
     hd_render_manager_set_visibilities();
 
-  if ((priv->previous_state == HDRM_STATE_LOADING) &&
-         (priv->state == HDRM_STATE_APP_PORTRAIT))
+  if (((priv->previous_state == HDRM_STATE_LOADING) && (priv->state == HDRM_STATE_APP_PORTRAIT)) ||
+      ((priv->previous_state == HDRM_STATE_HOME_EDIT_PORTRAIT) && (priv->state == HDRM_STATE_HOME)) ||
+      ((priv->previous_state == HDRM_STATE_HOME_EDIT) && (priv->state == HDRM_STATE_HOME_PORTRAIT))
+     )
     hd_render_manager_update_status_area(TRUE);
   else
     hd_render_manager_update_status_area(FALSE);
@@ -1099,8 +1101,10 @@ void hd_render_manager_sync_clutter_after ()
       (priv->previous_state == HDRM_STATE_LAUNCHER_PORTRAIT))
     clutter_actor_show (priv->operator);
 
-  if ((priv->previous_state == HDRM_STATE_LOADING) &&
-         (priv->state == HDRM_STATE_APP_PORTRAIT))
+  if (((priv->previous_state == HDRM_STATE_LOADING) && (priv->state == HDRM_STATE_APP_PORTRAIT)) ||
+      ((priv->previous_state == HDRM_STATE_HOME_EDIT_PORTRAIT) && (priv->state == HDRM_STATE_HOME)) ||
+      ((priv->previous_state == HDRM_STATE_HOME_EDIT) && (priv->state == HDRM_STATE_HOME_PORTRAIT))
+     )
     hd_render_manager_update_status_area(FALSE);
 
   if (STATE_BLUR_BUTTONS(priv->state) &&
