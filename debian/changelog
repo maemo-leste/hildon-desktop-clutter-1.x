@@ -1,8 +1,9 @@
 hildon-desktop (1:2.2.151~1) unstable; urgency=low
 
   * [UNRELEASED]
+  * Fixed: ctrl_backspace_in_tasknav == 5 with a notification thumb in the task navigator results in crash.
 
- -- Tomasz Pieniążek <t.pieniazek@gazeta.pl>  Sun, 18 Jan 2013 16:42:00 +0200
+ -- Tomasz Pieniążek <t.pieniazek@gazeta.pl>  Sun, 24 Jan 2013 18:52:00 +0200
 
 hildon-desktop (1:2.2.150-1) unstable; urgency=low
 

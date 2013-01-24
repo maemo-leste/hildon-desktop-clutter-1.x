@@ -4413,18 +4413,18 @@ hd_task_navigator_new (void)
 static int
 hd_thumb_compare (gconstpointer a, gconstpointer b)
 {
-	Thumbnail *t=(Thumbnail *)a;
-	Thumbnail *s=(Thumbnail *)b;
+  Thumbnail *t=(Thumbnail *)a;
+  Thumbnail *s=(Thumbnail *)b;
 
-	if ( (thumb_has_notification(t) || thumb_is_notification(t)) &&
-	     !(thumb_has_notification(s) || thumb_is_notification(s))) 
+  if ( (thumb_has_notification(t) || thumb_is_notification(t)) &&
+       !(thumb_has_notification(s) || thumb_is_notification(s)))
     return 1;
-	if ( (thumb_has_notification(s) || thumb_is_notification(s)) &&
-	     !(thumb_has_notification(t) || thumb_is_notification(t))) 
+  if ( (thumb_has_notification(s) || thumb_is_notification(s)) &&
+       !(thumb_has_notification(t) || thumb_is_notification(t)))
     return -1;
 
-	return s->last_activated - t->last_activated;
-}	
+  return s->last_activated - t->last_activated;
+}
 
 static int
 hd_thumb_compare2 (gconstpointer a, gconstpointer b)
@@ -4437,98 +4437,93 @@ hd_thumb_compare2 (gconstpointer a, gconstpointer b)
 void
 hd_task_navigator_rotate_thumbs (void) 
 {
-	GList *s, *t;
+  GList *s, *t;
 
-	s = Thumbnails;
-	Thumbnails = g_list_remove_link (Thumbnails, s);
-	t = Thumbnails;
+  s = Thumbnails;
+  Thumbnails = g_list_remove_link (Thumbnails, s);
+  t = Thumbnails;
 
-	while (t && !thumb_has_notification ((Thumbnail *) (t->data)) && 
-		   !thumb_is_notification ((Thumbnail *) (t->data)))
+  while (t && !thumb_has_notification ((Thumbnail *) (t->data)) &&
+         !thumb_is_notification ((Thumbnail *) (t->data)))
     t = g_list_next (t);
 
-	if (t) 
-    {
-	    Thumbnails = g_list_insert_before (Thumbnails, t, s->data);
-	    g_list_free (s);
-	  }
-  else 
-		Thumbnails = g_list_concat (Thumbnails,s);
+    if (t)
+      {
+        Thumbnails = g_list_insert_before (Thumbnails, t, s->data);
+        g_list_free (s);
+      }
+    else
+      Thumbnails = g_list_concat (Thumbnails,s);
 
   layout (NULL, FALSE);
 }
 void
 hd_task_navigator_sort_thumbs (void) 
 {
-	GList *s, *t;
+  Thumbnails = g_list_sort (Thumbnails, hd_thumb_compare);
 
-	s = g_list_sort (g_list_copy (Thumbnails), hd_thumb_compare);
-	t = Thumbnails;
-	Thumbnails = s;
-
-	g_list_free (t);
-	clutter_actor_set_size (Navigator, DESKTOP_WIDTH, DESKTOP_HEIGHT);
-	clutter_actor_set_size (Scroller, DESKTOP_WIDTH, DESKTOP_HEIGHT);
+  clutter_actor_set_size (Navigator, DESKTOP_WIDTH, DESKTOP_HEIGHT);
+  clutter_actor_set_size (Scroller, DESKTOP_WIDTH, DESKTOP_HEIGHT);
   layout (NULL, FALSE);
 }
 
 void
 hd_task_navigator_activate (int x, int y, int close) 
 {
-	Layout lout;
-	int n;
-	GList *t;
+  Layout lout;
+  int n;
+  GList *t;
 
-	if (y == -2) 
+  if (y == -2)
     {
-		  GList *s;
+      GList *s;
 
       if (x < 0)
-        x += NThumbnails;
+          x += NThumbnails;
 
-		  s = g_list_sort (g_list_copy (Thumbnails), hd_thumb_compare2);
-		  t = g_list_nth (s,x);
+      s = g_list_sort (g_list_copy (Thumbnails), hd_thumb_compare2);
+      t = g_list_nth (s,x);
 
-		  if (t) 
+      if (t)
         {
-			    if (close)
-            appthumb_close_clicked ((Thumbnail *) t->data); 
-          else if (hd_task_navigator_is_active ()) 
+          if (close)
+            appthumb_close_clicked ((Thumbnail *) t->data);
+          else if (hd_task_navigator_is_active ())
             appthumb_clicked ((Thumbnail *) t->data);
-		    }
+        }
 
-		  g_list_free (s);
-		  return ;
-	  } 
-  else if (y == -1) 
-		n = x;
-	else 
-    {
-		  calc_layout (&lout);
-		  if (lout.cells_per_row <= x)
+        g_list_free (s);
         return ;
+    }
+    else if (y == -1)
+        n = x;
+    else
+      {
+        calc_layout (&lout);
+        if (lout.cells_per_row <= x)
+          return ;
 
-		  n = y * lout.cells_per_row + x;
-	  }
+        n = y * lout.cells_per_row + x;
+      }
 
-	if (n >= NThumbnails) 
-    return ;
+    if (n >= NThumbnails)
+      return ;
 
-	t = Thumbnails;
+    t = Thumbnails;
 
-	while ((n > 0) && t) 
-    {
-		  t = t->next;
-		  n--;
-	  }
+    while ((n > 0) && t)
+      {
+        t = t->next;
+        n--;
+      }
 
-	if(t && !n ) 
-    {
-		  if(close) 
-        appthumb_close_clicked ((Thumbnail *) t->data); 
-      else if (hd_task_navigator_is_active ()) 
-        appthumb_clicked ((Thumbnail *) t->data);
-	  }
+    if (t && !n )
+      {
+        if(close)
+          appthumb_close_clicked ((Thumbnail *) t->data);
+        else if (hd_task_navigator_is_active ())
+          appthumb_clicked ((Thumbnail *) t->data);
+      }
 }
 
 /* FIXME: not used anymore. */
