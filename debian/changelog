@@ -1,9 +1,9 @@
 hildon-desktop (1:2.2.151~1) unstable; urgency=low
 
   * [UNRELEASED]
-  * Fixed: ctrl_backspace_in_tasknav == 5 with a notification thumb in the task navigator results in crash.
+  * Fixed: BMO #12266: ctrl_backspace_in_tasknav == 5 with a notification thumb in the task navigator results in crash.
 
- -- Tomasz Pieniążek <t.pieniazek@gazeta.pl>  Sun, 24 Jan 2013 18:52:00 +0200
+ -- Tomasz Pieniążek <t.pieniazek@gazeta.pl>  Sun, 25 Jan 2013 11:41:00 +0200
 
 hildon-desktop (1:2.2.150-1) unstable; urgency=low
 
@@ -56,7 +56,7 @@ hildon-desktop (1:2.2.146-2) unstable; urgency=low
 
 hildon-desktop (1:2.2.146-1) unstable; urgency=low
 
-  * Fixes: Portrait (dialog) windows handling.
+  * Fixes: BMO #12586: Portrait (dialog) windows handling.
   * Fixes: i'm [not] gonna create 0x0 frame window and play hide and catch with you, have a good time.
 
  -- Tomasz Pieniążek <t.pieniazek@gazeta.pl>  Sat, 14 Dec 2012 13:29:00 +0200
