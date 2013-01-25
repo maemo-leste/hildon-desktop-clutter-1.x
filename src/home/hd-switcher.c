@@ -41,6 +41,7 @@
 #include "hd-render-manager.h"
 #include "hd-title-bar.h"
 #include "hd-wm.h"
+#include "hd-transition.h"
 
 #include <clutter/clutter.h>
 #include <clutter/x11/clutter-x11.h>
@@ -352,6 +353,10 @@ hd_switcher_clicked (HdSwitcher *switcher)
   g_debug("entered hd_switcher_clicked: state=%s\n",
         hd_render_manager_get_state_str());
 
+  if (hd_transition_is_rotating ())
+    /* Abort the current action, otherwise we will have a bad time. */
+    return;
+
   if (priv->long_press || STATE_IS_EDIT_MODE (hd_render_manager_get_state ()))
     return;
 
@@ -380,17 +385,33 @@ hd_switcher_clicked (HdSwitcher *switcher)
   if (STATE_IS_TASK_NAV(hd_render_manager_get_state()))
     {
       g_debug("hd_switcher_clicked: show launcher, switcher=%p\n", switcher);
-      hd_render_manager_set_state(HDRM_STATE_LAUNCHER);
+      if (STATE_IS_PORTRAIT (hd_render_manager_get_state ()))
+        hd_render_manager_set_state(HDRM_STATE_LAUNCHER_PORTRAIT);
+      else
+        hd_render_manager_set_state(HDRM_STATE_LAUNCHER);
     }
   else if (STATE_IS_LAUNCHER (hd_render_manager_get_state()))
     {
       g_debug("hd_switcher_clicked: show switcher, switcher=%p\n", switcher);
-      hd_render_manager_set_state(HDRM_STATE_TASK_NAV);
+      if (STATE_IS_PORTRAIT (hd_render_manager_get_state ()))
+        hd_render_manager_set_state(HDRM_STATE_TASK_NAV_PORTRAIT);
+      else
+        hd_render_manager_set_state(HDRM_STATE_TASK_NAV);
     }
   else if (hd_task_navigator_is_empty())
-	hd_render_manager_set_state(HDRM_STATE_LAUNCHER);
+    {
+      if (STATE_IS_PORTRAIT (hd_render_manager_get_state ()))
+        hd_render_manager_set_state(HDRM_STATE_LAUNCHER_PORTRAIT);
+      else
+        hd_render_manager_set_state(HDRM_STATE_LAUNCHER);
+    }
   else
-	hd_render_manager_set_state(HDRM_STATE_TASK_NAV);
+    {
+      if (STATE_IS_PORTRAIT (hd_render_manager_get_state ()))
+        hd_render_manager_set_state(HDRM_STATE_TASK_NAV_PORTRAIT);
+      else
+        hd_render_manager_set_state(HDRM_STATE_TASK_NAV);
+    }
 }
 
 static gboolean

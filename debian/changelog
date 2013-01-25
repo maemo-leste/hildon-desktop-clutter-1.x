@@ -3,8 +3,9 @@ hildon-desktop (1:2.2.151~1) unstable; urgency=low
   * [UNRELEASED]
   * Fixed: BMO #12266: ctrl_backspace_in_tasknav == 5 with a notification thumb in the task navigator results in crash.
   * Fixed: Relaunching landscape-only application from the portrait launcher leads to visual glitches.
+  * Fixed: Going to the task navigator when the screen is rotating crashes h-d.
 
- -- Tomasz Pieniążek <t.pieniazek@gazeta.pl>  Sun, 25 Jan 2013 17:07:00 +0200
+ -- Tomasz Pieniążek <t.pieniazek@gazeta.pl>  Sun, 25 Jan 2013 20:32:00 +0200
 
 hildon-desktop (1:2.2.150-1) unstable; urgency=low
 
