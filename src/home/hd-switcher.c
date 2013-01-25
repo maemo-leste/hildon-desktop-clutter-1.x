@@ -139,6 +139,8 @@ static void hd_switcher_insufficient_memory(HdSwitcher *switcher,
                                             gpointer data);
 static void
 hd_switcher_zoom_in_complete (ClutterActor *actor, HdSwitcher *switcher);
+static MBWindowManagerClient*
+actor_to_client_window (ClutterActor *clutter_window);
 
 G_DEFINE_TYPE (HdSwitcher, hd_switcher, G_TYPE_OBJECT);
 
@@ -378,7 +380,7 @@ hd_switcher_clicked (HdSwitcher *switcher)
   if (STATE_IS_TASK_NAV(hd_render_manager_get_state()))
     {
       g_debug("hd_switcher_clicked: show launcher, switcher=%p\n", switcher);
-	hd_render_manager_set_state(HDRM_STATE_LAUNCHER);
+      hd_render_manager_set_state(HDRM_STATE_LAUNCHER);
     }
   else if (STATE_IS_LAUNCHER (hd_render_manager_get_state()))
     {
@@ -496,6 +498,12 @@ static void
 hd_switcher_relaunch_app_callback(HdSwitcherRelaunchAppData *data)
 {
   HdSwitcherPrivate *priv = HD_SWITCHER (data->switcher)->priv;
+  MBWindowManagerClient *c = actor_to_client_window (data->actor);
+  gboolean state_is_portrait = STATE_IS_PORTRAIT (hd_render_manager_get_state ());
+  gboolean should_rotate = FALSE;
+
+  if (c)
+    should_rotate = (state_is_portrait && !hd_comp_mgr_client_supports_portrait (c));
 
   g_signal_handlers_disconnect_by_func(
       hd_render_manager_get(),
@@ -509,12 +517,14 @@ hd_switcher_relaunch_app_callback(HdSwitcherRelaunchAppData *data)
    * the transition and our state is APP now.  Anyway, tana doesn't tolerate
    * (for reasons of pedantry) requests for zooming in inappropriate states.
    */
-  if (STATE_IS_TASK_NAV(hd_render_manager_get_state ()))
+  if (STATE_IS_TASK_NAV (hd_render_manager_get_state ()) && !should_rotate)
     {
       hd_task_navigator_zoom_in (priv->task_nav, data->actor,
                   (ClutterEffectCompleteFunc)hd_switcher_relaunched_app_callback,
                   data);
     }
+  else
+    hd_switcher_relaunched_app_callback (data->actor, data);
 }
 
 static void
@@ -556,12 +566,16 @@ hd_switcher_relaunch_app (HdSwitcher *switcher,
 
   /* Go to the task switcher view. After this is done, we'll do
    * our zoom in on the app view the callback above */
-  if (!STATE_IS_TASK_NAV(hd_render_manager_get_state ()))
+  if (!STATE_IS_TASK_NAV (hd_render_manager_get_state ()))
     {
       g_signal_connect_swapped(hd_render_manager_get(), "transition-complete",
             G_CALLBACK(hd_switcher_relaunch_app_callback),
             cb_data);
-      hd_render_manager_set_state(HDRM_STATE_TASK_NAV);
+
+      if (STATE_IS_PORTRAIT (hd_render_manager_get_state ()))
+        hd_render_manager_set_state (HDRM_STATE_TASK_NAV_PORTRAIT);
+      else
+        hd_render_manager_set_state (HDRM_STATE_TASK_NAV);
     }
   else /* We're already in tasw. */
     hd_task_navigator_zoom_in (priv->task_nav, actor,
@@ -580,15 +594,16 @@ hd_switcher_loading_fail (HdSwitcher *switcher,
   hd_launcher_stop_loading_transition ();
   if (STATE_IS_LOADING(hd_render_manager_get_state ()))
     {
-      if (hd_task_navigator_has_apps ())
+      if (hd_task_navigator_has_apps ()) {
         hd_render_manager_set_state (HDRM_STATE_TASK_NAV);
+      }
       else
-			{
-				if(STATE_IS_PORTRAIT (hd_render_manager_get_state ()))
-	        hd_render_manager_set_state (HDRM_STATE_HOME_PORTRAIT);
-				else
-	        hd_render_manager_set_state (HDRM_STATE_HOME);
-			}
+        {
+          if (STATE_IS_PORTRAIT (hd_render_manager_get_state ()))
+            hd_render_manager_set_state (HDRM_STATE_HOME_PORTRAIT);
+          else
+            hd_render_manager_set_state (HDRM_STATE_HOME);
+        }
     }
 
 #if 0 /* removed as of NB#140674 */
@@ -723,10 +738,10 @@ hd_switcher_zoom_in_complete (ClutterActor *actor, HdSwitcher *switcher)
                 "HD-MBWMCompMgrClutterClient", __FUNCTION__);
       /* this is a real problem - not a normal use case, so just return
        * to home, as everything should be ok there */
-			if(STATE_IS_PORTRAIT (hd_render_manager_get_state ()))
-	      hd_render_manager_set_state (HDRM_STATE_HOME_PORTRAIT);
-			else
-	      hd_render_manager_set_state (HDRM_STATE_HOME);
+      if (STATE_IS_PORTRAIT (hd_render_manager_get_state ()))
+        hd_render_manager_set_state (HDRM_STATE_HOME_PORTRAIT);
+      else
+        hd_render_manager_set_state (HDRM_STATE_HOME);
 
       return;
     }
@@ -744,10 +759,10 @@ hd_switcher_zoom_in_complete (ClutterActor *actor, HdSwitcher *switcher)
            * Treat it as if cmgrcc was NULL.
            */
           g_warning("%s: cclient->wm_client == NULL", __FUNCTION__);
-					if(STATE_IS_PORTRAIT (hd_render_manager_get_state ()))
-	      	  hd_render_manager_set_state (HDRM_STATE_HOME_PORTRAIT);
-					else
-	      	  hd_render_manager_set_state (HDRM_STATE_HOME);
+          if(STATE_IS_PORTRAIT (hd_render_manager_get_state ()))
+            hd_render_manager_set_state (HDRM_STATE_HOME_PORTRAIT);
+          else
+            hd_render_manager_set_state (HDRM_STATE_HOME);
         }
       else
         hd_wm_activate_zoomed_client (c->wmref, c);
@@ -952,3 +967,19 @@ hd_switcher_group_background_clicked (HdSwitcher   *switcher,
 	  hd_render_manager_set_state (HDRM_STATE_HOME);
 }
 
+static MBWindowManagerClient *
+actor_to_client_window (ClutterActor *clutter_window)
+{
+  const MBWMCompMgrClient *cmgrc;
+  MBWMClientWindow *window;
+
+  cmgrc = g_object_get_data (G_OBJECT (clutter_window),
+                             "HD-MBWMCompMgrClutterClient");
+
+  if (!cmgrc || !cmgrc->wm_client || !cmgrc->wm_client->window)
+    return NULL;
+
+  window = cmgrc->wm_client->window;
+
+  return mb_wm_managed_client_from_xwindow (window->wm, window->xwindow);
+}
