@@ -4,8 +4,9 @@ hildon-desktop (1:2.2.151~1) unstable; urgency=low
   * Fixed: BMO #12266: ctrl_backspace_in_tasknav == 5 with a notification thumb in the task navigator results in crash.
   * Fixed: Relaunching landscape-only application from the portrait launcher leads to visual glitches.
   * Fixed: Going to the task navigator when the screen is rotating crashes h-d.
+  * Fixed: While locked in portrait and any time when installed app list is refreshed (by instaling new app or when this tool http://talk.maemo.org/showthread.php?t=88774 updates calendar icon) screen with apps icons used to launch them is broken: scroll doesn`t work properly at the end of the screen, newly installed app icon is missing, some icons are moved to the right and are unaccessible (like orientation is somehow partially switched to landscape).
 
- -- Tomasz Pieniążek <t.pieniazek@gazeta.pl>  Sun, 25 Jan 2013 20:32:00 +0200
+ -- Tomasz Pieniążek <t.pieniazek@gazeta.pl>  Thu, 31 Jan 2013 10:32:00 +0200
 
 hildon-desktop (1:2.2.150-1) unstable; urgency=low
 

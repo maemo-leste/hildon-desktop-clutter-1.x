@@ -653,8 +653,14 @@ _hd_launcher_clear_page (GQuark key_id, gpointer data, gpointer user_data)
 static void
 _hd_launcher_layout_page (GQuark key_id, gpointer data, gpointer user_data)
 {
+  HdLauncherPrivate *priv = HD_LAUNCHER_GET_PRIVATE (hd_launcher_get ());
   HdLauncherPage *page = HD_LAUNCHER_PAGE (data);
-  hd_launcher_grid_layout(HD_LAUNCHER_GRID(hd_launcher_page_get_grid (page)));
+  HdLauncherGrid *grid = HD_LAUNCHER_GRID (hd_launcher_page_get_grid (page));
+
+  /* actual layout update for the grid, reordering and resizing tiles */
+  hd_launcher_grid_set_portrait (grid, priv->portraited);
+
+  hd_launcher_grid_layout (HD_LAUNCHER_GRID (grid));
 }
 
 static void
