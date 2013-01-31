@@ -12,7 +12,7 @@ hildon-desktop (1:2.2.151~1) unstable; urgency=low
 hildon-desktop (1:2.2.150-1) unstable; urgency=low
 
   * Fixed: thumb is partially transparent/clipped when the task navigator changes orientation.
-  * Fixed: instead of a dialog window only blurred background is visible.
+  * Fixed: BMO #12661: instead of a dialog window only blurred background is visible.
   * Fixed: do not delay screen rotation when the launcher page is being scrolled.
   * Fixed: the launcher's 'empty label' is partially off-screen in portrait mode.
   * Fixed: it's possible to change screen orientation in desktop edit mode.
