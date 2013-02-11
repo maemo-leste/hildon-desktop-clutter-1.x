@@ -1305,3 +1305,11 @@ hd_launcher_is_editor_in_landscape (void)
 
   return priv->is_editor_in_landscape;
 }
+
+gboolean
+hd_launcher_is_portrait (void)
+{
+  HdLauncherPrivate *priv = HD_LAUNCHER_GET_PRIVATE (hd_launcher_get ());
+
+  return priv->portraited;
+}

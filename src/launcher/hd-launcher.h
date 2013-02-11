@@ -88,15 +88,14 @@ hd_launcher_back_button_clicked(void);
 
 /* Exported so it can be called when something is launched from outside,
  * like with a dbus call. */
-gboolean
-hd_launcher_transition_app_start (HdLauncherApp *item);
-
+gboolean hd_launcher_transition_app_start (HdLauncherApp *item);
 void hd_launcher_stop_loading_transition (void);
 
 void hd_launcher_activate(int p);
 void hd_launcher_update_orientation (gboolean portraited);
 
 gboolean hd_launcher_is_editor_in_landscape (void);
+gboolean hd_launcher_is_portrait (void);
 
 /* left/right/top/bottom margin that is clicked on to go back */
 #define HD_LAUNCHER_LEFT_MARGIN (68) /* layout guide F */

@@ -220,7 +220,7 @@ hd_launcher_page_constructed (GObject *object)
   clutter_actor_get_size(priv->empty_label, &label_width, &label_height);
 
   /* In portrait mode page witdh and height values are switched. */
-  if (STATE_IS_PORTRAIT (hd_render_manager_get_state ()))
+  if (hd_launcher_is_portrait ())
     {
       page_width = HD_LAUNCHER_PAGE_HEIGHT;
       page_height = HD_LAUNCHER_PAGE_WIDTH;
