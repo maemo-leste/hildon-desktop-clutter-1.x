@@ -6,8 +6,9 @@ hildon-desktop (1:2.2.151~1) unstable; urgency=low
   * Fixed: Going to the task navigator when the screen is rotating crashes h-d.
   * Fixed: While locked in portrait and any time when installed app list is refreshed (by instaling new app or when this tool http://talk.maemo.org/showthread.php?t=88774 updates calendar icon) screen with apps icons used to launch them is broken: scroll doesn`t work properly at the end of the screen, newly installed app icon is missing, some icons are moved to the right and are unaccessible (like orientation is somehow partially switched to landscape).
   * Fixed: The task navigator is updated before changing the screen orientation. Fixes a couple of visual glitches.
+  * Fixed: Sometimes launcher's scrollbar is wrongly positioned.
 
- -- Tomasz Pieniążek <t.pieniazek@gazeta.pl>  Thu, 31 Jan 2013 14:13:00 +0200
+ -- Tomasz Pieniążek <t.pieniazek@gazeta.pl>  Mon, 11 Feb 2013 18:28:00 +0200
 
 hildon-desktop (1:2.2.150-1) unstable; urgency=low
 
