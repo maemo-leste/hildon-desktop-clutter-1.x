@@ -1,6 +1,5 @@
-hildon-desktop (1:2.2.151~1) unstable; urgency=low
+hildon-desktop (1:2.2.151-1) unstable; urgency=low
 
-  * [UNRELEASED]
   * Fixed: BMO #12266: hildon-desktop crashes when switching from fullscreen application to notification
   * Fixed: Relaunching landscape-only application from the portrait launcher leads to visual glitches.
   * Fixed: Going to the task navigator when the screen is rotating crashes h-d.
@@ -9,7 +8,7 @@ hildon-desktop (1:2.2.151~1) unstable; urgency=low
   * Fixed: Sometimes launcher's scrollbar is wrongly positioned.
   * Changed: Blacklisting behaviour.
 
- -- Tomasz Pieniążek <t.pieniazek@gazeta.pl>  Fri, 01 Mar 2013 15:48:00 +0200
+ -- Tomasz Pieniążek <t.pieniazek@gazeta.pl>  Fri, 01 Mar 2013 15:51:00 +0200
 
 hildon-desktop (1:2.2.150-1) unstable; urgency=low
 
