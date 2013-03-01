@@ -575,7 +575,7 @@ hd_comp_mgr_init (MBWMObject *obj, va_list vap)
     g_hash_table_new_full (g_direct_hash,
 			   g_direct_equal,
 			   NULL,
-			   (GDestroyNotify)mb_wm_object_unref);
+               (GDestroyNotify)mb_wm_object_unref);
 
   /* Be notified about all X window property changes around here. */
   priv->property_changed_cb_id = mb_wm_main_context_x_event_handler_add (
@@ -3901,21 +3901,12 @@ hd_comp_mgr_is_blacklisted(MBWindowManager *wm, MBWindowManagerClient *c)
   XClassHint class_hint;
   Status ret;
   gchar *wname = NULL;
+  gboolean blacklisted = FALSE;
+  gboolean blacklisted_by_desktopfile = FALSE;
+  gboolean forcerotation = hd_transition_get_int("thp_tweaks", "forcerotation", 0);
 
   if ((!c) || !HD_IS_APP (c) || !MB_WINDOW_MANAGER(wm) || c == wm->desktop)
     return FALSE;
-
-  /* Do not lock to landscape a window which supports portrait mode. */
-  if (c->portrait_supported || c->portrait_requested)
-      return FALSE;
-
-  /* We don't want blacklisted windows when forcerotation == 0. */
-  if (!hd_transition_get_int("thp_tweaks", "forcerotation", 0))
-    return FALSE;
-
-  /* Let's check if the window is on the whitelist. */
-  //if (hd_comp_mgr_is_whitelisted(wm, c))
-  //  return FALSE;
 
   blacklist = g_strdup (hd_transition_get_string ("thp_tweaks", "blacklist", ""));
   memset (&class_hint, 0, sizeof (XClassHint));
@@ -3927,7 +3918,7 @@ hd_comp_mgr_is_blacklisted(MBWindowManager *wm, MBWindowManagerClient *c)
     wname = g_strdup (class_hint.res_name);
 
   /* Check, if X-CSSU-Force-Landscape=true. */
-  gboolean blacklisted = hd_comp_mgr_is_blacklisted_parse_desktop_file (wname, class_hint.res_class, c->window->pid);
+  blacklisted_by_desktopfile = hd_comp_mgr_is_blacklisted_parse_desktop_file (wname, class_hint.res_class, c->window->pid);
 
   if (class_hint.res_class)
     XFree(class_hint.res_class);
@@ -3935,15 +3926,29 @@ hd_comp_mgr_is_blacklisted(MBWindowManager *wm, MBWindowManagerClient *c)
   if (class_hint.res_name)
     XFree(class_hint.res_name);
 
-  if (g_strrstr(blacklist, wname))
-    blacklisted = TRUE;
+  if (!blacklisted_by_desktopfile)
+    {
+      if (g_strrstr(blacklist, wname))
+        blacklisted = TRUE;
 
-  if (c->stacked_below && (wname == NULL))
-    if (hd_comp_mgr_is_blacklisted (wm, c->stacked_below))
-      blacklisted = TRUE;
+      if (c->stacked_below && (wname == NULL))
+        if (hd_comp_mgr_is_blacklisted (wm, c->stacked_below))
+          blacklisted = TRUE;
+    }
 
   g_free (blacklist);
   g_free (wname);
+
+  if (blacklisted_by_desktopfile)
+    return TRUE;
+
+  /* Do not lock to landscape a window which supports portrait mode. */
+  if (c->portrait_supported || c->portrait_requested)
+      return FALSE;
+
+  /* We don't want blacklisted windows when forcerotation == 0. */
+  if (!forcerotation)
+    return FALSE;
 
   return blacklisted;
 }
