@@ -4593,9 +4593,16 @@ void
 hd_task_navigator_update_win_orientation (Window xwindow, gboolean portrait)
 {
   if (!(STATE_IS_TASK_NAV (hd_render_manager_get_state ())
-        || STATE_IS_APP (hd_render_manager_get_state ()))
-           || !IS_PORTRAIT)
+         || STATE_IS_APP (hd_render_manager_get_state ()))
+       || !IS_PORTRAIT)
     /* We do not care, get out of here */
+    return;
+
+  if (!hd_render_manager_is_changing_state ()
+        && (hd_render_manager_get_state () == HDRM_STATE_TASK_NAV_PORTRAIT)
+        && IS_PORTRAIT)
+    /* The Phone app has changed its portrait flags (MCE). We ignore this, as
+     * the task nav is going to be rotated anyway. */
     return;
 
   Thumbnail * thumb = find_thumb_from_xwindow(xwindow);
