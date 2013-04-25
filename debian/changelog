@@ -1,3 +1,9 @@
+hildon-desktop (1:2.2.152.1-1) unstable; urgency=low
+
+  * New: Add applications osso-backup, ossofilemanager and osso_notes to whitelist.
+
+ -- Tomasz Pieniążek <t.pieniazek@gazeta.pl>  Thu, 25 Apr 2013 21:43:00 +0200
+
 hildon-desktop (1:2.2.152-1) unstable; urgency=low
 
   * Fixed: The Phone app thumbnail is being rotated before the desktop is rotated.
