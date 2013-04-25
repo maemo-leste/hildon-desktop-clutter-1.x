@@ -1,9 +1,8 @@
-hildon-desktop (1:2.2.152~1) unstable; urgency=low
+hildon-desktop (1:2.2.152-1) unstable; urgency=low
 
-  * [UNRELEASED]
   * Fixed: The Phone app thumbnail is being rotated before the desktop is rotated.
 
- -- Tomasz Pieniążek <t.pieniazek@gazeta.pl>  Fri, 15 Mar 2013 20:21:00 +0200
+ -- Tomasz Pieniążek <t.pieniazek@gazeta.pl>  Thu, 25 Apr 2013 21:38:00 +0200
 
 hildon-desktop (1:2.2.151-1) unstable; urgency=low
 
