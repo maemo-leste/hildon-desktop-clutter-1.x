@@ -1603,6 +1603,11 @@ void hd_render_manager_set_state(HDRMStateEnum state)
                 should_be_portrait ? HDRM_STATE_TASK_NAV_PORTRAIT : HDRM_STATE_TASK_NAV;
             }
 
+          /* Update the task nav's layout. */
+          hd_task_navigator_rotate (STATE_IS_PORTRAIT (state));
+          /* Update the launcher's layout, pip (portrait if possible) flags and hwkbd status. */
+          hd_task_navigator_update_orientation (STATE_IS_PORTRAIT (state));
+
           /* Zoom out if possible.  Otherwise if not coming from launcher
            * scroll it back to the top. */
           if (STATE_IS_APP (oldstate))
@@ -1673,10 +1678,6 @@ void hd_render_manager_set_state(HDRMStateEnum state)
           if (oldstate != state)
             {
               hd_transition_rotate_screen (wm, STATE_IS_PORTRAIT (state));
-              /* Update the task nav's layout. */
-              hd_task_navigator_rotate (STATE_IS_PORTRAIT (state));
-              /* Update the launcher's layout, pip (portrait if possible) flags and hwkbd status. */
-              hd_task_navigator_update_orientation (STATE_IS_PORTRAIT (state));
             }
         }
       if (STATE_ONE_OF(state | oldstate, HDRM_STATE_TASK_NAV | HDRM_STATE_TASK_NAV_PORTRAIT))

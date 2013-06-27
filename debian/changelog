@@ -1,8 +1,8 @@
-hildon-desktop (1:2.2.153~1) unstable; urgency=low
+hildon-desktop (1:2.2.152.2-1) unstable; urgency=low
 
-  * [UNRELEASED]
+  * Fixed: Thumbnails rotation.
 
- -- Tomasz Pieniążek <t.pieniazek@gazeta.pl>  Thu, 25 Apr 2013 21:44:00 +0200
+ -- Tomasz Pieniążek <t.pieniazek@gazeta.pl>  Thu, 27 Jun 2013 17:49:00 +0200
 
 hildon-desktop (1:2.2.152.1-1) unstable; urgency=low
 
