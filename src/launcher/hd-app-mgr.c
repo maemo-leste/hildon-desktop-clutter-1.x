@@ -57,6 +57,12 @@
 
 #define I_(str) (g_intern_static_string ((str)))
 
+#if 0
+# define PORTRAIT       g_debug
+#else
+# define PORTRAIT(...)  /* NOP */
+#endif
+
 typedef enum
 {
   QUEUE_PRESTARTABLE,
@@ -2158,6 +2164,8 @@ hd_app_mgr_mce_activate_accel_if_needed (gboolean update_portraitness)
                       STATE_IS_APP(state) )
                     )
                     );
+
+  PORTRAIT("priv->accel_enabled: %s", priv->accel_enabled);
 
   if (priv->accel_enabled == activate)
     return;
