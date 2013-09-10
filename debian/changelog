@@ -1,8 +1,9 @@
 hildon-desktop (1:2.2.153~1) unstable; urgency=low
 
   * [UNRELEASED]
+  * Fixed: BMO #12707: /apps/osso/hildon-desktop/desktop_orientation_lock setting ignored.
 
- -- Tomasz Pieniążek <t.pieniazek@gazeta.pl>  Thu, 27 Jun 2013 17:49:00 +0200
+ -- Tomasz Pieniążek <t.pieniazek@gazeta.pl>  Tue, 10 Sep 2013 19:23:00 +0200
 
 hildon-desktop (1:2.2.152.2-1) unstable; urgency=low
 
