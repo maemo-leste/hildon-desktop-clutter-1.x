@@ -3459,6 +3459,8 @@ hd_comp_mgr_should_be_portrait (HdCompMgr *hmgr)
 gboolean
 hd_comp_mgr_can_be_portrait (HdCompMgr *hmgr)
 {
+  HdCompMgrPrivate *priv = hmgr->priv;
+
   if (STATE_IS_LAUNCHER (hd_render_manager_get_state ()))
     {
       if (hd_app_mgr_ui_can_rotate ())
@@ -3472,10 +3474,18 @@ hd_comp_mgr_can_be_portrait (HdCompMgr *hmgr)
     }
   else if (STATE_IS_HOME (hd_render_manager_get_state ()))
     {
+      /* Check if desktop is not prevented from switching to portrait mode */
+      if (gconf_client_get_bool (priv->gconf_client, GCONF_KEY_DESKTOP_ORIENTATION_LOCK, NULL))
+        return FALSE;
+
       return !hd_app_mgr_slide_is_open ();
     }
   else if (STATE_IS_EDIT_MODE (hd_render_manager_get_state ()))
     {
+      /* Check if desktop is not prevented from switching to portrait mode */
+      if (gconf_client_get_bool (priv->gconf_client, GCONF_KEY_DESKTOP_ORIENTATION_LOCK, NULL))
+        return FALSE;
+
       /* Check if we are in portrait desktop edit mode and lock screen orientation
        * if it's true */
       if (STATE_IS_PORTRAIT (hd_render_manager_get_state ()))
