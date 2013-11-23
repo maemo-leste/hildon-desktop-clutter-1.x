@@ -4579,12 +4579,11 @@ hd_task_navigator_app_portrait_capable(Thumbnail * thumb)
 static Thumbnail *
 find_thumb_from_xwindow(Window xwindow)
 {
-  int i;
   const GList *li;
   Thumbnail * thumb;
 
-  for (li = Thumbnails, i = 0; li && (thumb = li->data); li = li->next, i++)
-    if(thumb->win->xwindow == xwindow)
+  for (li = Thumbnails; li && (thumb = li->data); li = li->next)
+    if(thumb->win && thumb->win->xwindow == xwindow)
       return thumb;
   return NULL;
 }
