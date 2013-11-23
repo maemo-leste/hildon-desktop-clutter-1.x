@@ -1,3 +1,9 @@
+hildon-desktop (1:2.2.153-2) unstable; urgency=low
+
+  * Do not dereference NULL pointer - fixes a crash
+
+ -- Ivaylo Dimitrov <freemangordon@abv.bg>  Sat, 23 Nov 2013 14:01:22 +0200
+
 hildon-desktop (1:2.2.153-1) unstable; urgency=low
 
   * Fixed: BMO #12707: /apps/osso/hildon-desktop/desktop_orientation_lock setting ignored.
