@@ -1990,6 +1990,7 @@ hd_transition_get_keyfile(void)
         g_warning("%s: using default settings", __FUNCTION__);
       g_error_free(error);
       g_key_file_free(ini);
+
       return transitions_ini;
     }
 
@@ -2097,8 +2098,13 @@ hd_transition_get_string(const gchar *transition, const char *key,
   GError *error;
   GKeyFile *ini;
 
-  if (!(ini = hd_transition_get_keyfile()))
-    return default_val;
+  if (!(ini = hd_transition_get_keyfile())) {
+    /* It sould be a newly allocated string.
+     * Fixes BMO #12722: hildon-desktop crashes on malformed transitions.ini.
+     */
+    gchar *new_val = g_strdup(default_val);
+    return new_val;
+  }
 
   error = NULL;
   value = g_key_file_get_string (ini, transition, key, &error);
