@@ -1437,8 +1437,9 @@ void hd_render_manager_set_state(HDRMStateEnum state)
                    * code */
                   if (hd_dbus_state_before_tklock == HDRM_STATE_NON_COMPOSITED)
                     priv->state = HDRM_STATE_APP;
-                  else
+                  else if (hd_dbus_state_before_tklock == HDRM_STATE_NON_COMP_PORT)
                     priv->state = HDRM_STATE_APP_PORTRAIT;
+
                   hd_dbus_state_before_tklock = HDRM_STATE_UNDEFINED;
                   /* this may or may not cause state change: */
                   if (hd_comp_mgr_reconsider_compositing (cmgr))
@@ -1472,14 +1473,6 @@ void hd_render_manager_set_state(HDRMStateEnum state)
                   if (hd_dbus_state_before_tklock == HDRM_STATE_HOME)
                     /* tklock -> portrait dialog -> unlock */
                     hd_dbus_state_before_tklock = HDRM_STATE_HOME_PORTRAIT;
-                }
-              else
-                { /* should not be in portrait */
-                  /* If we got a call and then locked right after,
-                   * we can be in HDRM_STATE_HOME_PORTRAIT state,
-                   * which is *meant* to be transitional.  NB#158934 */
-                   if (hd_dbus_state_before_tklock == HDRM_STATE_HOME_PORTRAIT)
-                    hd_dbus_state_before_tklock = HDRM_STATE_HOME;
                 }
 
               g_debug("%s: return to state %s before tklock\n", __func__,
