@@ -1,3 +1,10 @@
+hildon-desktop (1:2.2.154~1) unstable; urgency=low
+
+  * [UNRELEASED]
+  * Fixed: BMO #12722: hildon-desktop crashes on malformed transitions.ini.
+
+ -- Tomasz Pieniążek <t.pieniazek@gazeta.pl>  Wed, 12 Feb 2014 16:41:00 +0200
+
 hildon-desktop (1:2.2.153-2) unstable; urgency=low
 
   * Do not dereference NULL pointer - fixes a crash
