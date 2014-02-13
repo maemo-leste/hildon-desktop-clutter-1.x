@@ -2165,7 +2165,7 @@ hd_app_mgr_mce_activate_accel_if_needed (gboolean update_portraitness)
                     )
                     );
 
-  PORTRAIT("priv->accel_enabled: %s", priv->accel_enabled);
+  PORTRAIT("priv->accel_enabled: %d", priv->accel_enabled);
 
   if (priv->accel_enabled == activate)
     return;

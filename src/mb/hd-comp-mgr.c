@@ -1099,19 +1099,23 @@ lp_forecast (MBWindowManager *wm, MBWindowManagerClient *client)
       gboolean whitelisted = hd_comp_mgr_is_whitelisted(wm, c);
       /* Check if the window is blacklisted. */
       gboolean blacklisted = hd_comp_mgr_is_blacklisted(wm, c);
+      /* Check if the window supports or demands (including inhertiance) portrait mode. */
+      gboolean supports_demands_portrait = c->portrait_supported || c->portrait_requested
+                                           || c->portrait_requested_inherited;
+      PORTRAIT("%s: supports_demands_portrait: %d", __FUNCTION__, supports_demands_portrait);
 
-      if (((!force_rotation && !whitelisted) && !c->portrait_supported)
+      if (((!force_rotation && !whitelisted) && !supports_demands_portrait)
               || hd_comp_mgr_is_orientationlock_enabled (wm, c)
               || blacklisted
               || hd_launcher_is_editor_in_landscape ())
         {
+          PORTRAIT("%s: ROTATING TO LANDSCAPE", __FUNCTION__);
           hd_transition_rotate_screen (wm, FALSE);
           break;
         }
-      else if (!c->portrait_requested_inherited)
-        break;
       else if (c->portrait_requested && !hd_app_mgr_slide_is_open ())
         {
+          PORTRAIT("%s: ROTATING TO PORTRAIT", __FUNCTION__);
           hd_transition_rotate_screen (wm, TRUE);
           break;
         }
@@ -1372,7 +1376,10 @@ hd_comp_mgr_unregister_client (MBWMCompMgr *mgr, MBWindowManagerClient *c)
       && hd_transition_is_rotating_to_portrait ()
       && !mb_wm_client_is_map_confirmed (c)
       && c->window->portrait_requested > 0)
-    hd_transition_rotate_screen (mgr->wm, FALSE);
+    {
+      PORTRAIT("%s: ROTATING TO LANDSCAPE", __FUNCTION__);
+      hd_transition_rotate_screen (mgr->wm, FALSE);
+    }
 
   /* Dialogs and Notes (including notifications) have already been dealt
    * with in hd_comp_mgr_effect().  This is because by this time we don't
@@ -3252,10 +3259,12 @@ hd_comp_mgr_may_be_portrait (HdCompMgr *hmgr, gboolean assume_requested)
     {
       /* Check if there's a client which supports or request
        * portrait mode. Make sure it's an application. */
-       if ((any_supports || any_requests) && client_is_app)
+       if ((any_supports || any_requests) && client_is_app) {
+         PORTRAIT ("We have found a client which supports portrait. Break;");
        /* Do not iterate more, there's a client which supports
         * portrait mode. */
          break;
+       }
 
       PORTRAIT ("CLIENT %p", c);
       PORTRAIT ("IS IGNORABLE?");
@@ -3317,12 +3326,24 @@ hd_comp_mgr_may_be_portrait (HdCompMgr *hmgr, gboolean assume_requested)
         }
 
       /*
+       * Let's check if the window is MBWMClientWindowEWMHStateFullscreen.
+       * We don't want to lock tklock or incoming call windows.
+       */
+      gboolean is_lockable = TRUE;
+      if (c && c->window && !(c->window->ewmh_state & MBWMClientWindowEWMHStateFullscreen))
+        {
+          PORTRAIT ("CLIENT IS NOT LOCKABLE (MBWMClientWindowEWMHStateFullscreen)");
+          is_lockable = FALSE;
+        }
+
+      /*
        * If orientation lock is enabled, go to landscape.
        * Also, if necessary freeze the desktop in landscape mode, when we are in
        * the desktop's edit mode.
        */
-      if (hd_comp_mgr_is_orientationlock_enabled (wm, c)
+      if ((hd_comp_mgr_is_orientationlock_enabled (wm, c)
           || hd_launcher_is_editor_in_landscape ())
+          && is_lockable)
         {
           PORTRAIT ("ORIENTATION LOCK");
           return FALSE;
@@ -3523,6 +3544,7 @@ hd_comp_mgr_portrait_or_not_portrait (MBWMCompMgr *mgr,
       && hd_transition_is_rotating_to_portrait ()
       && !hd_comp_mgr_should_be_portrait (HD_COMP_MGR (mgr)))
     {
+      PORTRAIT("%s: ROTATING TO LANDSCAPE", __FUNCTION__);
       hd_transition_rotate_screen (mgr->wm, FALSE);
       return;
     }
@@ -4025,12 +4047,26 @@ gboolean
 hd_comp_mgr_is_orientationlock_enabled (MBWindowManager *wm, MBWindowManagerClient *c)
 {
   if (!hd_orientation_lock_is_locked_to_landscape ())
-    /* Orientation lock is disabled. */
-    return FALSE;
+    {
+      /* Orientation lock is disabled. */
+      PORTRAIT("%s: Orientation lock is disabled.", __FUNCTION__);
+      return FALSE;
+    }
 
   /* Do not try to lock call-ui window. */
   if (hd_comp_mgr_is_callui_window (wm, c))
-    return FALSE;
+    {
+      PORTRAIT("%s: call-ui window! Do not even try to lock it.", __FUNCTION__);
+      return FALSE;
+    }
+
+  /* We don't want to lock windows with *request* flag. */
+  if (c->portrait_requested || c->portrait_requested_inherited)
+    {
+      PORTRAIT("%s: window with flags! requested: %d, requested_inh: %d, supported: %d Do not even try to lock it.", __FUNCTION__,
+               c->portrait_requested, c->portrait_requested_inherited, c->portrait_supported);
+      return FALSE;
+    }
 
   return TRUE;
 }
