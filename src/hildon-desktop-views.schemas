@@ -114,5 +114,15 @@
         <short>Set to true to disable menu editing</short>
       </locale>
     </schema>
+    <schema>
+      <key>/schemas/apps/osso/hildon-desktop/screenshot_path</key>
+      <applyto>/apps/osso/hildon-desktop/screenshot_path</applyto>
+      <owner>hildon-desktop</owner>
+      <type>string</type>
+      <default></default>
+      <locale name="C">
+        <short>Set to path of location for screenshots</short>
+      </locale>
+    </schema>
   </schemalist>
 </gconfschemafile>

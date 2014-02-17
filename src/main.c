@@ -68,6 +68,8 @@ enum {
   KEY_ACTION_SEND_DBUS,
 };
 
+#define GCONF_SCREENSHOT_PATH "/apps/osso/hildon-desktop/screenshot_path"
+
 #ifdef MBWM_DEB_VERSION
 asm(".section .rodata");
 asm(".string \"built with libmatchbox2 "MBWM_DEB_VERSION"\"");
@@ -127,6 +129,7 @@ static void
 take_screenshot (void)
 {
   char *path, *filename;
+  char *mydocsdir;
   static gchar datestamp[255];
   static time_t secs = 0;
   struct tm *tm = NULL;
@@ -135,18 +138,32 @@ take_screenshot (void)
   GdkPixbuf *image;
   GError *error = NULL;
   gboolean ret;
-
-  if (!getenv("MYDOCSDIR")) {
-    g_warning ("Screenshot failed, environment variable MYDOCSDIR missing.");
-    return;
-  }
+  GConfClient *client;
 
   /* limit the rate of screenshots to avoid jamming HD when the key
    * is pressed all the time */
   if (time (NULL) - secs < 5)
     return;
 
-  path = g_strdup_printf ("%s/.images/Screenshots", getenv("MYDOCSDIR"));
+  client = gconf_client_get_default ();
+  mydocsdir = g_strdup (getenv ("MYDOCSDIR"));
+
+  path = gconf_client_get_string (client, GCONF_SCREENSHOT_PATH, NULL);
+
+  if (!path || !*path) {
+    if (!mydocsdir) {
+      g_warning ("Screenshot failed, environment variable MYDOCSDIR missing"
+		 "or gconf option \'%s\' not set", GCONF_SCREENSHOT_PATH);
+      g_free (path);
+      return;
+    } else {
+      path = g_strdup_printf ("%s/.images/Screenshots", mydocsdir);
+    }
+  }
+
+  g_free (mydocsdir);
+  g_object_unref (client);
+
   g_mkdir_with_parents (path, 0770);
 
   secs = time(NULL);
