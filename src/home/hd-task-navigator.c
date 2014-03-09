@@ -80,6 +80,12 @@
 # define g_return_if_fail         g_assert
 #endif
 
+#if 0
+# define PORTRAIT       g_warning
+#else
+# define PORTRAIT(...)  /* NOP */
+#endif
+
 /* Measures (in pixels).  Unless indicated, none of them is tunable. */
 /* Common platform metrics */
 #define SCREEN_WIDTH               HD_COMP_MGR_LANDSCAPE_WIDTH
@@ -2277,6 +2283,11 @@ layout_thumbs (ClutterActor * newborn)
           guint app_geom_fix = 0;
           guint wprison_fix = 0;
           gboolean landscape = FALSE;
+
+          /* Remove current clip if set. Otherwise we'll have serious problems with clipped thumbnails.
+           * More info: http://talk.maemo.org/showpost.php?p=1414482&postcount=320 */
+          if (clutter_actor_has_clip (thumb->windows))
+            clutter_actor_remove_clip (thumb->windows);
 
           if(IS_PORTRAIT && !hd_task_navigator_app_portrait_capable(thumb) )
             {

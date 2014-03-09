@@ -903,7 +903,10 @@ hd_launcher_transition_loading_timeout()
   /* Change state back to switcher (if other apps exist) or home if the app
    * starting failed */
   if (hd_task_navigator_has_apps())
-    hd_render_manager_set_state(HDRM_STATE_TASK_NAV);
+    if(priv->portraited)
+      hd_render_manager_set_state(HDRM_STATE_TASK_NAV);
+    else
+      hd_render_manager_set_state(HDRM_STATE_TASK_NAV_PORTRAIT);
   else
     {
       if(priv->portraited)

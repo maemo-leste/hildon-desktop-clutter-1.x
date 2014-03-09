@@ -72,6 +72,12 @@
 /* ------------------------------------------------------------------------- */
 #define I_(str) (g_intern_static_string ((str)))
 
+#if 0
+# define PORTRAIT       g_warning
+#else
+# define PORTRAIT(...)  /* NOP */
+#endif
+
 GType
 hd_render_manager_state_get_type (void)
 {
@@ -1596,10 +1602,10 @@ void hd_render_manager_set_state(HDRMStateEnum state)
                 should_be_portrait ? HDRM_STATE_TASK_NAV_PORTRAIT : HDRM_STATE_TASK_NAV;
             }
 
-          /* Update the task nav's layout. */
-          hd_task_navigator_rotate (STATE_IS_PORTRAIT (state));
           /* Update the launcher's layout, pip (portrait if possible) flags and hwkbd status. */
           hd_task_navigator_update_orientation (STATE_IS_PORTRAIT (state));
+          /* Update the task nav's layout. */
+          hd_task_navigator_rotate (STATE_IS_PORTRAIT (state));
 
           /* Zoom out if possible.  Otherwise if not coming from launcher
            * scroll it back to the top. */
@@ -1668,8 +1674,10 @@ void hd_render_manager_set_state(HDRMStateEnum state)
           else if (!STATE_IS_LAUNCHER (oldstate))
             hd_task_navigator_scroll_back (priv->task_nav);
 
+
           if (oldstate != state)
             {
+              PORTRAIT("%s: rotate screen to %d", __FUNCTION__, STATE_IS_PORTRAIT (state));
               hd_transition_rotate_screen (wm, STATE_IS_PORTRAIT (state));
             }
         }
