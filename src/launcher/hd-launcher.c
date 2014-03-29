@@ -904,9 +904,9 @@ hd_launcher_transition_loading_timeout()
    * starting failed */
   if (hd_task_navigator_has_apps())
     if(priv->portraited)
-      hd_render_manager_set_state(HDRM_STATE_TASK_NAV);
-    else
       hd_render_manager_set_state(HDRM_STATE_TASK_NAV_PORTRAIT);
+    else
+      hd_render_manager_set_state(HDRM_STATE_TASK_NAV);
   else
     {
       if(priv->portraited)
