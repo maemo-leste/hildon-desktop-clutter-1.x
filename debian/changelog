@@ -1,12 +1,17 @@
-hildon-desktop (1:2.2.154~3) unstable; urgency=low
+hildon-desktop (1:2.2.155~1) unstable; urgency=low
 
   * [UNRELEASED]
+
+ -- Tomasz Pieniążek <t.pieniazek@gazeta.pl>  Sat, 29 Mar 2014 13:35:00 +0200
+
+hhildon-desktop (1:2.2.154-1) unstable; urgency=low
+
   * Fixed: BMO #12720: Incorrect lockscreen background.
   * Fixed: BMO #12725: Screenshot saving path is hardcoded (by silviof).
   * Fixed: Sometimes thumbnails are wrongly clipped.
   * Changed: many portrait related changes (request flags, code clean up).
 
- -- Tomasz Pieniążek <t.pieniazek@gazeta.pl>  Wed, 09 Mar 2014 20:49:00 +0200
+ -- Tomasz Pieniążek <t.pieniazek@gazeta.pl>  Sat, 29 Mar 2014 13:31:00 +0200
 
 hildon-desktop (1:2.2.154~1) unstable; urgency=low
 
