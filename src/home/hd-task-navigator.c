@@ -630,19 +630,16 @@ static const struct
 	.small  = {  THUMB_SMALL_HEIGHT  * .9  ,(THUMB_SMALL_WIDTH+FRAME_TOP_HEIGHT)*.9 },
     }
 };
-static void
-clutter_actor_set_rotation_z(ClutterActor *actor,gfloat angle,gfloat z)
-{
-    clutter_actor_set_rotation(actor,CLUTTER_Z_AXIS,angle,0,0,z);
-}
-static void clutter_actor_get_rotation_z(ClutterActor * actor, gfloat* angle, gfloat * z)
-{
-    gint _z;
-    *angle = clutter_actor_get_rotation (actor, CLUTTER_Z_AXIS, NULL, NULL , &_z);
-    *z=_z;
-}
 
+static void
+clutter_actor_set_rotation_z(ClutterActor *actor,gfloat angle,gfloat z);
+static void
+clutter_actor_get_rotation_z(ClutterActor * actor, gfloat* angle, gfloat * z);
 static void set_clip(ClutterActor * actor, gint appwgw, gint appwgh);
+static void get_clip(ClutterActor * actor, gint * appwgw, gint * appwgh);
+
+static void
+clutter_actor_set_rotation_z(ClutterActor *actor,gfloat angle,gfloat z);
 
 /* Place and size an actor without animation. */
 static const Flyops Fly_at_once =
@@ -1382,9 +1379,9 @@ check_and_scale (ClutterActor * actor, gdouble sx_new, gdouble sy_new)
     free_effect (closure->timeline, closure);
 }
 
-
 DEFINE_RMS_EFFECT(rotate_z, gfloat,
-		  clutter_actor_get_rotation_z, clutter_actor_set_rotation_z);
+                  clutter_actor_get_rotation_z, clutter_actor_set_rotation_z)
+
 static void
 check_and_rotate_z (ClutterActor * actor, gfloat angle_new, gfloat z_new)
 {
@@ -1392,27 +1389,32 @@ check_and_rotate_z (ClutterActor * actor, gfloat angle_new, gfloat z_new)
   gfloat angle_now;
   gint z_now;
 
-  angle_now = clutter_actor_get_rotation (actor, CLUTTER_Z_AXIS, NULL, NULL,&z_now);
+  angle_now = clutter_actor_get_rotation (actor,
+                                          CLUTTER_Z_AXIS, NULL, NULL, &z_now);
 
   if (angle_now != angle_new || z_now != z_new)
     rotate_z (actor, angle_new, z_new);
-  else if ((closure = has_effect (actor, move_effect_frame)) != NULL)
+  else if ((closure = has_effect (actor, rotate_z_effect_frame)) != NULL)
     free_effect (closure->timeline, closure);
 }
 
-static void set_clip(ClutterActor * actor, gint appwgw, gint appwgh)
+static void
+clutter_actor_set_rotation_z(ClutterActor * actor,gfloat angle,gfloat z)
 {
-    clutter_actor_set_clip (actor,
-			    App_window_geometry_x, IS_PORTRAIT?0:App_window_geometry_y,
-			    appwgw, appwgh);
-}
-static void get_clip(ClutterActor * actor, gint * appwgw, gint * appwgh)
-{
-    clutter_actor_get_clip (actor, NULL, NULL, appwgw,appwgh);
+    clutter_actor_set_rotation (actor, CLUTTER_Z_AXIS, angle, 0, 0, z);
 }
 
-DEFINE_RMS_EFFECT(clip, gint,
-		  get_clip, set_clip);
+static void
+clutter_actor_get_rotation_z(ClutterActor * actor, gfloat * angle, gfloat * z)
+{
+    gint _z;
+    *angle = clutter_actor_get_rotation (actor,
+                                         CLUTTER_Z_AXIS, NULL, NULL, &_z);
+    *z=_z;
+}
+
+DEFINE_RMS_EFFECT(clip, gint, get_clip, set_clip)
+
 static void
 check_and_clip (ClutterActor * actor, gint appwgw, gint appwgh)
 {
@@ -1422,12 +1424,27 @@ check_and_clip (ClutterActor * actor, gint appwgw, gint appwgh)
   if (!actor)
     return;
 
-  clutter_actor_get_clip (actor, NULL, NULL, &appwgw_now,&appwgh_now);
+  clutter_actor_get_clip (actor, NULL, NULL, &appwgw_now, &appwgh_now);
 
   if (appwgw_now != appwgw || appwgh_now != appwgh)
     clip (actor, appwgw, appwgh);
-  else if ((closure = has_effect (actor, move_effect_frame)) != NULL)
+  else if ((closure = has_effect (actor, clip_effect_frame)) != NULL)
     free_effect (closure->timeline, closure);
+}
+
+static void
+set_clip(ClutterActor * actor, gint appwgw, gint appwgh)
+{
+    clutter_actor_set_clip (actor,
+                            App_window_geometry_x,
+                            IS_PORTRAIT?0:App_window_geometry_y,
+                            appwgw, appwgh);
+}
+
+static void
+get_clip(ClutterActor * actor, gint * appwgw, gint * appwgh)
+{
+    clutter_actor_get_clip (actor, NULL, NULL, appwgw, appwgh);
 }
 
 /* RMS effects }}} */
@@ -2284,42 +2301,38 @@ layout_thumbs (ClutterActor * newborn)
           guint wprison_fix = 0;
           gboolean landscape = FALSE;
 
-          /* Remove current clip if set. Otherwise we'll have serious problems with clipped thumbnails.
-           * More info: http://talk.maemo.org/showpost.php?p=1414482&postcount=320 */
-          if (clutter_actor_has_clip (thumb->windows))
-            clutter_actor_remove_clip (thumb->windows);
-
           if(IS_PORTRAIT && !hd_task_navigator_app_portrait_capable(thumb) )
             {
               app_geom_fix = HD_COMP_MGR_TOP_MARGIN;
               wprison_fix = FRAME_TOP_HEIGHT-FRAME_WIDTH;
-              
-              ops->clip(thumb->windows, appwgw, appwgh+app_geom_fix);
 
               /* Phone in portrait and showing not-portrait capable app thumb */
               hd_task_navigator_set_disable_portrait(thumb,True);
 
-              ops->rotate_z(thumb->windows,90.0f,0);
-              ops->move(thumb->windows,appwgw,HD_COMP_MGR_TOP_MARGIN);
+              ops->rotate_z(thumb->windows, 90.0f, 0);
+              ops->move(thumb->windows, appwgw, HD_COMP_MGR_TOP_MARGIN);
               /* Keep aspect ratio */
               landscape = TRUE;
             }
           else
             {
-              ops->clip(thumb->windows, appwgw, appwgh+(IS_PORTRAIT?HD_COMP_MGR_TOP_MARGIN:0));
               /* reset flag once in landscape and thumb supports portrait*/
               if(hd_task_navigator_app_portrait_capable(thumb))
-                hd_task_navigator_set_disable_portrait(thumb,False);
+                hd_task_navigator_set_disable_portrait(thumb, False);
 
               thumb->portrait_supported = IS_PORTRAIT?TRUE:FALSE;
 
-              ops->rotate_z(thumb->windows,0.0f,0);
-              ops->move(thumb->windows,0,0);
+              ops->rotate_z(thumb->windows, 0.0f, 0);
+              ops->move(thumb->windows, 0, 0);
             }
 
           ops->scale (thumb->prison,
                 (gdouble)(wprison-wprison_fix) / (appwgw-app_geom_fix),
                 (gdouble)hprison / (appwgh+app_geom_fix));
+
+          ops->clip (thumb->prison,
+                appwgw,
+                appwgh + app_geom_fix + (IS_PORTRAIT?HD_COMP_MGR_TOP_MARGIN:0));
 
           layout_thumb_frame (thumb, ops, landscape);
         }
@@ -4599,6 +4612,7 @@ find_thumb_from_xwindow(Window xwindow)
   return NULL;
 }
 
+
 void
 hd_task_navigator_update_win_orientation (Window xwindow, gboolean portrait)
 {
@@ -4609,11 +4623,12 @@ hd_task_navigator_update_win_orientation (Window xwindow, gboolean portrait)
     return;
 
   if (!hd_render_manager_is_changing_state ()
-        && (hd_render_manager_get_state () == HDRM_STATE_TASK_NAV_PORTRAIT)
-        && IS_PORTRAIT)
+      && (hd_render_manager_get_state () == HDRM_STATE_TASK_NAV_PORTRAIT)
+      && IS_PORTRAIT
+      && !(portrait == 1))
     /* The Phone app has changed its portrait flags (MCE). We ignore this, as
      * the task nav is going to be rotated anyway. */
-    return;
+      return;
 
   Thumbnail * thumb = find_thumb_from_xwindow(xwindow);
 
@@ -4661,7 +4676,9 @@ hd_task_navigator_update_win_orientation (Window xwindow, gboolean portrait)
         }
 
       layout_thumbs (thumb->thwin);
-      mb_wm_client_geometry_mark_dirty (mb_wm_managed_client_from_xwindow (thumb->win->wm, thumb->win->xwindow));
+      mb_wm_client_geometry_mark_dirty (
+                  mb_wm_managed_client_from_xwindow (thumb->win->wm,
+                                                     thumb->win->xwindow));
     }
 }
 
