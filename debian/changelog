@@ -1,3 +1,10 @@
+hildon-desktop (1:2.2.155-2) unstable; urgency=low
+
+  * Fix task navigator thumbnail rotation transition and clipping
+  * Fix memory leaks in clip/rotation effects
+
+ -- Ivaylo Dimitrov <freemangordon@abv.bg>  Sun, 20 Apr 2014 09:28:21 +0200
+
 hildon-desktop (1:2.2.155~1) unstable; urgency=low
 
   * [UNRELEASED]
