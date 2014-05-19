@@ -1099,12 +1099,13 @@ lp_forecast (MBWindowManager *wm, MBWindowManagerClient *client)
       gboolean whitelisted = hd_comp_mgr_is_whitelisted(wm, c);
       /* Check if the window is blacklisted. */
       gboolean blacklisted = hd_comp_mgr_is_blacklisted(wm, c);
-      /* Check if the window supports or demands (including inhertiance) portrait mode. */
-      gboolean supports_demands_portrait = c->portrait_supported || c->portrait_requested
-                                           || c->portrait_requested_inherited;
-      PORTRAIT("%s: supports_demands_portrait: %d", __FUNCTION__, supports_demands_portrait);
+      /* Check if the window supports or requests portrait mode. */
+      gboolean supports_requests_portrait =
+              c->portrait_supported || c->portrait_requested;
+      PORTRAIT("%s: supports_requests_portrait: %d", __FUNCTION__,
+               supports_requests_portrait);
 
-      if (((!force_rotation && !whitelisted) && !supports_demands_portrait)
+      if (((!force_rotation && !whitelisted) && !supports_requests_portrait)
               || hd_comp_mgr_is_orientationlock_enabled (wm, c)
               || blacklisted
               || hd_launcher_is_editor_in_landscape ())
@@ -1113,6 +1114,8 @@ lp_forecast (MBWindowManager *wm, MBWindowManagerClient *client)
           hd_transition_rotate_screen (wm, FALSE);
           break;
         }
+      else if (!c->portrait_requested_inherited)
+          break;
       else if (c->portrait_requested && !hd_app_mgr_slide_is_open ())
         {
           PORTRAIT("%s: ROTATING TO PORTRAIT", __FUNCTION__);
