@@ -1,3 +1,11 @@
+hildon-desktop (1:2.2.155-3) unstable; urgency=low
+
+  * Do not rotate screen on portraited client when its parent does not
+    support portrait mode.
+    This fixes http://talk.maemo.org/showpost.php?p=1424500&postcount=2058
+
+ -- Ivaylo Dimitrov <freemangordon@abv.bg>  Mon, 19 May 2014 05:03:54 +0300
+
 hildon-desktop (1:2.2.155-2) unstable; urgency=low
 
   * Fix task navigator thumbnail rotation transition and clipping
