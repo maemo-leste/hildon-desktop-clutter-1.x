@@ -51,6 +51,7 @@
 #include <X11/extensions/shape.h>
 
 #include <clutter/clutter.h>
+#include <clutter/x11/clutter-x11.h>
 
 #include "../tidy/tidy-blur-group.h"
 
@@ -58,6 +59,7 @@
 #include <mce/dbus-names.h>
 
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <fcntl.h>
 #include <signal.h>
 #include <math.h>
@@ -320,14 +322,15 @@ hd_comp_mgr_client_init (MBWMObject *obj, va_list vap)
       hd_comp_mgr_client_process_hibernation_prop (client);
 
       /* Look up if there were already windows for this app. */
-      guint windows = (guint)g_hash_table_lookup (hmgr->priv->shown_apps,
-                                                  (gpointer)app);
+      guint windows =
+          GPOINTER_TO_UINT(g_hash_table_lookup (hmgr->priv->shown_apps,
+                                                (gpointer)app));
       if (!windows)
         hd_app_mgr_app_opened (app);
 
       g_hash_table_insert (hmgr->priv->shown_apps,
                            (gpointer)app,
-                           (gpointer)++windows);
+                           GUINT_TO_POINTER(++windows));
     }
 
   /* Initially get window overlay state */
@@ -534,8 +537,7 @@ hd_comp_mgr_init (MBWMObject *obj, va_list vap)
 		                                  HD_HOME(priv->home),
 						  hd_task_navigator);
   g_object_set(priv->home, "hdrm", priv->render_manager, NULL);
-  clutter_container_add_actor(CLUTTER_CONTAINER (stage),
-                              CLUTTER_ACTOR(priv->render_manager));
+  clutter_actor_add_child(stage, CLUTTER_ACTOR(priv->render_manager));
 
   /* Pass the render manager to the app mgr so it knows when it can't
    * prestart apps.
@@ -557,7 +559,9 @@ hd_comp_mgr_init (MBWMObject *obj, va_list vap)
   arena = mb_wm_comp_mgr_clutter_get_arena(MB_WM_COMP_MGR_CLUTTER(cmgr));
   if (arena)
     {
+#ifdef UPSTREAM_DISABLED
       clutter_actor_set_allow_redraw(arena, FALSE);
+#endif
       clutter_actor_hide(arena);
       g_object_unref(arena); /* mb_wm_comp_mgr_clutter_get_arena refs us */
     }
@@ -1185,8 +1189,8 @@ hd_comp_mgr_unregister_client (MBWMCompMgr *mgr, MBWindowManagerClient *c)
   if (hclient->priv->app)
     {
       HdRunningApp *app = hclient->priv->app;
-      guint windows = (guint)g_hash_table_lookup (priv->shown_apps,
-                                                  (gpointer)app);
+      guint windows = GPOINTER_TO_UINT(g_hash_table_lookup (priv->shown_apps,
+                                                            (gpointer)app));
       if (--windows == 0)
         {
           hd_app_mgr_app_closed (app);
@@ -1194,9 +1198,8 @@ hd_comp_mgr_unregister_client (MBWMCompMgr *mgr, MBWindowManagerClient *c)
         }
       else
         {
-          g_hash_table_insert (priv->shown_apps,
-                               (gpointer)app,
-                               (gpointer)windows);
+          g_hash_table_insert (priv->shown_apps, (gpointer)app,
+                               GUINT_TO_POINTER(windows));
         }
     }
 
@@ -1206,7 +1209,7 @@ hd_comp_mgr_unregister_client (MBWMCompMgr *mgr, MBWindowManagerClient *c)
   if (hclient->priv->app &&
       hd_running_app_is_hibernating (hclient->priv->app) &&
       !g_hash_table_lookup (priv->hibernating_apps,
-                            (gpointer) hclient->priv->hibernation_key))
+                            GUINT_TO_POINTER(hclient->priv->hibernation_key)))
     {
       /*
        * We want to hold onto the CM client object, so we can continue using
@@ -1217,11 +1220,9 @@ hd_comp_mgr_unregister_client (MBWMCompMgr *mgr, MBWindowManagerClient *c)
       mb_wm_object_ref (MB_WM_OBJECT (cclient));
 
       g_hash_table_insert (priv->hibernating_apps,
-			   (gpointer) hclient->priv->hibernation_key,
-			   hclient);
+         GUINT_TO_POINTER(hclient->priv->hibernation_key), hclient);
 
-      hd_switcher_hibernate_window_actor (priv->switcher_group,
-					  actor);
+      hd_switcher_hibernate_window_actor (priv->switcher_group, actor);
     }
   else if (MB_WM_CLIENT_CLIENT_TYPE (c) == MBWMClientTypeApp)
     {
@@ -1344,17 +1345,20 @@ hd_comp_mgr_unregister_client (MBWMCompMgr *mgr, MBWindowManagerClient *c)
           g_object_set_data (G_OBJECT (actor), "HD-ApplicationId", NULL);
         }
     }
-  else if (MB_WM_CLIENT_CLIENT_TYPE (c) == HdWmClientTypeStatusArea)
+  else if (MB_WM_CLIENT_CLIENT_TYPE (c) ==
+           (MBWMClientType)HdWmClientTypeStatusArea)
     {
       hd_home_remove_status_area (HD_HOME (priv->home), actor);
       priv->status_area_client = NULL;
     }
-  else if (MB_WM_CLIENT_CLIENT_TYPE (c) == HdWmClientTypeStatusMenu)
+  else if (MB_WM_CLIENT_CLIENT_TYPE (c) ==
+           (MBWMClientType)HdWmClientTypeStatusMenu)
     {
       hd_home_remove_status_menu (HD_HOME (priv->home), actor);
       priv->status_menu_client = NULL;
     }
-  else if (MB_WM_CLIENT_CLIENT_TYPE (c) == HdWmClientTypeHomeApplet)
+  else if (MB_WM_CLIENT_CLIENT_TYPE (c) ==
+           (MBWMClientType)HdWmClientTypeHomeApplet)
     {
       ClutterActor *applet = mb_wm_comp_mgr_clutter_client_get_actor (cclient);
 
@@ -1415,7 +1419,6 @@ hd_comp_mgr_texture_update_area(HdCompMgr *hmgr,
                                 ClutterActor* actor)
 {
   ClutterActor *parent;
-  HdCompMgrPrivate * priv;
   gboolean blur_update = FALSE;
   ClutterActor *actors_stage;
 
@@ -1439,8 +1442,6 @@ hd_comp_mgr_texture_update_area(HdCompMgr *hmgr,
    */
   if (hd_transition_rotate_ignore_damage())
     return;
-
-  priv = hmgr->priv;
 
   /* TFP textures are usually bundled into another group, and it is
    * this group that sets visibility - so we must check it too */
@@ -1492,16 +1493,18 @@ hd_comp_mgr_hook_update_area(HdCompMgr *hmgr, ClutterActor *actor)
       ClutterActor *child;
       gint i;
 
-      for (i = 0, child = clutter_group_get_nth_child(CLUTTER_GROUP(actor), 0);
+      for (i = 0, child = clutter_actor_get_child_at_index(actor, 0);
            child;
-           child = clutter_group_get_nth_child(CLUTTER_GROUP(actor), ++i))
+           child = clutter_actor_get_child_at_index(actor, ++i))
         {
           if (CLUTTER_X11_IS_TEXTURE_PIXMAP(child))
             {
               g_signal_connect_swapped(
                       G_OBJECT(child), "update-area",
                       G_CALLBACK(hd_comp_mgr_texture_update_area), hmgr);
+#ifdef UPSTREAM_DISABLED
               clutter_actor_set_allow_redraw(child, FALSE);
+#endif
             }
         }
     }
@@ -1565,14 +1568,18 @@ void hd_comp_mgr_reset_overlay_shape (HdCompMgr *hmgr)
                          BlackPixel(wm->xdpy, DefaultScreen(wm->xdpy)));
 
     /* g_printerr ("%s: COMPOSITING: FULL SCREEN\n", __FUNCTION__); */
+#ifdef UPSTREAM_DISABLED
     clutter_stage_set_shaped_mode (stage, 0);
+#endif
   } else {
     /* g_printerr ("%s: COMPOSITING: ZERO REGION\n", __FUNCTION__); */
     /* Change the stage background to None before we do anything, to avoid
      * ugly black flashes. */
     XSetWindowBackgroundPixmap(wm->xdpy, clutter_window, None);
     /* tell Clutter not to draw on the window */
+#ifdef UPSTREAM_DISABLED
     clutter_stage_set_shaped_mode (stage, 1);
+#endif
     /* Reparent X back to the root window - and move it offscreen, then
      * reset its background to black. */
     XReparentWindow (wm->xdpy, clutter_window, wm->root_win->xwindow, 0, 0);
@@ -2243,12 +2250,12 @@ hd_comp_mgr_map_notify (MBWMCompMgr *mgr, MBWindowManagerClient *c)
 
   /* Hide status menu if any window except an applet is mapped */
   if (priv->status_menu_client &&
-      ctype != HdWmClientTypeHomeApplet &&
+      ctype != (MBWMClientType)HdWmClientTypeHomeApplet &&
       ctype != MBWMClientTypeOverride &&
       !HD_IS_BANNER_NOTE(c))
     mb_wm_client_deliver_delete (priv->status_menu_client);
 
-  if (ctype == HdWmClientTypeHomeApplet)
+  if (ctype == (MBWMClientType)HdWmClientTypeHomeApplet)
     {
       HdHomeApplet * applet  = HD_HOME_APPLET (c);
       char         * applet_id = applet->applet_id;
@@ -2268,13 +2275,13 @@ hd_comp_mgr_map_notify (MBWMCompMgr *mgr, MBWindowManagerClient *c)
         }
       return;
     }
-  else if (ctype == HdWmClientTypeStatusArea)
+  else if (ctype == (MBWMClientType)HdWmClientTypeStatusArea)
     {
       hd_home_add_status_area (HD_HOME (priv->home), actor);
       priv->status_area_client = c;
       return;
     }
-  else if (ctype == HdWmClientTypeStatusMenu)
+  else if (ctype == (MBWMClientType)HdWmClientTypeStatusMenu)
     { /* Either status menu OR power menu. */
       if (STATE_ONE_OF(hd_render_manager_get_state(),
             HDRM_STATE_LAUNCHER | HDRM_STATE_LAUNCHER_PORTRAIT |
@@ -2289,11 +2296,11 @@ hd_comp_mgr_map_notify (MBWMCompMgr *mgr, MBWindowManagerClient *c)
       priv->status_menu_client = c;
       return;
     }
-  else if (ctype == HdWmClientTypeAnimationActor)
+  else if (ctype == (MBWMClientType)HdWmClientTypeAnimationActor)
     {
       return;
     }
-  else if (ctype == HdWmClientTypeAppMenu)
+  else if (ctype == (MBWMClientType)HdWmClientTypeAppMenu)
     {
       /* This is mainly for the power key menu, but we must not allow
        * menus is general when not in APP state because they are not
@@ -2390,7 +2397,8 @@ hd_comp_mgr_map_notify (MBWMCompMgr *mgr, MBWindowManagerClient *c)
 
   hkey = hclient->priv->hibernation_key;
 
-  hclient_h = g_hash_table_lookup (priv->hibernating_apps, (gpointer)hkey);
+  hclient_h = g_hash_table_lookup (priv->hibernating_apps,
+                                   GUINT_TO_POINTER(hkey));
 
   if (hclient_h)
     {
@@ -2401,7 +2409,7 @@ hd_comp_mgr_map_notify (MBWMCompMgr *mgr, MBWindowManagerClient *c)
       hd_switcher_replace_window_actor (priv->switcher_group,
                                         actor_h, actor);
       mb_wm_object_unref (MB_WM_OBJECT (hclient_h));
-      g_hash_table_remove (priv->hibernating_apps, (gpointer)hkey);
+      g_hash_table_remove (priv->hibernating_apps, GUINT_TO_POINTER(hkey));
     }
 
   int topmost;
@@ -2683,7 +2691,8 @@ hd_comp_mgr_determine_current_app ()
         continue;
       if (!c->window)
         continue;
-      if (c->window->name && !g_strncasecmp (c->window->name, "systemui", 8))
+      if (c->window->name &&
+          !g_ascii_strncasecmp (c->window->name, "systemui", 8))
         /* systemui is not an application. */
         continue;
       return c;
@@ -2793,7 +2802,8 @@ hd_comp_mgr_unmap_notify (MBWMCompMgr *mgr, MBWindowManagerClient *c)
 
   /* if we are in home_edit_dlg mode, check and see if there is stuff
    * that would spoil our grab now - and if not, return to home_edit mode */
-  if (hdrm_state == HDRM_STATE_HOME_EDIT_DLG || hdrm_state == HDRM_STATE_HOME_EDIT_DLG_PORTRAIT)
+  if (hdrm_state == HDRM_STATE_HOME_EDIT_DLG ||
+      hdrm_state == HDRM_STATE_HOME_EDIT_DLG_PORTRAIT)
     {
       gboolean grab_spoil = FALSE;
       MBWindowManagerClient *above = mgr->wm->desktop;
@@ -2801,10 +2811,10 @@ hd_comp_mgr_unmap_notify (MBWMCompMgr *mgr, MBWindowManagerClient *c)
       for (; above; above = above->stacked_above)
         {
           if (above != c && !mb_wm_client_is_unmap_confirmed (above) &&
-              MB_WM_CLIENT_CLIENT_TYPE(above)!=MBWMClientTypeOverride &&
-              MB_WM_CLIENT_CLIENT_TYPE(above)!=HdWmClientTypeHomeApplet &&
-              MB_WM_CLIENT_CLIENT_TYPE(above)!=HdWmClientTypeStatusArea &&
-              MB_WM_CLIENT_CLIENT_TYPE(above)!=HdWmClientTypeAnimationActor &&
+              MB_WM_CLIENT_CLIENT_TYPE(above) != MBWMClientTypeOverride &&
+              MB_WM_CLIENT_CLIENT_TYPE(above) != (MBWMClientType)HdWmClientTypeHomeApplet &&
+              MB_WM_CLIENT_CLIENT_TYPE(above) != (MBWMClientType)HdWmClientTypeStatusArea &&
+              MB_WM_CLIENT_CLIENT_TYPE(above) != (MBWMClientType)HdWmClientTypeAnimationActor &&
               !HD_IS_BANNER_NOTE (above))
           {
             g_debug ("spoiler=%p", above);
@@ -2911,12 +2921,12 @@ hd_comp_mgr_effect (MBWMCompMgr                *mgr,
   if (event == MBWMCompMgrClientEventUnmap)
     {
       hd_transition_play_tactile (FALSE, c_type);
-      if (c_type == HdWmClientTypeStatusMenu)
+      if (c_type == (MBWMClientType)HdWmClientTypeStatusMenu)
         hd_transition_popup(hmgr, c, MBWMCompMgrClientEventUnmap);
       else if (HD_IS_INCOMING_EVENT_PREVIEW_NOTE(c))
         hd_transition_notification(hmgr, c, MBWMCompMgrClientEventUnmap);
       else if (c_type == MBWMClientTypeDialog ||
-               c_type == HdWmClientTypeAppMenu)
+               c_type == (MBWMClientType)HdWmClientTypeAppMenu)
         {
           if (!hd_util_client_obscured(c))
             hd_transition_popup(hmgr, c, MBWMCompMgrClientEventUnmap);
@@ -2999,10 +3009,10 @@ hd_comp_mgr_effect (MBWMCompMgr                *mgr,
   else if (event == MBWMCompMgrClientEventMap)
     {
       hd_transition_play_tactile (TRUE, c_type);
-      if (c_type == HdWmClientTypeStatusMenu)
+      if (c_type == (MBWMClientType)HdWmClientTypeStatusMenu)
         hd_transition_popup(hmgr, c, MBWMCompMgrClientEventMap);
       else if ((c_type == MBWMClientTypeDialog) ||
-               (c_type == HdWmClientTypeAppMenu))
+               (c_type == (MBWMClientType)HdWmClientTypeAppMenu))
         hd_transition_popup(hmgr, c, MBWMCompMgrClientEventMap);
       else if (HD_IS_INCOMING_EVENT_PREVIEW_NOTE(c))
         hd_transition_notification(hmgr, c, MBWMCompMgrClientEventMap);
@@ -3193,7 +3203,7 @@ hd_comp_mgr_close_app (HdCompMgr *hmgr, MBWMCompMgrClutterClient *cc,
       hd_switcher_remove_window_actor (priv->switcher_group, actor, cc);
 
       g_hash_table_remove (priv->hibernating_apps,
-                           (gpointer)h_client->priv->hibernation_key);
+                           GUINT_TO_POINTER(h_client->priv->hibernation_key));
 
       if (h_client->priv->app)
         {
