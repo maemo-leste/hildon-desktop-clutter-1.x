@@ -8,9 +8,9 @@
  *
  * // The parent must have been sized and the area canned be reparented.
  * scrable = hd_scrollable_group_new();
- * clutter_container_add_actor(parent, scrable);
+ * clutter_actor_add_child(parent, scrable);
  *
- * clutter_container_add_actor(scrable, some_actor);
+ * clutter_actor_add_child(scrable, some_actor);
  * ...
  *
  * // Set the eventual size of the scrollable area.

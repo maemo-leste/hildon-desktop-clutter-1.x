@@ -276,16 +276,14 @@ hd_title_bar_init (HdTitleBar *bar)
   clutter_actor_set_visibility_detect(CLUTTER_ACTOR(priv->foreground), TRUE);
   clutter_actor_set_name(CLUTTER_ACTOR(priv->foreground),
       "HdTitleBar::foreground");
-  clutter_container_add_actor(CLUTTER_CONTAINER(bar),
-      CLUTTER_ACTOR(priv->foreground));
+  clutter_actor_add_child(CLUTTER_ACTOR(bar), CLUTTER_ACTOR(priv->foreground));
 
   /* Title background */
   priv->title_bg = hd_clutter_cache_get_sub_texture(
       HD_THEME_IMG_TITLE_BAR, TRUE, &title_bg_size);
   if (TIDY_IS_SUB_TEXTURE(priv->title_bg))
     tidy_sub_texture_set_tiled(TIDY_SUB_TEXTURE(priv->title_bg), TRUE);
-  clutter_container_add_actor(CLUTTER_CONTAINER(bar),
-      CLUTTER_ACTOR(priv->title_bg));
+  clutter_actor_add_child(CLUTTER_ACTOR(bar), CLUTTER_ACTOR(priv->title_bg));
 
   hd_title_bar_add_left_signals(bar, priv->title_bg);
   clutter_actor_set_reactive (priv->title_bg, FALSE);
@@ -309,7 +307,7 @@ hd_title_bar_init (HdTitleBar *bar)
           clutter_label_set_use_markup(CLUTTER_LABEL(label), TRUE);
 
           priv->buttons[i] = clutter_group_new();
-          clutter_container_add_actor (CLUTTER_CONTAINER(priv->buttons[i]), label);
+          clutter_actor_add_child (CLUTTER_ACTOR(priv->buttons[i]), label);
 
           clutter_actor_get_size(CLUTTER_ACTOR(label), &w, &h);
           w += (2 * HD_TITLE_BAR_TEXT_MARGIN);
@@ -329,11 +327,12 @@ hd_title_bar_init (HdTitleBar *bar)
        * and right aligned ones will be placed on the initial
        * stage_allocation_changed(). */
       if (BTN_FLAGS[i] & BTN_FLAG_FOREGROUND)
-        clutter_container_add_actor(CLUTTER_CONTAINER(priv->foreground),
-            priv->buttons[i]);
+        {
+          clutter_actor_add_child(CLUTTER_ACTOR(priv->foreground),
+                                  priv->buttons[i]);
+        }
       else
-        clutter_container_add_actor(CLUTTER_CONTAINER(bar),
-            priv->buttons[i]);
+        clutter_actor_add_child(CLUTTER_ACTOR(bar), priv->buttons[i]);
       clutter_actor_hide(priv->buttons[i]);
 
       if (BTN_FLAGS[i] & BTN_FLAG_SET_SIZE)
@@ -366,7 +365,7 @@ hd_title_bar_init (HdTitleBar *bar)
   clutter_label_set_color(priv->title, &title_color);
   /* do not call clutter_label_set_use_markup() until we know whether
    * or not the text has markup */
-  clutter_container_add_actor(CLUTTER_CONTAINER(bar), CLUTTER_ACTOR(priv->title));
+  clutter_actor_add_child(CLUTTER_ACTOR(bar), CLUTTER_ACTOR(priv->title));
   clutter_actor_hide(CLUTTER_ACTOR(priv->title));
 
   /* Make sure the 'foreground' is in the right place */
@@ -387,8 +386,7 @@ hd_title_bar_init (HdTitleBar *bar)
                                                     HD_THEME_IMG_PROGRESS,
                                                     TRUE,
                                                     &progress_geo);
-    clutter_container_add_actor(CLUTTER_CONTAINER(bar),
-                                priv->progress_texture);
+    clutter_actor_add_child(CLUTTER_ACTOR(bar), priv->progress_texture);
     clutter_actor_set_visibility_detect(CLUTTER_ACTOR(priv->progress_texture),
                                         TRUE);
     clutter_actor_set_size(priv->progress_texture,
@@ -1516,7 +1514,7 @@ hd_title_bar_create_fake(gint width)
   ClutterActor *title_bar = hd_clutter_cache_get_texture(
       HD_THEME_IMG_TITLE_BAR, TRUE);
   clutter_actor_set_width(title_bar, width);
-  clutter_container_add_actor(CLUTTER_CONTAINER(group), title_bar);
+  clutter_actor_add_child(CLUTTER_ACTOR(group), title_bar);
 
   return CLUTTER_ACTOR(group);
 }

@@ -340,7 +340,7 @@ tidy_desaturation_group_paint (ClutterActor *actor)
   if (priv->current_desaturation_step != priv->desaturation_step)
     clutter_actor_queue_redraw(actor);
 
-  ClutterFixed mx, my, zx, zy;
+  gfloat mx, my, zx, zy;
   mx = CLUTTER_INT_TO_FIXED (width) / 2;
   my = CLUTTER_INT_TO_FIXED (height) / 2;
   zx = CLUTTER_FLOAT_TO_FIXED(width * 0.5f);

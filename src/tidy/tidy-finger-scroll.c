@@ -59,7 +59,7 @@ struct _TidyFingerScrollPrivate
   /* @move tells whether TIDY_FINGER_SCROLL_DRAG_TRASHOLD has been exceeded.
    * @first_x and @first_y are the coordinates of the first touch. */
   gboolean               move;
-  ClutterFixed           first_x, first_y;
+  gfloat           first_x, first_y;
 
   GArray                *motion_buffer;
   guint                  last_motion;
@@ -69,9 +69,9 @@ struct _TidyFingerScrollPrivate
   int                    deceleration_timeline_lastframe;
   ClutterUnit            dx;
   ClutterUnit            dy;
-  ClutterFixed           decel_rate;
-  ClutterFixed           bouncing_decel_rate;
-  ClutterFixed           bounce_back_speed_rate;
+  gfloat           decel_rate;
+  gfloat           bouncing_decel_rate;
+  gfloat           bounce_back_speed_rate;
 
   /* Variables to fade in/out scroll-bars */
   ClutterEffectTemplate *template_in;
@@ -232,7 +232,7 @@ motion_event_cb (ClutterActor *actor,
 
       if (child)
         {
-          ClutterFixed dx, dy;
+          gfloat dx, dy;
           TidyAdjustment *hadjust, *vadjust;
 
           tidy_scrollable_get_adjustments (TIDY_SCROLLABLE (child),
@@ -249,8 +249,8 @@ motion_event_cb (ClutterActor *actor,
           /* Has the drag treshold been reached? */
           if (!priv->move)
             {
-                ClutterFixed d1 = x - priv->first_x;
-                ClutterFixed d2 = y - priv->first_y;
+                gfloat d1 = x - priv->first_x;
+                gfloat d2 = y - priv->first_y;
                 priv->move = clutter_qmulx (d1, d1) + clutter_qmulx (d2, d2)
                   >= CLUTTER_INT_TO_FIXED (TIDY_FINGER_SCROLL_DRAG_TRASHOLD
                                            * TIDY_FINGER_SCROLL_DRAG_TRASHOLD);
@@ -368,14 +368,14 @@ deceleration_completed_cb (ClutterTimeline *timeline,
  * We return the initial bouncing speed, which is based on how
  * far we are in the danger zone (the distance from lower/upper).
  */
-static ClutterFixed
+static gfloat
 get_next_delta (TidyFingerScroll *scroll,
-                ClutterFixed lowest, ClutterFixed lower,
-                ClutterFixed value, ClutterFixed prevdiff,
-                ClutterFixed upper, ClutterFixed highest)
+                gfloat lowest, gfloat lower,
+                gfloat value, gfloat prevdiff,
+                gfloat upper, gfloat highest)
 {
   TidyFingerScrollPrivate *priv = scroll->priv;
-  ClutterFixed decel_rate, nextdiff;
+  gfloat decel_rate, nextdiff;
   gboolean in_upper_danger_zone, in_lower_danger_zone;
 
   in_lower_danger_zone = value < lower;
@@ -410,10 +410,10 @@ get_next_delta (TidyFingerScroll *scroll,
 }
 
 /* Advances *@valuep by @diff and returns how much it actually advanced. */
-static ClutterFixed
-advance_value (ClutterFixed lowest, ClutterFixed lower,
-               ClutterFixed *valuep, ClutterFixed diff,
-               ClutterFixed upper, ClutterFixed highest)
+static gfloat
+advance_value (gfloat lowest, gfloat lower,
+               gfloat *valuep, gfloat diff,
+               gfloat upper, gfloat highest)
 {
   static const gboolean likeable = FALSE;
 
@@ -460,8 +460,8 @@ deceleration_new_frame_cb (ClutterTimeline *timeline,
   TidyFingerScrollPrivate *priv = scroll->priv;
   ClutterActor *child;
   TidyAdjustment *hadjust, *vadjust;
-  ClutterFixed hvalue, hlowest, hlower, hpage, hupper, hhighest;
-  ClutterFixed vvalue, vlowest, vlower, vpage, vupper, vhighest;
+  gfloat hvalue, hlowest, hlower, hpage, hupper, hhighest;
+  gfloat vvalue, vlowest, vlower, vpage, vupper, vhighest;
 
   if (!(child = tidy_scroll_view_get_child (TIDY_SCROLL_VIEW(scroll))))
     return;
@@ -527,12 +527,12 @@ deceleration_new_frame_cb (ClutterTimeline *timeline,
  * in half a second.  Similarly for the bottom of the widget.  Otherwise
  * the @diff is returned as is.
  */
-static ClutterFixed
+static gfloat
 initial_speed (TidyFingerScroll *scroll, TidyAdjustment *adjust,
-               ClutterFixed diff)
+               gfloat diff)
 {
   TidyFingerScrollPrivate *priv = scroll->priv;
-  ClutterFixed lower, value, upper, page;
+  gfloat lower, value, upper, page;
 
   tidy_adjustment_get_valuesx (adjust, &value, &lower, &upper,
                                NULL, NULL, &page);
@@ -894,7 +894,7 @@ tidy_finger_scroll_init (TidyFingerScroll *self)
   ClutterTimeline *effect_timeline_in;
   ClutterTimeline *effect_timeline_out;
   TidyFingerScrollPrivate *priv = self->priv = FINGER_SCROLL_PRIVATE (self);
-  ClutterFixed qn;
+  gfloat qn;
   guint i;
 
   priv->motion_buffer = g_array_sized_new (FALSE, TRUE,

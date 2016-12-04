@@ -382,14 +382,14 @@ hd_render_manager_create (HdCompMgr *hdcompmgr,
   clutter_actor_set_size (CLUTTER_ACTOR(priv->task_nav),
                           HD_COMP_MGR_LANDSCAPE_WIDTH,
                           HD_COMP_MGR_LANDSCAPE_HEIGHT);
-  clutter_container_add_actor(CLUTTER_CONTAINER(render_manager),
+  clutter_actor_add_child(CLUTTER_ACTOR(render_manager),
                               CLUTTER_ACTOR(priv->task_nav));
   clutter_actor_move_anchor_point_from_gravity(CLUTTER_ACTOR(priv->task_nav),
                                                CLUTTER_GRAVITY_CENTER);
 
  /* Add the launcher widget. */
-  clutter_container_add_actor(CLUTTER_CONTAINER(render_manager),
-                              CLUTTER_ACTOR(launcher));
+  clutter_actor_add_child(CLUTTER_ACTOR(render_manager),
+                          CLUTTER_ACTOR(launcher));
 
   /* These must be below tasw and talu. */
   clutter_actor_lower_bottom (CLUTTER_ACTOR (priv->app_top));
@@ -399,12 +399,12 @@ hd_render_manager_create (HdCompMgr *hdcompmgr,
   priv->home = home;
   g_signal_connect_swapped(clutter_stage_get_default(), "notify::allocation",
                            G_CALLBACK(stage_allocation_changed), priv->home);
-  clutter_container_add_actor(CLUTTER_CONTAINER(priv->home_blur),
-                              CLUTTER_ACTOR(priv->home));
+  clutter_actor_add_child(CLUTTER_ACTOR(priv->home_blur),
+                          CLUTTER_ACTOR(priv->home));
 
   /* Edit button */
-  clutter_container_add_actor(CLUTTER_CONTAINER(priv->blur_front),
-                              hd_home_get_edit_button(priv->home));
+  clutter_actor_add_child(CLUTTER_ACTOR(priv->blur_front),
+                          hd_home_get_edit_button(priv->home));
 
   /* Operator */
   hd_render_manager_set_operator(hd_home_get_operator(priv->home));
@@ -414,8 +414,8 @@ hd_render_manager_create (HdCompMgr *hdcompmgr,
   priv->title_bar = g_object_ref_sink(g_object_new(HD_TYPE_TITLE_BAR, NULL));
   g_signal_connect_swapped(clutter_stage_get_default(), "notify::allocation",
                            G_CALLBACK(stage_allocation_changed), priv->title_bar);
-  clutter_container_add_actor(CLUTTER_CONTAINER(priv->blur_front),
-                              CLUTTER_ACTOR(priv->title_bar));
+  clutter_actor_add_child(CLUTTER_ACTOR(priv->blur_front),
+                          CLUTTER_ACTOR(priv->title_bar));
 
   return render_manager;
 }
@@ -513,8 +513,8 @@ hd_render_manager_init (HdRenderManager *self)
   tidy_blur_group_set_use_mirror(CLUTTER_ACTOR(priv->home_blur), TRUE);
   g_signal_connect_swapped(stage, "notify::allocation",
                            G_CALLBACK(stage_allocation_changed), priv->home_blur);
-  clutter_container_add_actor(CLUTTER_CONTAINER(self),
-                              CLUTTER_ACTOR(priv->home_blur));
+  clutter_actor_add_child(CLUTTER_ACTOR(self),
+                          CLUTTER_ACTOR(priv->home_blur));
 
   priv->app_top = CLUTTER_GROUP(clutter_group_new());
   clutter_actor_set_name(CLUTTER_ACTOR(priv->app_top),
@@ -522,8 +522,8 @@ hd_render_manager_init (HdRenderManager *self)
   g_signal_connect_swapped(stage, "notify::allocation",
                            G_CALLBACK(stage_allocation_changed), priv->app_top);
   clutter_actor_set_visibility_detect(CLUTTER_ACTOR(priv->app_top), FALSE);
-  clutter_container_add_actor(CLUTTER_CONTAINER(self),
-                              CLUTTER_ACTOR(priv->app_top));
+  clutter_actor_add_child(CLUTTER_ACTOR(self),
+                          CLUTTER_ACTOR(priv->app_top));
 
   priv->front = CLUTTER_GROUP(clutter_group_new());
   clutter_actor_set_name(CLUTTER_ACTOR(priv->front),
@@ -531,8 +531,8 @@ hd_render_manager_init (HdRenderManager *self)
   g_signal_connect_swapped(stage, "notify::allocation",
                            G_CALLBACK(stage_allocation_changed), priv->front);
   clutter_actor_set_visibility_detect(CLUTTER_ACTOR(priv->front), FALSE);
-  clutter_container_add_actor(CLUTTER_CONTAINER(self),
-                              CLUTTER_ACTOR(priv->front));
+  clutter_actor_add_child(CLUTTER_ACTOR(self),
+                          CLUTTER_ACTOR(priv->front));
 
   priv->blur_front = CLUTTER_GROUP(clutter_group_new());
   clutter_actor_set_name(CLUTTER_ACTOR(priv->blur_front),
@@ -541,8 +541,8 @@ hd_render_manager_init (HdRenderManager *self)
                            G_CALLBACK(stage_allocation_changed), priv->blur_front);
   clutter_actor_set_visibility_detect(CLUTTER_ACTOR(priv->blur_front), FALSE);
   g_object_set(priv->blur_front, "show_on_set_parent", FALSE, NULL);
-  clutter_container_add_actor(CLUTTER_CONTAINER(priv->home_blur),
-                              CLUTTER_ACTOR(priv->blur_front));
+  clutter_actor_add_child(CLUTTER_CONTAINER(priv->home_blur),
+                          CLUTTER_ACTOR(priv->blur_front));
 
   /* Animation stuff */
   range_set(&priv->home_radius, 0);
@@ -1309,9 +1309,9 @@ void hd_render_manager_set_loading  (ClutterActor *item)
       else if (clutter_actor_get_parent(priv->loading_image))
         {
           /* Or just totally unparent it */
-          clutter_container_remove_actor (
-              CLUTTER_CONTAINER(clutter_actor_get_parent(priv->loading_image)),
-              priv->loading_image);
+          clutter_actor_remove_child (
+                clutter_actor_get_parent(priv->loading_image),
+                priv->loading_image);
           /* If we are moving to an app from a loading image, fade the
            * image out nicely. However the user could tap on launcher/tasknav,
            * in which case we want this gone quickly. */

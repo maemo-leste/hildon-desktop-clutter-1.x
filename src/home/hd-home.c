@@ -1317,8 +1317,7 @@ create_edge_indicator (HdHome           *home,
                           HD_EDGE_INDICATION_WIDTH, HD_COMP_MGR_LANDSCAPE_HEIGHT);
   clutter_actor_set_position (edge_indicator, x, 0);
 
-  clutter_container_add_actor (CLUTTER_CONTAINER (edit_group),
-                               edge_indicator);
+  clutter_actor_add_child (CLUTTER_ACTOR (edit_group), edge_indicator);
   clutter_actor_show (edge_indicator);
 
   clutter_actor_set_reactive (edge_indicator, FALSE);
@@ -1341,12 +1340,11 @@ hd_home_constructed (GObject *object)
 
   priv->front = CLUTTER_GROUP(clutter_group_new());
   clutter_actor_set_name (CLUTTER_ACTOR(priv->front), "HdHome:front");
-  clutter_container_add_actor (CLUTTER_CONTAINER (object),
-                               CLUTTER_ACTOR(priv->front));
+  clutter_actor_add_child (CLUTTER_ACTOR (object), CLUTTER_ACTOR(priv->front));
 
   edit_group = priv->edit_group = clutter_group_new ();
   clutter_actor_set_name (edit_group, "HdHome:edit_group");
-  clutter_container_add_actor (CLUTTER_CONTAINER (priv->front), edit_group);
+  clutter_actor_add_child (CLUTTER_ACTOR (priv->front), edit_group);
   clutter_actor_hide (edit_group);
 
   GConfClient *client = gconf_client_get_default ();
@@ -1358,7 +1356,7 @@ hd_home_constructed (GObject *object)
                                                 HD_COMP_MGR (priv->comp_mgr),
                                                 CLUTTER_ACTOR (object));
   clutter_actor_set_name (priv->view_container, "HdHome:view_container");
-  clutter_container_add_actor (CLUTTER_CONTAINER (object), priv->view_container);
+  clutter_actor_add_child (CLUTTER_ACTOR (object), priv->view_container);
   clutter_actor_set_size (CLUTTER_ACTOR (priv->view_container),
                           HD_COMP_MGR_LANDSCAPE_WIDTH,
                           HD_COMP_MGR_LANDSCAPE_HEIGHT);

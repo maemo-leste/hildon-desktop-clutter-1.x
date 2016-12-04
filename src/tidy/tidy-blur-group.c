@@ -338,7 +338,7 @@ tidy_blur_group_fallback_blur(TidyBlurGroup *group, int tex_width, int tex_heigh
 
   TidyBlurGroupPrivate *priv = group->priv;
   CoglHandle tex = priv->current_is_a ? priv->tex_a : priv->tex_b;
-  ClutterFixed diffx, diffy;
+  gfloat diffx, diffy;
   diffx = CLUTTER_FLOAT_TO_FIXED(1.0f / tex_width);
   diffy = CLUTTER_FLOAT_TO_FIXED(1.0f / tex_height);
 
@@ -600,7 +600,7 @@ skip_progress:
   if (priv->current_blur_step != priv->blur_step)
     clutter_actor_queue_redraw(actor);
 
-  ClutterFixed mx, my, zx, zy;
+  gfloat mx, my, zx, zy;
   mx = CLUTTER_INT_TO_FIXED (width) / 2;
   my = CLUTTER_INT_TO_FIXED (height) / 2;
   zx = CLUTTER_FLOAT_TO_FIXED(width*0.5f*priv->zoom);

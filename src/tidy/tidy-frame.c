@@ -151,7 +151,7 @@ tidy_frame_allocate (ClutterActor          *actor,
   if (priv->child)
     {
       TidyPadding padding = { 0, };
-      ClutterFixed x_align, y_align;
+      gfloat x_align, y_align;
       ClutterUnit available_width, available_height;
       ClutterUnit child_width, child_height;
       ClutterActorBox child_box = { 0, };
@@ -281,8 +281,8 @@ tidy_frame_set_property (GObject      *gobject,
   switch (prop_id)
     {
     case PROP_CHILD:
-      clutter_container_add_actor (CLUTTER_CONTAINER (gobject),
-                                   g_value_get_object (value));
+      clutter_actor_add_child (CLUTTER_ACTOR (gobject),
+                               g_value_get_object (value));
       break;
 
     case PROP_TEXTURE:

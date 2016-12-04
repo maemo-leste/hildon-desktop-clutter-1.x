@@ -148,7 +148,7 @@ tidy_highlight_paint (ClutterActor *self)
   ClutterColor                 col = { 0xff, 0xff, 0xff, 0xff };
   CoglHandle                   cogl_texture;
   guint                        tex_width, tex_height;
-  ClutterFixed                 overlapx, overlapy;
+  gfloat                 overlapx, overlapy;
   CoglTextureVertex            verts[4];
 
   priv = TIDY_HIGHLIGHT (self)->priv;

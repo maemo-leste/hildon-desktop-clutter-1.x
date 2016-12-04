@@ -54,19 +54,17 @@ static HdClutterCache *the_clutter_cache = 0;
 static void
 hd_clutter_cache_init (HdClutterCache *cache)
 {
-  ClutterStage *stage;
+  ClutterActor *stage;
  /* HdClutterCachePrivate *priv = cache->priv =
     HD_CLUTTER_CACHE_GET_PRIVATE(cache);*/
 
   clutter_actor_hide(CLUTTER_ACTOR(cache));
   clutter_actor_set_name(CLUTTER_ACTOR(cache), "HdClutterCache");
 
-  stage = CLUTTER_STAGE(clutter_stage_get_default());
+  stage = clutter_stage_get_default();
+
   if (stage)
-    {
-      clutter_container_add_actor(CLUTTER_CONTAINER(stage),
-                                  CLUTTER_ACTOR(cache));
-    }
+      clutter_actor_add_child (stage, CLUTTER_ACTOR(cache));
 }
 
 static void
@@ -166,7 +164,7 @@ hd_clutter_cache_get_real_texture(const char *filename, gboolean from_theme)
     }
 
   clutter_actor_set_name(texture, filename_real);
-  clutter_container_add_actor(CLUTTER_CONTAINER(cache), texture);
+  clutter_actor_add_child (CLUTTER_ACTOR(cache), texture);
 
   if (filename_alloc)
     g_free(filename_alloc);
@@ -366,9 +364,7 @@ hd_clutter_cache_get_sub_texture_for_area(const char *filename,
               tidy_sub_texture_set_tiled(tex, TRUE);
             clutter_actor_set_position(CLUTTER_ACTOR(tex), pos.x, pos.y);
             clutter_actor_set_size(CLUTTER_ACTOR(tex), pos.width, pos.height);
-            clutter_container_add_actor(
-                      CLUTTER_CONTAINER(group),
-                      CLUTTER_ACTOR(tex));
+            clutter_actor_add_child (CLUTTER_ACTOR(group), CLUTTER_ACTOR(tex));
           }
       }
 

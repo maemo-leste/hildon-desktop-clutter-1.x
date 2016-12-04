@@ -194,7 +194,7 @@ hd_launcher_tile_init (HdLauncherTile *tile)
   clutter_actor_set_position(priv->click_area, 0, 0);
   clutter_actor_set_size(priv->click_area,
       HD_LAUNCHER_TILE_WIDTH, HD_LAUNCHER_TILE_HEIGHT);
-  clutter_container_add_actor(CLUTTER_CONTAINER(tile), priv->click_area);
+  clutter_actor_add_child(CLUTTER_ACTOR(tile), priv->click_area);
 
   g_signal_connect_swapped(priv->click_area, "button-press-event",
                            G_CALLBACK (hd_launcher_tile_button_press), tile);
@@ -399,7 +399,7 @@ hd_launcher_tile_set_icon_name (HdLauncherTile *tile,
       HD_LAUNCHER_TILE_ICON_SIZE);
   clutter_actor_set_position (priv->icon,
       (HD_LAUNCHER_TILE_WIDTH - HD_LAUNCHER_TILE_ICON_SIZE) / 2, 0);
-  clutter_container_add_actor (CLUTTER_CONTAINER(tile), priv->icon);
+  clutter_actor_add_child (CLUTTER_ACTOR(tile), priv->icon);
 
   if (priv->icon_glow)
     /* free the old one */
@@ -412,8 +412,7 @@ hd_launcher_tile_set_icon_name (HdLauncherTile *tile,
   clutter_actor_set_position (CLUTTER_ACTOR(priv->icon_glow),
         (HD_LAUNCHER_TILE_WIDTH - HD_LAUNCHER_TILE_GLOW_SIZE) / 2,
         (HD_LAUNCHER_TILE_ICON_SIZE - HD_LAUNCHER_TILE_GLOW_SIZE) / 2);
-  clutter_container_add_actor (CLUTTER_CONTAINER(tile),
-                               CLUTTER_ACTOR(priv->icon_glow));
+  clutter_actor_add_child (CLUTTER_ACTOR(tile), CLUTTER_ACTOR(priv->icon_glow));
   clutter_actor_lower_bottom(CLUTTER_ACTOR(priv->icon_glow));
 
   clutter_actor_hide(CLUTTER_ACTOR(priv->icon_glow));
@@ -475,7 +474,7 @@ hd_launcher_tile_set_text (HdLauncherTile *tile,
   clutter_actor_set_position(priv->label,
       (HD_LAUNCHER_TILE_WIDTH - label_width_px) / 2,
       HD_LAUNCHER_TILE_HEIGHT - label_height);
-  clutter_container_add_actor (CLUTTER_CONTAINER(tile), priv->label);
+  clutter_actor_add_child (CLUTTER_ACTOR(tile), priv->label);
 
   if (CLUTTER_UNITS_TO_DEVICE(label_width) > HD_LAUNCHER_TILE_WIDTH)
     clutter_actor_set_clip (priv->label, 0, 0,

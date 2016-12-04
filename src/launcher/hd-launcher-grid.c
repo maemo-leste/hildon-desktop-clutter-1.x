@@ -518,7 +518,7 @@ void hd_launcher_grid_layout (HdLauncherGrid *grid)
         ClutterActor *blocker = clutter_group_new();
         clutter_actor_set_name(blocker, "HdLauncherGrid::blocker");
         clutter_actor_show(blocker);
-        clutter_container_add_actor(CLUTTER_CONTAINER(grid), blocker);
+        clutter_actor_add_child(CLUTTER_ACTOR(grid), blocker);
         clutter_actor_set_reactive(blocker, TRUE);
         g_signal_connect (blocker, "button-release-event",
                           G_CALLBACK (_hd_launcher_grid_blocker_release_cb),
@@ -760,7 +760,7 @@ hd_launcher_grid_clear (HdLauncherGrid *grid)
 
       l = l->next;
 
-      clutter_container_remove_actor (CLUTTER_CONTAINER (grid), child);
+      clutter_actor_remove_child (grid, child);
     }
 }
 

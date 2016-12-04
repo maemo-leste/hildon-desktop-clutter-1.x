@@ -37,19 +37,19 @@ G_DEFINE_TYPE (TidyAdjustment, tidy_adjustment, G_TYPE_OBJECT)
 
 struct _TidyAdjustmentPrivate
 {
-  ClutterFixed lower;
-  ClutterFixed upper;
-  ClutterFixed value;
-  ClutterFixed step_increment;
-  ClutterFixed page_increment;
-  ClutterFixed page_size;
-  ClutterFixed skirt_p, skirt;
+  gfloat lower;
+  gfloat upper;
+  gfloat value;
+  gfloat step_increment;
+  gfloat page_increment;
+  gfloat page_size;
+  gfloat skirt_p, skirt;
 
   /* For interpolation */
   ClutterTimeline *interpolation;
-  ClutterFixed     dx;
-  ClutterFixed     old_position;
-  ClutterFixed     new_position;
+  gfloat     dx;
+  gfloat     old_position;
+  gfloat     new_position;
 };
 
 enum
@@ -286,12 +286,12 @@ tidy_adjustment_new (gdouble value,
 }
 
 TidyAdjustment *
-tidy_adjustment_newx (ClutterFixed value,
-                      ClutterFixed lower,
-                      ClutterFixed upper,
-                      ClutterFixed step_increment,
-                      ClutterFixed page_increment,
-                      ClutterFixed page_size)
+tidy_adjustment_newx (gfloat value,
+                      gfloat lower,
+                      gfloat upper,
+                      gfloat step_increment,
+                      gfloat page_increment,
+                      gfloat page_size)
 {
   TidyAdjustment *retval;
   TidyAdjustmentPrivate *priv;
@@ -309,7 +309,7 @@ tidy_adjustment_newx (ClutterFixed value,
   return retval;
 }
 
-ClutterFixed
+gfloat
 tidy_adjustment_get_valuex (TidyAdjustment *adjustment)
 {
   TidyAdjustmentPrivate *priv;
@@ -337,7 +337,7 @@ tidy_adjustment_get_value (TidyAdjustment *adjustment)
 
 void
 tidy_adjustment_set_valuex (TidyAdjustment *adjustment,
-                            ClutterFixed    value)
+                            gfloat    value)
 {
   TidyAdjustmentPrivate *priv;
   
@@ -367,8 +367,8 @@ tidy_adjustment_set_value (TidyAdjustment *adjustment,
 
 void
 tidy_adjustment_clamp_pagex (TidyAdjustment *adjustment,
-                             ClutterFixed    lower,
-                             ClutterFixed    upper)
+                             gfloat    lower,
+                             gfloat    upper)
 {
   gboolean changed;
   TidyAdjustmentPrivate *priv;
@@ -417,7 +417,7 @@ tidy_adjustment_set_lower (TidyAdjustment *adjustment,
                            gdouble         lower)
 {
   TidyAdjustmentPrivate *priv = adjustment->priv;
-  ClutterFixed value = CLUTTER_FLOAT_TO_FIXED (lower);
+  gfloat value = CLUTTER_FLOAT_TO_FIXED (lower);
   
   if (priv->lower != value)
     {
@@ -436,7 +436,7 @@ tidy_adjustment_set_upper (TidyAdjustment *adjustment,
                            gdouble         upper)
 {
   TidyAdjustmentPrivate *priv = adjustment->priv;
-  ClutterFixed value = CLUTTER_FLOAT_TO_FIXED (upper);
+  gfloat value = CLUTTER_FLOAT_TO_FIXED (upper);
   
   if (priv->upper != value)
     {
@@ -455,7 +455,7 @@ tidy_adjustment_set_step_increment (TidyAdjustment *adjustment,
                                     gdouble         step)
 {
   TidyAdjustmentPrivate *priv = adjustment->priv;
-  ClutterFixed value = CLUTTER_FLOAT_TO_FIXED (step);
+  gfloat value = CLUTTER_FLOAT_TO_FIXED (step);
   
   if (priv->step_increment != value)
     {
@@ -472,7 +472,7 @@ tidy_adjustment_set_page_increment (TidyAdjustment *adjustment,
                                     gdouble        page)
 {
   TidyAdjustmentPrivate *priv = adjustment->priv;
-  ClutterFixed value = CLUTTER_FLOAT_TO_FIXED (page);
+  gfloat value = CLUTTER_FLOAT_TO_FIXED (page);
 
   if (priv->page_increment != value)
     {
@@ -489,7 +489,7 @@ tidy_adjustment_set_page_size (TidyAdjustment *adjustment,
                                gdouble         size)
 {
   TidyAdjustmentPrivate *priv = adjustment->priv;
-  ClutterFixed value = CLUTTER_FLOAT_TO_FIXED (size);
+  gfloat value = CLUTTER_FLOAT_TO_FIXED (size);
 
   if (priv->page_size != value)
     {
@@ -505,12 +505,12 @@ tidy_adjustment_set_page_size (TidyAdjustment *adjustment,
 
 void
 tidy_adjustment_set_valuesx (TidyAdjustment *adjustment,
-                             ClutterFixed    value,
-                             ClutterFixed    lower,
-                             ClutterFixed    upper,
-                             ClutterFixed    step_increment,
-                             ClutterFixed    page_increment,
-                             ClutterFixed    page_size)
+                             gfloat    value,
+                             gfloat    lower,
+                             gfloat    upper,
+                             gfloat    step_increment,
+                             gfloat    page_increment,
+                             gfloat    page_size)
 {
   TidyAdjustmentPrivate *priv;
   gboolean emit_changed = FALSE;
@@ -593,12 +593,12 @@ tidy_adjustment_set_values (TidyAdjustment *adjustment,
 
 void
 tidy_adjustment_get_valuesx (TidyAdjustment *adjustment,
-                             ClutterFixed   *value,
-                             ClutterFixed   *lower,
-                             ClutterFixed   *upper,
-                             ClutterFixed   *step_increment,
-                             ClutterFixed   *page_increment,
-                             ClutterFixed   *page_size)
+                             gfloat   *value,
+                             gfloat   *lower,
+                             gfloat   *upper,
+                             gfloat   *step_increment,
+                             gfloat   *page_increment,
+                             gfloat   *page_size)
 {
   TidyAdjustmentPrivate *priv;
   
@@ -662,8 +662,8 @@ tidy_adjustment_get_values (TidyAdjustment *adjustment,
 /* Returns the hard bounds of the value of @adjustment. */
 void
 tidy_adjustment_get_skirtx (TidyAdjustment *adjustment,
-                            ClutterFixed   *lowest,
-                            ClutterFixed   *highest)
+                            gfloat   *lowest,
+                            gfloat   *highest)
 {
   TidyAdjustmentPrivate *priv = adjustment->priv;
 
@@ -678,7 +678,7 @@ tidy_adjustment_get_skirtx (TidyAdjustment *adjustment,
  * not enforced to allow for temporary overshooting. */
 void
 tidy_adjustment_set_skirtx (TidyAdjustment *adjustment,
-                            ClutterFixed    skirt_p)
+                            gfloat    skirt_p)
 {
   TidyAdjustmentPrivate *priv = adjustment->priv;
 
@@ -716,7 +716,7 @@ interpolation_completed_cb (ClutterTimeline *timeline,
 
 void
 tidy_adjustment_interpolatex (TidyAdjustment *adjustment,
-                              ClutterFixed    value,
+                              gfloat    value,
                               guint           n_frames,
                               guint           fps)
 {

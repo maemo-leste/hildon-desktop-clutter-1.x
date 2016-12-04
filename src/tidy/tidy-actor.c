@@ -74,8 +74,8 @@ struct _TidyActorPrivate
 
   TidyPadding padding;
 
-  ClutterFixed x_align;
-  ClutterFixed y_align;
+  gfloat x_align;
+  gfloat y_align;
 };
 
 static void
@@ -429,8 +429,8 @@ tidy_actor_get_alignment (TidyActor *actor,
  */
 void
 tidy_actor_set_alignmentx (TidyActor    *actor,
-                           ClutterFixed  x_align,
-                           ClutterFixed  y_align)
+                           gfloat  x_align,
+                           gfloat  y_align)
 {
   TidyActorPrivate *priv;
 
@@ -478,8 +478,8 @@ tidy_actor_set_alignmentx (TidyActor    *actor,
  */
 void
 tidy_actor_get_alignmentx (TidyActor    *actor,
-                           ClutterFixed *x_align,
-                           ClutterFixed *y_align)
+                           gfloat *x_align,
+                           gfloat *y_align)
 {
   TidyActorPrivate *priv;
 

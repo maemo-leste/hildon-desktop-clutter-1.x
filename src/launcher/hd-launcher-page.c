@@ -230,18 +230,15 @@ hd_launcher_page_constructed (GObject *object)
   y1 = ((page_height - HD_LAUNCHER_PAGE_YMARGIN - label_height)/2) +
         HD_LAUNCHER_PAGE_YMARGIN;
   clutter_actor_set_position (priv->empty_label, x1, y1);
-  clutter_container_add_actor (CLUTTER_CONTAINER (page), priv->empty_label);
+  clutter_actor_add_child (CLUTTER_ACTOR (page), priv->empty_label);
   g_free (font_string);
 
   priv->scroller = tidy_finger_scroll_new (TIDY_FINGER_SCROLL_MODE_KINETIC);
-  clutter_container_add_actor (CLUTTER_CONTAINER (page),
-                               priv->scroller);
-  clutter_actor_set_size(priv->scroller, page_width,
-                                         page_height);
+  clutter_actor_add_child (CLUTTER_ACTOR (page), priv->scroller);
+  clutter_actor_set_size(priv->scroller, page_width, page_height);
 
   priv->grid = hd_launcher_grid_new ();
-  clutter_container_add_actor (CLUTTER_CONTAINER (priv->scroller),
-                               priv->grid);
+  clutter_actor_add_child (CLUTTER_ACTOR (priv->scroller), priv->grid);
   priv->transition = 0;
 
   /* Add callbacks for de-selecting an icon after the user has moved
@@ -309,8 +306,7 @@ hd_launcher_page_add_tile (HdLauncherPage *page, HdLauncherTile* tile)
       priv->empty_label = NULL;
     }
 
-  clutter_container_add_actor (CLUTTER_CONTAINER (priv->grid),
-                               CLUTTER_ACTOR (tile));
+  clutter_actor_add_child (CLUTTER_ACTOR (priv->grid), CLUTTER_ACTOR (tile));
 
   g_signal_connect (tile, "clicked",
                     G_CALLBACK (hd_launcher_page_tile_clicked),

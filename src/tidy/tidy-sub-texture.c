@@ -108,7 +108,7 @@ tidy_sub_texture_paint (ClutterActor *self)
   gint                         x_1, y_1, x_2, y_2, width, height;
   ClutterColor                 col = { 0xff, 0xff, 0xff, 0xff };
   CoglHandle                   cogl_texture;
-  ClutterFixed                 t_x, t_y, t_w, t_h;
+  gfloat                 t_x, t_y, t_w, t_h;
   guint                        tex_width, tex_height;
   ClutterGeometry              region;
 

@@ -855,9 +855,9 @@ hd_transition_completed (ClutterTimeline* timeline, HDEffectData *data)
   if (data->event == MBWMCompMgrClientEventUnmap && data->cclient_actor)
     {
       ClutterActor *parent = clutter_actor_get_parent(data->cclient_actor);
-      if (CLUTTER_IS_CONTAINER(parent))
-        clutter_container_remove_actor(
-            CLUTTER_CONTAINER(parent), data->cclient_actor );
+
+      if (parent)
+        clutter_actor_remove_child(parent, data->cclient_actor );
     }
 
   if (data->cclient_actor)
@@ -887,9 +887,11 @@ hd_transition_completed (ClutterTimeline* timeline, HDEffectData *data)
     if (data->particles[i]) {
       // if actor was in a group, remove it
       if (CLUTTER_IS_CONTAINER(clutter_actor_get_parent(data->particles[i])))
-             clutter_container_remove_actor(
-               CLUTTER_CONTAINER(clutter_actor_get_parent(data->particles[i])),
-               data->particles[i]);
+        {
+          clutter_actor_remove_child(
+                CLUTTER_ACTOR(clutter_actor_get_parent(data->particles[i])),
+                data->particles[i]);
+        }
       g_object_unref(data->particles[i]); // unref ourselves
       data->particles[i] = 0; // for safety, set pointer to 0
     }
@@ -969,7 +971,7 @@ hd_transition_popup(HdCompMgr                  *mgr,
   /* Add actor for the background when we pop a bit too far */
   data->particles[0] = g_object_ref(clutter_rectangle_new());
   clutter_actor_set_name(data->particles[0], "popup background");
-  clutter_container_add_actor(CLUTTER_CONTAINER(actor), data->particles[0]);
+  clutter_actor_add_child(CLUTTER_ACTOR(actor), data->particles[0]);
   hd_gtk_style_get_bg_color(HD_GTK_BUTTON_SINGLETON, GTK_STATE_NORMAL,
                               &col);
   clutter_rectangle_set_color(CLUTTER_RECTANGLE(data->particles[0]),
@@ -1066,9 +1068,8 @@ hd_transition_fade_out_loading_screen(ClutterActor *loading_image)
                           G_CALLBACK (on_fade_timeline_new_frame), data);
     g_signal_connect (data->timeline, "completed",
                           G_CALLBACK (hd_transition_completed), data);
-    clutter_container_add_actor (
-                 hd_render_manager_get_front_group(),
-                 loading_image);
+    clutter_actor_add_child (hd_render_manager_get_front_group(),
+                             loading_image);
     /* first call to stop flicker */
     on_fade_timeline_new_frame(data->timeline, 0, data);
     clutter_timeline_start (data->timeline);
@@ -1157,7 +1158,7 @@ hd_transition_close_app (HdCompMgr                  *mgr,
           g_object_ref(data->particles[i]);
           clutter_actor_set_anchor_point_from_gravity(data->particles[i],
                                                       CLUTTER_GRAVITY_CENTER);
-          clutter_container_add_actor(parent, data->particles[i]);
+          clutter_actor_add_child(parent, data->particles[i]);
           clutter_actor_hide(data->particles[i]);
         }
     }
@@ -1410,9 +1411,7 @@ hd_transition_fade_and_rotate(gboolean first_part,
       clutter_actor_set_size(data->particles[0],
           hd_comp_mgr_get_current_screen_width (),
           hd_comp_mgr_get_current_screen_height ());
-      clutter_container_add_actor(
-                CLUTTER_CONTAINER(clutter_stage_get_default()),
-                data->particles[0]);
+      clutter_actor_add_child(clutter_stage_get_default(), data->particles[0]);
       clutter_actor_show(data->particles[0]);
     }
 
@@ -1428,9 +1427,8 @@ hd_transition_fade_and_rotate(gboolean first_part,
        clutter_actor_set_size(data->particles[1],
            HD_COMP_MGR_LANDSCAPE_WIDTH-HD_COMP_MGR_LANDSCAPE_HEIGHT,
            HD_COMP_MGR_LANDSCAPE_HEIGHT);
-       clutter_container_add_actor(
-                 CLUTTER_CONTAINER(hd_render_manager_get()),
-                 data->particles[1]);
+       clutter_actor_add_child(CLUTTER_ACTOR(hd_render_manager_get()),
+                               data->particles[1]);
        clutter_actor_show(data->particles[1]);
     }
 

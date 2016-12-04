@@ -181,50 +181,46 @@ hd_animation_actor_client_message (XClientMessageEvent *xev, void *userdata)
        /* Unparent the actor */
       ClutterActor *parent = clutter_actor_get_parent (actor);
       if (parent)
-        {
-          clutter_container_remove_actor (CLUTTER_CONTAINER (parent),
-                                        actor);
-        }
+          clutter_actor_remove_child (parent, actor);
 
       if (win != 0)
       {
-	  /* re-parent the actor to another actor */
+        /* re-parent the actor to another actor */
 
-	  MBWindowManagerClient *parent_client = NULL;
-	  MBWMCompMgrClutterClient *parent_cclient = NULL;
-	  parent = NULL;
+        MBWindowManagerClient *parent_client = NULL;
+        MBWMCompMgrClutterClient *parent_cclient = NULL;
+        parent = NULL;
 
-	  /* Many things can go wrong if the parent X window is not
-	   * mapped yet (WM client or clutter compositing client or
-	   * clutter actor may be missing). Silently bail out if
-	   * any of this happens. */
+        /* Many things can go wrong if the parent X window is not
+         * mapped yet (WM client or clutter compositing client or
+         * clutter actor may be missing). Silently bail out if
+         * any of this happens. */
 
-	  parent_client =
-	      mb_wm_managed_client_from_xwindow (client->wmref, win);
+        parent_client =
+            mb_wm_managed_client_from_xwindow (client->wmref, win);
 
-	  if (parent_client)
-	      parent_cclient =
-		  MB_WM_COMP_MGR_CLUTTER_CLIENT (parent_client->cm_client);
+        if (parent_client)
+        {
+          parent_cclient =
+              MB_WM_COMP_MGR_CLUTTER_CLIENT (parent_client->cm_client);
+        }
 
-	  if (parent_cclient)
-	      parent = mb_wm_comp_mgr_clutter_client_get_actor (parent_cclient);
+        if (parent_cclient)
+          parent = mb_wm_comp_mgr_clutter_client_get_actor (parent_cclient);
 
-	  if (parent)
-          {
-            clutter_container_add_actor (CLUTTER_CONTAINER (parent),
-                                         actor);
-         }
+        if (parent)
+          clutter_actor_add_child (CLUTTER_ACTOR (parent), actor);
       }
 
       if (self->show)
-          clutter_actor_show (actor);
+        clutter_actor_show (actor);
       else
-          clutter_actor_hide (actor);
+        clutter_actor_hide (actor);
   }
   else
   {
       CM_DEBUG ("AnimationActor %p: UNKNOWN MESSAGE %lu (%lu,%lu,%lu,%lu,%lu)\n",
-	       self,
+         self,
 	       xev->message_type,
 	       xev->data.l[0],
 	       xev->data.l[1],

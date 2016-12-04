@@ -338,13 +338,13 @@ remove_global_live_bg (HdHomeViewContainer *container)
 
   if (priv->live_bg->window->live_background == -1)
     {
-      clutter_container_remove_actor (CLUTTER_CONTAINER (container), actor);
+      clutter_actor_remove_child (container, actor);
       clutter_actor_hide (actor);
     }
   else if (priv->live_bg->window->live_background == -101)
     {
       ClutterActor *hfront = hd_home_get_front (priv->home);
-      clutter_container_remove_actor (CLUTTER_CONTAINER (hfront), actor);
+      clutter_actor_remove_child (hfront, actor);
       clutter_actor_hide (actor);
     }
 }
@@ -379,7 +379,7 @@ hd_home_view_container_set_live_bg (HdHomeViewContainer *container,
         {
           cclient = MB_WM_COMP_MGR_CLUTTER_CLIENT (client->cm_client);
           actor = mb_wm_comp_mgr_clutter_client_get_actor (cclient);
-          clutter_container_remove_actor (CLUTTER_CONTAINER (container), actor);
+          clutter_actor_remove_child (CLUTTER_ACTOR (container), actor);
           clutter_actor_hide (actor);
           priv->live_bg = NULL;
 
@@ -483,8 +483,7 @@ hd_home_view_container_constructed (GObject *self)
                                      "id", i,
                                      "view-container", container,
                                      NULL);
-      clutter_container_add_actor (CLUTTER_CONTAINER (self),
-                                   priv->views[i]);
+      clutter_actor_add_child (CLUTTER_ACTOR (self), priv->views[i]);
     }
 
   priv->gconf_client = gconf_client_get_default ();

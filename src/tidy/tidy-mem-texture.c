@@ -57,10 +57,10 @@ struct _TidyMemTexturePrivate
 #endif
 
   /* Offset of the memory texture in this actor */
-  ClutterFixed offset_x;
-  ClutterFixed offset_y;
-  ClutterFixed scale_x;
-  ClutterFixed scale_y;
+  gfloat offset_x;
+  gfloat offset_y;
+  gfloat scale_x;
+  gfloat scale_y;
 
   GList *tiles; /* of TidyMemTextureTile */
 };
@@ -75,10 +75,10 @@ tidy_mem_texture_update_modified(TidyMemTexture *texture,
 static void
 tidy_mem_texture_tile_coords(TidyMemTexture *texture,
                              TidyMemTextureTile *tile,
-                             ClutterFixed *x1,
-                             ClutterFixed *y1,
-                             ClutterFixed *x2,
-                             ClutterFixed *y2);
+                             gfloat *x1,
+                             gfloat *y1,
+                             gfloat *x2,
+                             gfloat *y2);
 static gboolean
 tidy_mem_texture_tile_visible(TidyMemTexture *texture,
                               TidyMemTextureTile *tile,
@@ -125,7 +125,7 @@ tidy_mem_texture_paint (ClutterActor *self)
       TidyMemTextureTile *tile = tiles->data;
       if (tidy_mem_texture_tile_visible(texture, tile, width, height))
         {
-          ClutterFixed x1,y1,x2,y2;
+          gfloat x1,y1,x2,y2;
           tidy_mem_texture_tile_coords(texture, tile, &x1, &y1, &x2, &y2);
           cogl_texture_rectangle (tile->texture,
                                   x1, y1, x2, y2,
@@ -237,10 +237,10 @@ tidy_mem_texture_free_data(TidyMemTexture *texture)
 static void
 tidy_mem_texture_tile_coords(TidyMemTexture *texture,
                              TidyMemTextureTile *tile,
-                             ClutterFixed *x1,
-                             ClutterFixed *y1,
-                             ClutterFixed *x2,
-                             ClutterFixed *y2)
+                             gfloat *x1,
+                             gfloat *y1,
+                             gfloat *x2,
+                             gfloat *y2)
 {
   TidyMemTexturePrivate *priv = texture->priv;
 
@@ -263,7 +263,7 @@ tidy_mem_texture_tile_visible(TidyMemTexture *texture,
                               TidyMemTextureTile *tile,
                               gint width, gint height)
 {
-  ClutterFixed x1, y1, x2, y2;
+  gfloat x1, y1, x2, y2;
   tidy_mem_texture_tile_coords(texture, tile, &x1, &y1, &x2, &y2);
   return (x2 >= 0 && y2 >= 0 &&
           x1 <= CLUTTER_INT_TO_FIXED(width) &&
@@ -477,7 +477,7 @@ void tidy_mem_texture_damage(TidyMemTexture *texture,
 }
 
 void tidy_mem_texture_set_offset(TidyMemTexture *texture,
-                                 ClutterFixed x, ClutterFixed y)
+                                 gfloat x, gfloat y)
 {
   TidyMemTexturePrivate *priv;
   if (!TIDY_IS_MEM_TEXTURE(texture))
@@ -494,8 +494,8 @@ void tidy_mem_texture_set_offset(TidyMemTexture *texture,
 }
 
 void tidy_mem_texture_set_scale(TidyMemTexture *texture,
-                                ClutterFixed scale_x,
-                                ClutterFixed scale_y)
+                                gfloat scale_x,
+                                gfloat scale_y)
 {
   TidyMemTexturePrivate *priv;
   if (!TIDY_IS_MEM_TEXTURE(texture))

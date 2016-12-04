@@ -374,7 +374,7 @@ hd_home_view_constructed (GObject *object)
   g_signal_connect_swapped(clutter_stage_get_default(), "notify::allocation",
                            G_CALLBACK(hd_home_view_rotate_background),
                            priv->background_container);
-  clutter_container_add_actor (CLUTTER_CONTAINER (object), priv->background_container);
+  clutter_actor_add_child (CLUTTER_ACTOR (object), priv->background_container);
 
   priv->applets_container = clutter_group_new ();
   clutter_actor_set_name (priv->applets_container, "HdHomeView::applets-container");
@@ -386,8 +386,8 @@ hd_home_view_constructed (GObject *object)
   g_signal_connect_swapped(clutter_stage_get_default(), "notify::allocation",
                            G_CALLBACK(hd_home_view_resize_applets_container),
                            priv->applets_container);
-  clutter_container_add_actor (CLUTTER_CONTAINER (hd_home_get_front(priv->home)),
-                               priv->applets_container);
+  clutter_actor_add_child (CLUTTER_ACTOR (hd_home_get_front(priv->home)),
+                           priv->applets_container);
 
   /* By default the background is a black rectangle */
   priv->background = clutter_rectangle_new_with_color (&clr);
@@ -395,8 +395,8 @@ hd_home_view_constructed (GObject *object)
   clutter_actor_set_size (priv->background,
                           HD_COMP_MGR_LANDSCAPE_WIDTH,
                           HD_COMP_MGR_LANDSCAPE_HEIGHT);
-  clutter_container_add_actor (CLUTTER_CONTAINER (priv->background_container),
-                               priv->background);
+  clutter_actor_add_child (CLUTTER_ACTOR (priv->background_container),
+                           priv->background);
 
   clutter_actor_set_reactive (CLUTTER_ACTOR (object), TRUE);
 
@@ -529,13 +529,11 @@ set_background_common (HdHomeView *hview, ClutterActor *new_bg)
       return;
 
     /* Add new background to the background container */
-    clutter_container_add_actor (
-                CLUTTER_CONTAINER (priv->background_container),
-                new_bg);
+    clutter_actor_add_child (CLUTTER_ACTOR(priv->background_container), new_bg);
+
     if (new_bg_sub)
-      clutter_container_add_actor (
-                  CLUTTER_CONTAINER (priv->background_container),
-                  CLUTTER_ACTOR(new_bg_sub));
+      clutter_actor_add_child (CLUTTER_ACTOR(priv->background_container),
+                               CLUTTER_ACTOR(new_bg_sub));
 
     /* Remove the old background (color or image) and the subtexture
      * that may have been used to make it smaller */
@@ -778,10 +776,9 @@ hd_home_view_set_live_bg (HdHomeView *view,
           cclient = MB_WM_COMP_MGR_CLUTTER_CLIENT (client->cm_client);
           new_bg = mb_wm_comp_mgr_clutter_client_get_actor (cclient);
           /* it is in either container */
-          clutter_container_remove_actor (
-                CLUTTER_CONTAINER (priv->background_container), new_bg);
-          clutter_container_remove_actor (
-                CLUTTER_CONTAINER (priv->applets_container), new_bg);
+          clutter_actor_remove_child (priv->background_container, new_bg);
+          clutter_actor_remove_child (CLUTTER_ACTOR (priv->applets_container),
+                                      new_bg);
           clutter_actor_hide (new_bg);
         }
       priv->live_bg = NULL;
@@ -1506,7 +1503,7 @@ hd_home_view_add_applet (HdHomeView   *view,
 
   /* Add close button */
   close_button = hd_clutter_cache_get_texture ("AppletCloseButton.png", TRUE);
-  clutter_container_add_actor (CLUTTER_CONTAINER (applet), close_button);
+  clutter_actor_add_child (CLUTTER_ACTOR (applet), close_button);
 
   clutter_actor_set_reactive (close_button, TRUE);
   clutter_actor_raise_top (close_button);
@@ -1524,7 +1521,7 @@ hd_home_view_add_applet (HdHomeView   *view,
       ClutterActor *configure_button;
 
       configure_button = hd_clutter_cache_get_texture ("AppletConfigureButton.png", TRUE);
-      clutter_container_add_actor (CLUTTER_CONTAINER (applet), configure_button);
+      clutter_actor_add_child (CLUTTER_ACTOR (applet), configure_button);
 
       clutter_actor_set_reactive (configure_button, TRUE);
       clutter_actor_raise_top (configure_button);
@@ -1909,21 +1906,19 @@ hd_home_view_change_wallpaper(HdHomeView *view)
   g_object_ref(priv->background_sub);
 
   /* Remove old background and add new to the background container */
-  clutter_container_remove_actor (
-              CLUTTER_CONTAINER (priv->background_container),
-              priv->background);
+  clutter_actor_remove_child (CLUTTER_ACTOR (priv->background_container),
+                              priv->background);
   if (priv->background_sub)
-    clutter_container_remove_actor (
-                CLUTTER_CONTAINER (priv->background_container),
-                CLUTTER_ACTOR(priv->background_sub));
+    {
+      clutter_actor_remove_child (CLUTTER_ACTOR (priv->background_container),
+                                  CLUTTER_ACTOR(priv->background_sub));
+    }
 
-  clutter_container_add_actor (
-              CLUTTER_CONTAINER (priv->background_container),
-              new_bg);
+  clutter_actor_add_child (CLUTTER_ACTOR (priv->background_container), new_bg);
+
   if (new_bg_sub)
-    clutter_container_add_actor (
-                CLUTTER_CONTAINER (priv->background_container),
-                CLUTTER_ACTOR(new_bg_sub));
+    clutter_actor_add_child (CLUTTER_ACTOR (priv->background_container),
+                             CLUTTER_ACTOR(new_bg_sub));
 
   /* Only update blur if we're currently active */
   if (hd_home_view_container_get_current_view(priv->view_container) == priv->id)

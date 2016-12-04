@@ -98,7 +98,7 @@ tidy_scroll_view_dispose (GObject *object)
   TidyScrollViewPrivate *priv = TIDY_SCROLL_VIEW (object)->priv;
 
   if (priv->child)
-    clutter_container_remove_actor (CLUTTER_CONTAINER (object), priv->child);
+    clutter_actor_remove_child (object, priv->child);
 
   if (priv->vscroll)
     {
@@ -385,7 +385,7 @@ child_adjustment_changed_cb (TidyAdjustment *adjustment,
                              ClutterActor   *bar)
 {
   TidyScrollView *scroll;
-  ClutterFixed lower, upper, page_size;
+  gfloat lower, upper, page_size;
 
   scroll = TIDY_SCROLL_VIEW (clutter_actor_get_parent (bar));
 

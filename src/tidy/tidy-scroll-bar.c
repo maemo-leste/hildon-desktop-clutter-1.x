@@ -214,7 +214,7 @@ tidy_scroll_bar_allocate (ClutterActor          *actor,
   if (priv->adjustment)
     {
       ClutterUnit real_width, real_height, min_sizeu, max_sizeu;
-      ClutterFixed lower, upper, page_size, size, increment;
+      gfloat lower, upper, page_size, size, increment;
       ClutterActorBox child_box;
       guint min_size, max_size;
       TidyPadding padding;
@@ -392,7 +392,7 @@ tidy_stylable_iface_init (TidyStylableIface *iface)
 static void
 move_slider (TidyScrollBar *bar, gint x, gint y, gboolean interpolate)
 {
-  ClutterFixed position, lower, upper, page_size;
+  gfloat position, lower, upper, page_size;
   ClutterUnit ux, width;
   
   TidyScrollBarPrivate *priv = bar->priv;
@@ -529,8 +529,8 @@ tidy_scroll_bar_refresh (TidyScrollBar *bar)
   ClutterActor *actor = CLUTTER_ACTOR (bar);
   TidyScrollBarPrivate *priv = bar->priv;
   ClutterUnit width, button_width;
-  ClutterFixed lower, upper, value, page_size;
-  ClutterFixed x, position;
+  gfloat lower, upper, value, page_size;
+  gfloat x, position;
   
   /* Work out scroll handle size */
   tidy_adjustment_get_valuesx (priv->adjustment,

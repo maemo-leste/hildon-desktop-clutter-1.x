@@ -711,7 +711,7 @@ hd_launcher_create_page (HdLauncherItem *item, gpointer data)
   newpage = hd_launcher_page_new ();
 
   clutter_actor_hide (newpage);
-  clutter_container_add_actor (CLUTTER_CONTAINER (self), newpage);
+  clutter_actor_add_child (CLUTTER_ACTOR (self), newpage);
   g_datalist_set_data_full (&priv->pages, hd_launcher_item_get_id (item), newpage, (GDestroyNotify) clutter_actor_destroy);
 }
 
@@ -865,8 +865,7 @@ hd_launcher_populate_tree_finished (HdLauncherTree *tree, gpointer data)
    * so that apps can be correctly put into them.
    */
   ClutterActor *top_page = hd_launcher_page_new ();
-  clutter_container_add_actor (CLUTTER_CONTAINER (launcher),
-                               top_page);
+  clutter_actor_add_child (CLUTTER_ACTOR (launcher), top_page);
   clutter_actor_hide (top_page);
   priv->active_page = NULL;
   g_datalist_set_data_full (&priv->pages, HD_LAUNCHER_ITEM_TOP_CATEGORY, top_page, (GDestroyNotify) clutter_actor_destroy);

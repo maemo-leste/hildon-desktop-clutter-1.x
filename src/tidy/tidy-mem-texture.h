@@ -82,9 +82,9 @@ void tidy_mem_texture_damage(TidyMemTexture *texture,
                              gint x, gint y,
                              gint width, gint height);
 void tidy_mem_texture_set_offset(TidyMemTexture *texture,
-                                 ClutterFixed x, ClutterFixed y);
+                                 gfloat x, gfloat y);
 void tidy_mem_texture_set_scale(TidyMemTexture *texture,
-                                ClutterFixed scale_x, ClutterFixed scale_Y);
+                                gfloat scale_x, gfloat scale_Y);
 
 G_END_DECLS
 
