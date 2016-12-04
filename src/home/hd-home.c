@@ -44,8 +44,7 @@
 #include "hd-title-bar.h"
 
 #include <clutter/clutter.h>
-#include <clutter/x11/clutter-x11.h>
-#include <clutter/clutter-texture.h>
+#include <clutter/clutter.h>
 
 #include <matchbox/core/mb-wm.h>
 

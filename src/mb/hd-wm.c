@@ -38,8 +38,7 @@
 #include <matchbox/core/mb-wm.h>
 #include <matchbox/client-types/mb-wm-client-desktop.h>
 
-#include <clutter/clutter-main.h>
-#include <clutter/x11/clutter-x11.h>
+#include <clutter/clutter.h>
 
 #include <gtk/gtk.h>
 #include <gdk/gdkx.h>

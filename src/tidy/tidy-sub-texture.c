@@ -8,7 +8,7 @@
 #endif
 
 #include "tidy-sub-texture.h"
-#include <clutter/clutter-actor.h>
+#include <clutter/clutter.h>
 
 #include "cogl/cogl.h"
 

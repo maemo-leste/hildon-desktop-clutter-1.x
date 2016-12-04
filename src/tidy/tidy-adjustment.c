@@ -25,8 +25,7 @@
 #endif
 
 #include <glib-object.h>
-#include <clutter/clutter-fixed.h>
-#include <clutter/clutter-timeline.h>
+#include <clutter/clutter.h>
 
 #include "tidy-adjustment.h"
 #include "tidy-marshal.h"

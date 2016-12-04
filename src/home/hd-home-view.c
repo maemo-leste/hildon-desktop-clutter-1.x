@@ -40,7 +40,6 @@
 #include "../tidy/tidy-sub-texture.h"
 
 #include <clutter/clutter.h>
-#include <clutter/x11/clutter-x11.h>
 
 #include <matchbox/core/mb-wm.h>
 

@@ -51,7 +51,6 @@
 #include <X11/extensions/shape.h>
 
 #include <clutter/clutter.h>
-#include <clutter/x11/clutter-x11.h>
 
 #include "../tidy/tidy-blur-group.h"
 

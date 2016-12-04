@@ -8,7 +8,7 @@
 #endif
 
 #include "tidy-mem-texture.h"
-#include <clutter/clutter-actor.h>
+#include <clutter/clutter.h>
 
 #include <string.h>
 #include "cogl/cogl.h"

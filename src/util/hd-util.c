@@ -2,7 +2,7 @@
 #include "hd-util.h"
 
 #include <matchbox/core/mb-wm.h>
-#include <clutter/x11/clutter-x11.h>
+#include <clutter/clutter.h>
 #include <cogl/cogl.h>
 
 #include <X11/Xlib.h>

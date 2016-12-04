@@ -7,7 +7,7 @@
 #endif
 
 #include "tidy-highlight.h"
-#include <clutter/clutter-actor.h>
+#include <clutter/clutter.h>
 
 #include "cogl/cogl.h"
 

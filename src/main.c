@@ -36,10 +36,7 @@
 #include <gtk/gtk.h>
 #include <gdk/gdkx.h>
 #include <hildon/hildon-main.h>
-#include <clutter/clutter-main.h>
-#include <clutter/clutter-stage.h>
-#include <clutter/x11/clutter-x11.h>
-#include <clutter/clutter-container.h>
+#include <clutter/clutter.h>
 #include <libgnomevfs/gnome-vfs.h>
 #include <gdk-pixbuf-xlib/gdk-pixbuf-xlib.h>
 

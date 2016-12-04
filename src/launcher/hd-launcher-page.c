@@ -29,7 +29,6 @@
 
 #include <glib-object.h>
 #include <clutter/clutter.h>
-#include <clutter/clutter-timeline.h>
 #include <tidy/tidy-finger-scroll.h>
 #include <tidy/tidy-scroll-view.h>
 #include <tidy/tidy-scroll-bar.h>

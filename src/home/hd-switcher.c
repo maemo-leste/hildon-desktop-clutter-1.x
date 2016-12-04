@@ -44,7 +44,6 @@
 #include "hd-transition.h"
 
 #include <clutter/clutter.h>
-#include <clutter/x11/clutter-x11.h>
 
 #include <matchbox/core/mb-wm.h>
 #include <matchbox/core/mb-wm-object.h>

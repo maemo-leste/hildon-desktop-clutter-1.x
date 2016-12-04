@@ -7,7 +7,6 @@
 #include <glib.h>
 #include <clutter/clutter.h>
 #include <matchbox/core/mb-wm.h>
-#include <clutter/clutter.h>
 
 #include "mb/hd-atoms.h"
 

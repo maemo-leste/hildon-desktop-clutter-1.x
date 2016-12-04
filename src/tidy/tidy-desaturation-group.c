@@ -14,7 +14,7 @@
 #include "config.h"
 #endif
 
-#include <clutter/clutter-container.h>
+#include <clutter/clutter.h>
 
 #include <cogl/cogl.h>
 

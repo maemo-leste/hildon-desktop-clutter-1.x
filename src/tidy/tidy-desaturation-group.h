@@ -1,8 +1,7 @@
 #ifndef TIDYDESATURATION_H_
 #define TIDYDESATURATION_H_
 
-#include <clutter/clutter-group.h>
-#include <clutter/clutter-types.h>
+#include <clutter/clutter.h>
 #include <cogl/cogl.h>
 
 G_BEGIN_DECLS
