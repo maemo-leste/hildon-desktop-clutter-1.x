@@ -24,6 +24,7 @@ typedef enum
 GType hd_scrollable_group_get_type (void);
 ClutterActor *hd_scrollable_group_new (void);
 
+typedef void (*scroll_viewport_cb_t)(ClutterActor *, gpointer);
 gboolean hd_scrollable_group_is_clicked (HdScrollableGroup * self);
 
 guint hd_scrollable_group_get_viewport_x (HdScrollableGroup * self);
@@ -34,7 +35,7 @@ void hd_scrollable_group_set_viewport_y (HdScrollableGroup * self, guint y);
 void hd_scrollable_group_scroll_viewport (HdScrollableGroup * self,
                                           HdScrollableGroupDirection which,
                                           gboolean is_relative, gint diff,
-                                          ClutterEffectCompleteFunc fun,
+                                          scroll_viewport_cb_t fun,
                                           gpointer funparam);
 void hd_scrollable_group_set_real_estate (HdScrollableGroup * self,
                                           HdScrollableGroupDirection which,
