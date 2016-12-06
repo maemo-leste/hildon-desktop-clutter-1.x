@@ -268,10 +268,10 @@ hd_decor_create_actors(HdDecor *decor)
     {
       const char* title = mb_wm_client_get_name (client);
       if (title && strlen(title)) {
-        ClutterLabel *bar_title;
+        ClutterText *bar_title;
         ClutterColor default_color = { 0xFF, 0xFF, 0xFF, 0xFF };
         char font_name[512];
-        guint w = 0, h = 0;
+        gfloat w = 0, h = 0;
         int screen_width_avail = hd_comp_mgr_get_current_screen_width ();
         if (is_waiting)
           screen_width_avail -= HD_THEME_IMG_PROGRESS_SIZE+
@@ -283,12 +283,12 @@ hd_decor_create_actors(HdDecor *decor)
         /* TODO: handle it so that _NET_WM_NAME has pure UTF-8 and no markup,
          * and _HILDON_WM_NAME has UTF-8 + Pango markup. If _HILDON_WM_NAME
          * is there, it is used, otherwise use the traditional properties. */
-        bar_title = CLUTTER_LABEL(clutter_label_new());
-        clutter_label_set_color(bar_title, &default_color);
+        bar_title = CLUTTER_TEXT(clutter_text_new());
+        clutter_text_set_color(bar_title, &default_color);
 
         /* set Pango markup only if the string is XML fragment */
         if (client->window->name_has_markup)
-          clutter_label_set_use_markup(bar_title, TRUE);
+          clutter_text_set_use_markup(bar_title, TRUE);
 
         decor->title_actor = CLUTTER_ACTOR(bar_title);
         clutter_actor_add_child(CLUTTER_ACTOR(actor), decor->title_actor);
@@ -297,14 +297,14 @@ hd_decor_create_actors(HdDecor *decor)
                   d->font_family ? d->font_family : "Sans",
                   d->font_size ? d->font_size : 18,
                   d->font_units == MBWMXmlFontUnitsPoints ? "" : "px");
-        clutter_label_set_font_name(bar_title, font_name);
-        clutter_label_set_text(bar_title, title);
+        clutter_text_set_font_name(bar_title, font_name);
+        clutter_text_set_text(bar_title, title);
 
         clutter_actor_get_size(CLUTTER_ACTOR(bar_title), &w, &h);
         /* if it's too big, make sure we crop it */
         if (w > screen_width_avail)
           {
-            clutter_label_set_ellipsize(bar_title, PANGO_ELLIPSIZE_NONE);
+            clutter_text_set_ellipsize(bar_title, PANGO_ELLIPSIZE_NONE);
             clutter_actor_set_width(CLUTTER_ACTOR(bar_title),
                                     screen_width_avail);
             clutter_actor_set_clip(CLUTTER_ACTOR(bar_title),
@@ -347,9 +347,9 @@ hd_decor_create_actors(HdDecor *decor)
           HD_THEME_IMG_PROGRESS_SIZE, HD_THEME_IMG_PROGRESS_SIZE);
       /* Get the timeline and set it running */
       decor->progress_timeline = g_object_ref(
-          clutter_timeline_new(HD_THEME_IMG_PROGRESS_FRAMES,
+          clutter_timeline_new(1000 * HD_THEME_IMG_PROGRESS_FRAMES /
                                HD_THEME_IMG_PROGRESS_FPS));
-      clutter_timeline_set_loop(decor->progress_timeline, TRUE);
+      clutter_timeline_set_repeat_count(decor->progress_timeline, -1);
       g_signal_connect (decor->progress_timeline, "new-frame",
                         G_CALLBACK (on_decor_progress_timeline_new_frame),
                         decor->progress_texture);
@@ -361,26 +361,24 @@ void hd_decor_sync(HdDecor *decor)
 {
   MBWMDecor *mbdecor = MB_WM_DECOR(decor);
   MBWindowManagerClient  *client = MB_WM_DECOR(decor)->parent_client;
-  MBWMTheme *theme;
   ClutterActor *actor;
-  ClutterGeometry geom;
   HdTitleBar *bar;
 
-  if (!client || !client->wmref) return;
+  if (!client || !client->wmref)
+    return;
 
   bar = HD_TITLE_BAR(hd_render_manager_get_title_bar());
   if (bar && hd_title_bar_is_title_bar_decor(bar, mbdecor))
     hd_title_bar_update(bar);
 
-  theme = client->wmref->theme;
-
   actor = hd_decor_get_actor(decor);
-  if (!actor) return;
-  clutter_actor_get_geometry(actor, &geom);
+  if (!actor)
+      return;
 
   /* TODO: We probably want to try and adjust the current actors
    * rather than removing them and recreating them. */
   hd_decor_remove_actors(decor);
+
   if (MB_WM_DECOR(decor)->geom.width > 0 &&
       MB_WM_DECOR(decor)->geom.height > 0 &&
       MB_WM_CLIENT_CLIENT_TYPE(client) != MBWMClientTypeApp)

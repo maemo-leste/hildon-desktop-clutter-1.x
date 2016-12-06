@@ -426,7 +426,7 @@ hd_launcher_tile_set_text (HdLauncherTile *tile,
 {
   ClutterColor text_color = {0xFF, 0xFF, 0xFF, 0xFF};
   HdLauncherTilePrivate *priv = HD_LAUNCHER_TILE_GET_PRIVATE (tile);
-  ClutterUnit label_width;
+  gint32 label_width;
   guint label_height, label_width_px;
   gchar *tile_font = NULL;
 
