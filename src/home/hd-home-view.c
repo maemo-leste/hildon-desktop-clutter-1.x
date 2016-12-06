@@ -94,18 +94,18 @@ struct _HdHomeViewPrivate
 
   gboolean                  is_portrait;
 
-  gint                      applet_motion_start_x;
-  gint                      applet_motion_start_y;
-  gint                      applet_motion_start_position_x;
-  gint                      applet_motion_start_position_y;
+  gfloat                    applet_motion_start_x;
+  gfloat                    applet_motion_start_y;
+  gfloat                    applet_motion_start_position_x;
+  gfloat                    applet_motion_start_position_y;
 
   gboolean                  applet_motion_tap : 1;
 
   gboolean                  move_applet_left : 1;
   gboolean                  move_applet_right : 1;
 
-  gint                      pan_gesture_start_x;
-  gint                      pan_gesture_start_y;
+  gfloat                    pan_gesture_start_x;
+  gfloat                    pan_gesture_start_y;
 
   guint                     id;
 
@@ -171,9 +171,9 @@ static void                  applet_data_free (HdHomeViewAppletData *data);
 G_DEFINE_TYPE (HdHomeView, hd_home_view, CLUTTER_TYPE_GROUP);
 
 static void
-hd_home_view_allocate (ClutterActor          *actor,
-                       const ClutterActorBox *box,
-                       gboolean               absolute_origin_changed)
+hd_home_view_allocate (ClutterActor           *self,
+                       const ClutterActorBox  *box,
+                       ClutterAllocationFlags  flags)
 {
 #if 0
   FIXME unused remove
@@ -187,7 +187,7 @@ hd_home_view_allocate (ClutterActor          *actor,
                              priv->background_image_file);
 #endif
 
-  CLUTTER_ACTOR_CLASS (hd_home_view_parent_class)->allocate (actor, box, absolute_origin_changed);
+  CLUTTER_ACTOR_CLASS (hd_home_view_parent_class)->allocate (self, box, flags);
 }
 
 static void
@@ -267,7 +267,7 @@ static gboolean hd_home_view_hidden(HdHomeView *view) {
 static gboolean
 is_button_press_in_gesture_start_area (ClutterEvent *event)
 {
-  g_debug ("%s. (%d, %d)",
+  g_debug ("%s. (%lf, %lf)",
            __FUNCTION__,
            event->button.x, event->button.y);
 
@@ -286,7 +286,7 @@ pan_gesture_motion (ClutterActor *actor,
 {
   HdHomeViewPrivate *priv = view->priv;
 
-  g_debug ("%s. (%d, %d)",
+  g_debug ("%s. (%lf, %lf)",
            __FUNCTION__,
            event->motion.x, event->motion.y);
 
@@ -334,7 +334,7 @@ pressed_on_view (ClutterActor *actor,
 {
   HdHomeViewPrivate *priv = view->priv;
 
-  g_debug ("%s. (%d, %d)",
+  g_debug ("%s. (%lf, %lf)",
            __FUNCTION__,
            event->button.x, event->button.y);
 
@@ -366,7 +366,9 @@ hd_home_view_constructed (GObject *object)
 
   priv->background_container = clutter_group_new ();
   clutter_actor_set_name (priv->background_container, "HdHomeView::background-container");
+#ifdef UPSTREAM_DISABLED
   clutter_actor_set_visibility_detect(priv->background_container, FALSE);
+#endif
   clutter_actor_set_position (priv->background_container, 0, 0);
   clutter_actor_set_size (priv->background_container,
                           HD_COMP_MGR_LANDSCAPE_WIDTH,
@@ -378,7 +380,9 @@ hd_home_view_constructed (GObject *object)
 
   priv->applets_container = clutter_group_new ();
   clutter_actor_set_name (priv->applets_container, "HdHomeView::applets-container");
+#ifdef UPSTREAM_DISABLED
   clutter_actor_set_visibility_detect(priv->applets_container, FALSE);
+#endif
   clutter_actor_set_position (priv->applets_container, 0, 0);
   clutter_actor_set_size (priv->applets_container,
                           HD_COMP_MGR_LANDSCAPE_WIDTH,
@@ -421,7 +425,9 @@ hd_home_view_init (HdHomeView *self)
   clutter_actor_set_name(CLUTTER_ACTOR(self), "HdHomeView");
   /* Explicitly enable maemo-specific visibility detection to cut down
    * spurious paints */
+#ifdef UPSTREAM_DISABLED
   clutter_actor_set_visibility_detect(CLUTTER_ACTOR(self), TRUE);
+#endif
 
   self->priv->gconf_client = gconf_client_get_default ();
 
@@ -678,13 +684,13 @@ load_background_idle (gpointer data)
                   {
                     clutter_texture_set_from_rgb_data(CLUTTER_TEXTURE(new_bg),
                           (guchar*)out_pixels, FALSE,
-                          width, height, width*2, 2, CLUTTER_TEXTURE_FLAG_16_BIT, &error);
+                          width, height, width*2, 2, CLUTTER_TEXTURE_NONE, &error);
                   }
                 else 
                   {
                     clutter_texture_set_from_rgb_data(CLUTTER_TEXTURE(new_bg),
                           (guchar*)out_pixels, FALSE,
-                          width, height, width*2, 2, CLUTTER_TEXTURE_FLAG_16_BIT, &error_portrait);
+                          width, height, width*2, 2, CLUTTER_TEXTURE_NONE, &error_portrait);
                   }
 
                 g_free(out_pixels);
@@ -903,8 +909,7 @@ hd_home_view_applet_motion (ClutterActor       *applet,
 			    HdHomeView         *view)
 {
   HdHomeViewPrivate *priv = view->priv;
-  gint x, y;
-  guint w, h;
+  gfloat x, y, w, h;
 
   /* Check if it is still a tap or already a move */
   if (priv->applet_motion_tap)
@@ -1849,7 +1854,7 @@ static void
 hd_home_view_rotate_background(ClutterActor *actor, GParamSpec *unused,
                                ClutterActor *stage)
 {
-  guint w, h;
+  gfloat w, h;
 
   clutter_actor_get_size (stage, &w, &h);
   if (w < h)
