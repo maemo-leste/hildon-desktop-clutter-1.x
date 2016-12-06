@@ -29,6 +29,7 @@
 
 #include <gdk/gdk.h>
 #include <clutter/clutter.h>
+#include <clutter/x11/clutter-x11.h>
 #include <X11/extensions/shape.h>
 
 #include "tidy/tidy-blur-group.h"
@@ -242,8 +243,8 @@ struct _HdRenderManagerPrivate {
 
   /* We only update the input viewport on idle to attempt to reduce the
    * amount of calls to the X server. */
-  GdkRegion           *current_input_viewport;
-  GdkRegion           *new_input_viewport;
+  cairo_region_t           *current_input_viewport;
+  cairo_region_t           *new_input_viewport;
   guint                input_viewport_callback;
 };
 
@@ -258,7 +259,7 @@ hd_render_manager_captured_event_cb (ClutterActor     *actor,
 
 static void
 on_timeline_blur_new_frame(ClutterTimeline *timeline,
-                           gint frame_num, gpointer data);
+                           guint msecs, gpointer data);
 static void
 on_timeline_blur_completed(ClutterTimeline *timeline, gpointer data);
 
@@ -308,21 +309,19 @@ static inline gboolean range_equal(Range *range)
 
 static void
 press_effect_new_frame (ClutterTimeline *timeline,
-			gint n_frame,
-			HdRenderManagerPrivate *priv)
+                        guint msecs,
+                        HdRenderManagerPrivate *priv)
 {
 #define PRESS_SCALE 0.005
 #define PRESS_ANCHOR 0.0025
-   gfloat time = (gfloat)n_frame / (gfloat)clutter_get_default_frame_rate ();
+   gfloat time = (gfloat)msecs / (gfloat)clutter_get_default_frame_rate ();
    gdouble sx, sy;
-   gint ax, ay;
-   ClutterFixed w,h;
+   gfloat ax, ay;
+   gfloat w,h;
    ClutterActor *stage = CLUTTER_ACTOR (render_manager);
 
-   w = clutter_qmulx (CLUTTER_INT_TO_FIXED (hd_comp_mgr_get_current_screen_width()),
-		      CLUTTER_FLOAT_TO_FIXED (PRESS_ANCHOR));
-   h = clutter_qmulx (CLUTTER_INT_TO_FIXED (hd_comp_mgr_get_current_screen_width()),
-		      CLUTTER_FLOAT_TO_FIXED (PRESS_ANCHOR));
+   w = hd_comp_mgr_get_current_screen_width() * PRESS_ANCHOR;
+   h = hd_comp_mgr_get_current_screen_width() * PRESS_ANCHOR;
    
    clutter_actor_get_scale (stage, &sx, &sy);
    clutter_actor_get_anchor_point (stage, &ax, &ay);
@@ -330,24 +329,18 @@ press_effect_new_frame (ClutterTimeline *timeline,
    if (time <= 0.15)
      {
        clutter_actor_set_scale (stage, sx - PRESS_SCALE, sy - PRESS_SCALE);
-
-       clutter_actor_set_anchor_point (stage, 
-				       ax - CLUTTER_FIXED_TO_INT (w),
-				       ay - CLUTTER_FIXED_TO_INT (h));
+       clutter_actor_set_anchor_point (stage, ax - w, ay - h);
      }
    else if (sx < 1)
      {
        clutter_actor_set_scale (stage, sx + PRESS_SCALE, sy + PRESS_SCALE);
-
-       clutter_actor_set_anchor_point (stage,
-				       ax + CLUTTER_FIXED_TO_INT (w),
-				       ay + CLUTTER_FIXED_TO_INT (h));
+       clutter_actor_set_anchor_point (stage, ax + w, ay + h);
      }
 
-   if (n_frame == clutter_timeline_get_n_frames (priv->timeline_press))
+   if (msecs == clutter_timeline_get_duration (priv->timeline_press))
      {
-	priv->press_effect = FALSE;
-	clutter_actor_set_anchor_point (stage, 0, 0);
+       priv->press_effect = FALSE;
+       clutter_actor_set_anchor_point (stage, 0, 0);
      }
 
    clutter_actor_queue_redraw (stage);
@@ -377,7 +370,9 @@ hd_render_manager_create (HdCompMgr *hdcompmgr,
   /* Task switcher widget: anchor it at the centre so it is zoomed in
    * the middle when blurred. */
   priv->task_nav = task_nav;
+#ifdef UPSTREAM_DISABLED
   clutter_actor_set_visibility_detect(CLUTTER_ACTOR(priv->task_nav), FALSE);
+#endif
   clutter_actor_set_position(CLUTTER_ACTOR(priv->task_nav), 0, 0);
   clutter_actor_set_size (CLUTTER_ACTOR(priv->task_nav),
                           HD_COMP_MGR_LANDSCAPE_WIDTH,
@@ -508,7 +503,9 @@ hd_render_manager_init (HdRenderManager *self)
   priv->home_blur = TIDY_BLUR_GROUP(tidy_blur_group_new());
   clutter_actor_set_name(CLUTTER_ACTOR(priv->home_blur),
                          "HdRenderManager:home_blur");
+#ifdef UPSTREAM_DISABLED
   clutter_actor_set_visibility_detect(CLUTTER_ACTOR(priv->home_blur), FALSE);
+#endif
   tidy_blur_group_set_use_alpha(CLUTTER_ACTOR(priv->home_blur), FALSE);
   tidy_blur_group_set_use_mirror(CLUTTER_ACTOR(priv->home_blur), TRUE);
   g_signal_connect_swapped(stage, "notify::allocation",
@@ -521,7 +518,9 @@ hd_render_manager_init (HdRenderManager *self)
                          "HdRenderManager:app_top");
   g_signal_connect_swapped(stage, "notify::allocation",
                            G_CALLBACK(stage_allocation_changed), priv->app_top);
+#ifdef UPSTREAM_DISABLED
   clutter_actor_set_visibility_detect(CLUTTER_ACTOR(priv->app_top), FALSE);
+#endif
   clutter_actor_add_child(CLUTTER_ACTOR(self),
                           CLUTTER_ACTOR(priv->app_top));
 
@@ -530,7 +529,9 @@ hd_render_manager_init (HdRenderManager *self)
                          "HdRenderManager:front");
   g_signal_connect_swapped(stage, "notify::allocation",
                            G_CALLBACK(stage_allocation_changed), priv->front);
+#ifdef UPSTREAM_DISABLED
   clutter_actor_set_visibility_detect(CLUTTER_ACTOR(priv->front), FALSE);
+#endif
   clutter_actor_add_child(CLUTTER_ACTOR(self),
                           CLUTTER_ACTOR(priv->front));
 
@@ -539,9 +540,11 @@ hd_render_manager_init (HdRenderManager *self)
                          "HdRenderManager:blur_front");
   g_signal_connect_swapped(stage, "notify::allocation",
                            G_CALLBACK(stage_allocation_changed), priv->blur_front);
+#ifdef UPSTREAM_DISABLED
   clutter_actor_set_visibility_detect(CLUTTER_ACTOR(priv->blur_front), FALSE);
+#endif
   g_object_set(priv->blur_front, "show_on_set_parent", FALSE, NULL);
-  clutter_actor_add_child(CLUTTER_CONTAINER(priv->home_blur),
+  clutter_actor_add_child(CLUTTER_ACTOR(priv->home_blur),
                           CLUTTER_ACTOR(priv->blur_front));
 
   /* Animation stuff */
@@ -554,7 +557,7 @@ hd_render_manager_init (HdRenderManager *self)
   range_set(&priv->applets_opacity, 0);
   range_set(&priv->applets_zoom, 1);
 
-  priv->timeline_press = clutter_timeline_new_for_duration (750);
+  priv->timeline_press = clutter_timeline_new (750);
 
   g_signal_connect (priv->timeline_press,
 		    "new-frame",
@@ -562,7 +565,7 @@ hd_render_manager_init (HdRenderManager *self)
 		    priv);
   priv->press_effect = FALSE;
 
-  priv->timeline_blur = clutter_timeline_new_for_duration(250);
+  priv->timeline_blur = clutter_timeline_new(250);
   g_signal_connect (priv->timeline_blur, "new-frame",
                     G_CALLBACK (on_timeline_blur_new_frame), self);
   g_signal_connect (priv->timeline_blur, "completed",
@@ -589,7 +592,7 @@ stage_allocation_changed(ClutterActor *actor, GParamSpec *unused,
 
 static void
 on_timeline_blur_new_frame(ClutterTimeline *timeline,
-                           gint frame_num, gpointer data)
+                           guint msecs, gpointer data)
 {
   HdRenderManagerPrivate *priv;
   float amt;
@@ -598,7 +601,7 @@ on_timeline_blur_new_frame(ClutterTimeline *timeline,
 
   priv = render_manager->priv;
 
-  amt = frame_num / (float)clutter_timeline_get_n_frames(timeline);
+  amt = msecs / (float)clutter_timeline_get_duration(timeline);
 
   range_interpolate(&priv->home_radius, amt);
   range_interpolate(&priv->home_zoom, amt);
@@ -642,6 +645,7 @@ on_timeline_blur_new_frame(ClutterTimeline *timeline,
     }
   else
     clutter_actor_show(CLUTTER_ACTOR(priv->task_nav));
+
   clutter_actor_set_scale(CLUTTER_ACTOR(priv->task_nav),
                           priv->task_nav_zoom.current,
                           priv->task_nav_zoom.current);
@@ -1143,10 +1147,10 @@ void hd_render_manager_stop_transition()
 
   if (priv->timeline_playing)
     {
-      guint frames;
+      guint duration;
       clutter_timeline_stop(priv->timeline_blur);
-      frames = clutter_timeline_get_n_frames(priv->timeline_blur);
-      on_timeline_blur_new_frame(priv->timeline_blur, frames, render_manager);
+      duration = clutter_timeline_get_duration(priv->timeline_blur);
+      on_timeline_blur_new_frame(priv->timeline_blur, duration, render_manager);
       on_timeline_blur_completed(priv->timeline_blur, render_manager);
     }
 
@@ -1654,8 +1658,8 @@ void hd_render_manager_set_state(HDRMStateEnum state)
                   /* Make sure @cmgrcc stays around as long as needed. */
                   mb_wm_object_ref (MB_WM_OBJECT (cmgrcc));
                   hd_task_navigator_zoom_out (priv->task_nav, actor,
-                                             (ClutterEffectCompleteFunc)zoom_out_completed,
-                                             cmgrcc);
+                                              G_CALLBACK(zoom_out_completed),
+                                              cmgrcc);
                 }
               else if (
                        (oldstate == HDRM_STATE_NON_COMPOSITED && state == HDRM_STATE_TASK_NAV_PORTRAIT) ||
@@ -1845,7 +1849,7 @@ void hd_render_manager_set_state(HDRMStateEnum state)
           range_set(&priv->home_saturation, priv->home_saturation.b);
           range_set(&priv->home_radius, priv->home_radius.b);
           on_timeline_blur_new_frame(priv->timeline_blur,
-              clutter_timeline_get_current_frame(priv->timeline_blur), NULL);
+              clutter_timeline_get_elapsed_time(priv->timeline_blur), NULL);
         }
 
       if (STATE_IS_NON_COMP (state))
@@ -2238,8 +2242,8 @@ void hd_render_manager_restack()
 #endif /*STACKING_DEBUG*/
                      clutter_actor_raise_top(actor);
                      if (live_bg_actor && c->desktop == curr_view
-                         && MB_WM_CLIENT_CLIENT_TYPE (c)
-                                             == HdWmClientTypeHomeApplet)
+                         && MB_WM_CLIENT_CLIENT_TYPE (c)==
+                         (MBWMClientType)HdWmClientTypeHomeApplet)
                        clutter_actor_raise_top (live_bg_actor);
                     }
 #if STACKING_DEBUG
@@ -2282,13 +2286,15 @@ void hd_render_manager_restack()
           {
             ClutterGeometry geo = {0};
             gboolean maximized;
+            MBGeometry *mg;
 
             hd_render_manager_get_geo_for_current_screen(child, &geo);
             if (!hd_render_manager_clip_geo(&geo))
               /* It's neiteher maximized nor @app_top, it doesn't exist. */
               continue;
-            maximized = hd_comp_mgr_client_is_maximized (
-                                        *((MBGeometry*)((void*)&geo)));
+
+            mg = (MBGeometry*)((void*)&geo);
+            maximized = hd_comp_mgr_client_is_maximized (*mg);
 
             /* If we are in HOME_EDIT_DLG state, the background is always
              * blurred, and if something is maximised it MUST be a dialog
@@ -3121,7 +3127,7 @@ void hd_render_manager_remove_input_blocker() {
    MBWindowManager        *wm   = MB_WM_COMP_MGR(priv->comp_mgr)->wm;
    Window        win = None;
    Window        clwin;
-   GdkRectangle *rectangles;
+   cairo_rectangle_int_t *rectangles;
    XRectangle   *xrectangles = 0;
    gint          i,n_rectangles;
    XserverRegion region;
@@ -3130,18 +3136,20 @@ void hd_render_manager_remove_input_blocker() {
    /* If we're not actually changing the contents of the viewport, just
       return now */
    if (priv->current_input_viewport &&
-       gdk_region_equal(priv->new_input_viewport,
+       cairo_region_equal(priv->new_input_viewport,
                         priv->current_input_viewport))
      return FALSE;
 
-   /* Create an XFixes region from the GdkRegion. We use GdkRegion because
+   /* Create an XFixes region from the cairo_region_t. We use cairo_region_t because
     * we can check equality easily with it. */
-   gdk_region_get_rectangles (priv->new_input_viewport,
-                              &rectangles,
-                              &n_rectangles);
+   n_rectangles = cairo_region_num_rectangles (priv->new_input_viewport);
+   rectangles = g_new (cairo_rectangle_int_t, n_rectangles);
+
    if (n_rectangles>0)
      xrectangles = g_malloc(sizeof(XRectangle) * n_rectangles);
+
    for (i=0;i<n_rectangles;i++) {
+     cairo_region_get_rectangle (priv->new_input_viewport, i, &rectangles[i]);
      xrectangles[i].x = rectangles[i].x;
      xrectangles[i].y = rectangles[i].y;
      xrectangles[i].width = rectangles[i].width;
@@ -3171,7 +3179,7 @@ void hd_render_manager_remove_input_blocker() {
 
     /* Update our current viewport field */
     if (priv->current_input_viewport)
-      gdk_region_destroy(priv->current_input_viewport);
+      cairo_region_destroy(priv->current_input_viewport);
     priv->current_input_viewport = priv->new_input_viewport;
     priv->new_input_viewport = 0;
 
@@ -3182,13 +3190,13 @@ void hd_render_manager_remove_input_blocker() {
   * and overlay windows to region (queues an update on idle, which updates
   * only if there has been a change */
  static void
- hd_render_manager_set_compositor_input_viewport (GdkRegion *region)
+ hd_render_manager_set_compositor_input_viewport (cairo_region_t *region)
  {
    HdRenderManagerPrivate *priv = render_manager->priv;
 
    /*  */
    if (priv->new_input_viewport)
-     gdk_region_destroy(priv->new_input_viewport);
+     cairo_region_destroy(priv->new_input_viewport);
    priv->new_input_viewport = region;
 
    /* Add idle callback. This MUST be higher priority than Clutter timelines
@@ -3204,20 +3212,20 @@ void hd_render_manager_remove_input_blocker() {
  /* Creates a region for anything of a type in client_mask which is
   * above the desktop - we can use this to mask off buttons by notifications,
   * etc. */
- static GdkRegion*
+ static cairo_region_t*
  hd_render_manager_get_foreground_region(MBWMClientType client_mask)
  {
    MBWindowManagerClient *fg_client;
    HdRenderManagerPrivate *priv = render_manager->priv;
    MBWindowManager *wm = MB_WM_COMP_MGR(priv->comp_mgr)->wm;
-   GdkRegion *region = gdk_region_new();
+   cairo_region_t *region = cairo_region_create();
 
    fg_client = wm->desktop ? wm->desktop->stacked_above : 0;
    while (fg_client)
      {
        if (MB_WM_CLIENT_CLIENT_TYPE(fg_client) & client_mask)
-         gdk_region_union_with_rect(region,
-             (GdkRectangle*)(void*)&fg_client->window->geometry);
+         cairo_region_union_rectangle(region,
+             (cairo_rectangle_int_t *)(void*)&fg_client->window->geometry);
 
        fg_client = fg_client->stacked_above;
      }
@@ -3229,7 +3237,7 @@ void hd_render_manager_remove_input_blocker() {
  hd_render_manager_set_input_viewport()
  {
    HdRenderManagerPrivate *priv = render_manager->priv;
-   GdkRegion         *region = gdk_region_new();
+   cairo_region_t         *region = cairo_region_create();
    MBWindowManager   *wm = MB_WM_COMP_MGR (priv->comp_mgr)->wm;
    MBWindowManagerClient *c;
 
@@ -3251,10 +3259,10 @@ void hd_render_manager_remove_input_blocker() {
            if ((hd_title_bar_get_state(priv->title_bar) & HDTB_VIS_BTN_LEFT_MASK)
                && hd_render_manager_actor_is_visible(CLUTTER_ACTOR(priv->title_bar)))
              {
-               GdkRectangle rect = {0,0,
+               cairo_rectangle_int_t rect = {0,0,
                    hd_title_bar_get_button_width(priv->title_bar),
                    HD_COMP_MGR_TOP_MARGIN};
-               gdk_region_union_with_rect(region, &rect);
+               cairo_region_union_rectangle(region, &rect);
              }
 
            /* RIGHT button: We have to ignore this in app mode, because matchbox
@@ -3262,11 +3270,11 @@ void hd_render_manager_remove_input_blocker() {
            if ((hd_title_bar_get_state(priv->title_bar) & HDTB_VIS_BTN_RIGHT_MASK) &&
                !STATE_IS_APP(priv->state))
              {
-               GdkRectangle rect = {0,0,
+               cairo_rectangle_int_t rect = {0, 0,
                    hd_title_bar_get_button_width(priv->title_bar),
                    HD_COMP_MGR_TOP_MARGIN };
                rect.x = hd_comp_mgr_get_current_screen_width() - rect.width;
-               gdk_region_union_with_rect(region, &rect);
+               cairo_region_union_rectangle(region, &rect);
              }
 
             /* Edit button... */
@@ -3275,7 +3283,7 @@ void hd_render_manager_remove_input_blocker() {
                 ClutterGeometry geom;
                 clutter_actor_get_geometry(
                         hd_home_get_edit_button(priv->home), &geom);
-                gdk_region_union_with_rect(region, (GdkRectangle*)(void*)&geom);
+                cairo_region_union_rectangle(region, (cairo_rectangle_int_t*)(void*)&geom);
               }
 
            /* Block status area?  If so refer to the client geometry,
@@ -3297,18 +3305,18 @@ void hd_render_manager_remove_input_blocker() {
              {
                ClutterGeometry geom;
                clutter_actor_get_geometry(priv->status_area, &geom);
-               gdk_region_union_with_rect(region, (GdkRectangle*)(void*)&geom);
+               cairo_region_union_rectangle(region, (cairo_rectangle_int_t*)(void*)&geom);
              }
          }
        else
          {
            /* g_warning ("%s: get the whole screen!", __func__); */
-           GdkRectangle screen = {
+           cairo_rectangle_int_t screen = {
                0, 0,
                hd_comp_mgr_get_current_screen_width (),
                hd_comp_mgr_get_current_screen_height ()
                };
-           gdk_region_union_with_rect(region, &screen);
+           cairo_region_union_rectangle(region, &screen);
          }
 
 
@@ -3317,20 +3325,20 @@ void hd_render_manager_remove_input_blocker() {
         * position of showing any of them */
        if (STATE_UNGRAB_NOTES(hd_render_manager_get_state()))
          {
-           GdkRegion *subtract = hd_render_manager_get_foreground_region(
+           cairo_region_t *subtract = hd_render_manager_get_foreground_region(
                MBWMClientTypeNote | MBWMClientTypeDialog);
-           gdk_region_subtract (region, subtract);
-           gdk_region_destroy (subtract);
+           cairo_region_subtract (region, subtract);
+           cairo_region_destroy (subtract);
          }
 
        /*
         * We need the events initiated on the applets.
         */
        if (STATE_NEED_DESKTOP(hd_render_manager_get_state())) {
-         GdkRegion *unionregion = hd_render_manager_get_foreground_region(
+         cairo_region_t *unionregion = hd_render_manager_get_foreground_region(
                HdWmClientTypeHomeApplet);
-           gdk_region_union (region, unionregion);
-           gdk_region_destroy (unionregion);
+           cairo_region_union (region, unionregion);
+           cairo_region_destroy (unionregion);
        }
      }
 
@@ -3340,8 +3348,8 @@ void hd_render_manager_remove_input_blocker() {
    for (c = wm->stack_top; c && c != wm->desktop; c = c->stacked_below)
      if (HD_IS_INCOMING_EVENT_PREVIEW_NOTE (c)
          && hd_render_manager_is_client_visible (c))
-       gdk_region_union_with_rect(region,
-                                  (GdkRectangle*)(void*)&c->frame_geometry);
+       cairo_region_union_rectangle(region,
+                             (cairo_rectangle_int_t*)(void*)&c->frame_geometry);
 
    /* Now queue an update with this new region */
    hd_render_manager_set_compositor_input_viewport(region);
@@ -3353,28 +3361,30 @@ void hd_render_manager_remove_input_blocker() {
  hd_render_manager_flip_input_viewport()
  {
    HdRenderManagerPrivate *priv = render_manager->priv;
-   GdkRectangle *inputshape;
+   cairo_rectangle_int_t *inputshape;
    int i, ninputshapes;
-   GdkRegion *region;
+   cairo_region_t *region;
 
    /* We should already have a viewport here, but just check */
    if (!priv->current_input_viewport)
      return;
 
    /* Get our current input viewport and rotate it */
-   gdk_region_get_rectangles(priv->current_input_viewport,
-                             &inputshape, &ninputshapes);
-   region = gdk_region_new();
+   ninputshapes = cairo_region_num_rectangles(priv->current_input_viewport);
+   inputshape = g_new (cairo_rectangle_int_t, ninputshapes);
+   region = cairo_region_create();
+
    for (i = 0; i < ninputshapes; i++)
      {
-       GdkRectangle new_inputshape;
-
+       cairo_rectangle_int_t new_inputshape;
+       cairo_region_get_rectangle (priv->current_input_viewport, i, &inputshape[i]);
        new_inputshape.x = inputshape[i].y;
        new_inputshape.y = inputshape[i].x;
        new_inputshape.width = inputshape[i].height;
        new_inputshape.height = inputshape[i].width;
-       gdk_region_union_with_rect(region, &new_inputshape);
+       cairo_region_union_rectangle(region, &new_inputshape);
      }
+
    g_free(inputshape);
 
    /* Set the new viewport */
