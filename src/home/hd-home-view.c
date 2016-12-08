@@ -618,6 +618,7 @@ load_background_idle (gpointer data)
       }
     else
       {
+#ifdef MAEMO_CHANGES
         GdkPixbuf        *pixbuf;
 
         /* Load image directly. We actually want to dither it on the fly to
@@ -697,6 +698,9 @@ load_background_idle (gpointer data)
               }
             g_object_unref (pixbuf);
           }
+#else
+      new_bg = clutter_texture_new_from_file (cached_background_image_file, &error);
+#endif
       }
 
     if(!i) 
