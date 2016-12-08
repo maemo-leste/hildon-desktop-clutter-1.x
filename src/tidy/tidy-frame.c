@@ -59,13 +59,13 @@ G_DEFINE_TYPE_WITH_CODE (TidyFrame, tidy_frame, TIDY_TYPE_ACTOR,
 
 static void
 tidy_frame_get_preferred_width (ClutterActor *actor,
-                                ClutterUnit   for_height,
-                                ClutterUnit  *min_width_p,
-                                ClutterUnit  *natural_width_p)
+                                gfloat   for_height,
+                                gfloat  *min_width_p,
+                                gfloat  *natural_width_p)
 {
   TidyFramePrivate *priv = TIDY_FRAME (actor)->priv;
   TidyPadding padding = { 0, };
-  ClutterUnit min_width, natural_width;
+  gfloat min_width, natural_width;
 
   tidy_actor_get_padding (TIDY_ACTOR (actor), &padding);
 
@@ -74,7 +74,7 @@ tidy_frame_get_preferred_width (ClutterActor *actor,
 
   if (priv->child)
     {
-      ClutterUnit child_min, child_natural;
+      gfloat child_min, child_natural;
 
       clutter_actor_get_preferred_width (priv->child, for_height,
                                          &child_min,
@@ -93,13 +93,13 @@ tidy_frame_get_preferred_width (ClutterActor *actor,
 
 static void
 tidy_frame_get_preferred_height (ClutterActor *actor,
-                                 ClutterUnit   for_width,
-                                 ClutterUnit  *min_height_p,
-                                 ClutterUnit  *natural_height_p)
+                                 gfloat   for_width,
+                                 gfloat  *min_height_p,
+                                 gfloat  *natural_height_p)
 {
   TidyFramePrivate *priv = TIDY_FRAME (actor)->priv;
   TidyPadding padding = { 0, };
-  ClutterUnit min_height, natural_height;
+  gfloat min_height, natural_height;
 
   tidy_actor_get_padding (TIDY_ACTOR (actor), &padding);
 
@@ -108,7 +108,7 @@ tidy_frame_get_preferred_height (ClutterActor *actor,
 
   if (priv->child)
     {
-      ClutterUnit child_min, child_natural;
+      gfloat child_min, child_natural;
 
       clutter_actor_get_preferred_height (priv->child, for_width,
                                           &child_min,
@@ -152,8 +152,8 @@ tidy_frame_allocate (ClutterActor          *actor,
     {
       TidyPadding padding = { 0, };
       gfloat x_align, y_align;
-      ClutterUnit available_width, available_height;
-      ClutterUnit child_width, child_height;
+      gfloat available_width, available_height;
+      gfloat child_width, child_height;
       ClutterActorBox child_box = { 0, };
 
       tidy_actor_get_padding (TIDY_ACTOR (actor), &padding);
@@ -223,8 +223,8 @@ tidy_frame_paint (ClutterActor *actor)
 
       clutter_actor_get_allocation_box (actor, &allocation);
 
-      w = CLUTTER_UNITS_TO_DEVICE (allocation.x2 - allocation.x1);
-      h = CLUTTER_UNITS_TO_DEVICE (allocation.y2 - allocation.y1);
+      w = allocation.x2 - allocation.x1;
+      h = allocation.y2 - allocation.y1;
 
       cogl_color (bg_color);
       cogl_rectangle (0, 0, w, h);

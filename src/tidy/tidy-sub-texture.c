@@ -8,8 +8,7 @@
 #endif
 
 #include "tidy-sub-texture.h"
-#include <clutter/clutter.h>
-
+#include "tidy-util.h"
 #include "cogl/cogl.h"
 
 enum
@@ -34,9 +33,9 @@ struct _TidySubTexturePrivate
 
 static void
 tidy_sub_texture_get_preferred_width (ClutterActor *self,
-                                           ClutterUnit   for_height,
-                                           ClutterUnit  *min_width_p,
-                                           ClutterUnit  *natural_width_p)
+                                           gfloat   for_height,
+                                           gfloat  *min_width_p,
+                                           gfloat  *natural_width_p)
 {
   TidySubTexturePrivate *priv = TIDY_SUB_TEXTURE (self)->priv;
   ClutterActor *parent_texture;
@@ -68,9 +67,9 @@ tidy_sub_texture_get_preferred_width (ClutterActor *self,
 
 static void
 tidy_sub_texture_get_preferred_height (ClutterActor *self,
-                                            ClutterUnit   for_width,
-                                            ClutterUnit  *min_height_p,
-                                            ClutterUnit  *natural_height_p)
+                                            gfloat   for_width,
+                                            gfloat  *min_height_p,
+                                            gfloat  *natural_height_p)
 {
   TidySubTexturePrivate *priv = TIDY_SUB_TEXTURE (self)->priv;
   ClutterActor *parent_texture;
@@ -106,11 +105,12 @@ tidy_sub_texture_paint (ClutterActor *self)
   TidySubTexturePrivate  *priv;
   ClutterActor                *parent_texture;
   gint                         x_1, y_1, x_2, y_2, width, height;
-  ClutterColor                 col = { 0xff, 0xff, 0xff, 0xff };
+  CoglColor                 col;
   CoglHandle                   cogl_texture;
   gfloat                 t_x, t_y, t_w, t_h;
   guint                        tex_width, tex_height;
   ClutterGeometry              region;
+  ClutterActorBox box;
 
   priv = TIDY_SUB_TEXTURE (self)->priv;
 
@@ -125,10 +125,15 @@ tidy_sub_texture_paint (ClutterActor *self)
   if (!CLUTTER_ACTOR_IS_REALIZED (parent_texture))
     clutter_actor_realize (parent_texture);
 
-  col.alpha = clutter_actor_get_paint_opacity (self);
-  cogl_color (&col);
-
-  clutter_actor_get_allocation_coords (self, &x_1, &y_1, &x_2, &y_2);
+  tidy_set_cogl_color(&col, 0xff, 0xff, 0xff,
+                      clutter_actor_get_paint_opacity (self));
+  cogl_set_source_color (&col);
+/* FIXME */
+  clutter_actor_get_allocation_box(self, &box);
+  x_1 = box.x1;
+  y_1 = box.y1;
+  x_2 = box.x2;
+  y_2 = box.y2;
   width = x_2 - x_1;
   height = y_2 - y_1;
 
@@ -150,20 +155,21 @@ tidy_sub_texture_paint (ClutterActor *self)
       region.height = tex_height;
     }
 
-  t_x = CLUTTER_FLOAT_TO_FIXED(region.x / (float)tex_width);
-  t_y = CLUTTER_FLOAT_TO_FIXED(region.y / (float)tex_height);
-  t_w = CLUTTER_FLOAT_TO_FIXED(region.width / (float)tex_width);
-  t_h = CLUTTER_FLOAT_TO_FIXED(region.height / (float)tex_height);
+  t_x = region.x / (float)tex_width;
+  t_y = region.y / (float)tex_height;
+  t_w = region.width / (float)tex_width;
+  t_h = region.height / (float)tex_height;
 
   /* Parent paint translated us into position, so we just
    * paint at 0,0 */
   if (!priv->tiled)
     {
       // normal draw if not tiled...
-      cogl_texture_rectangle (cogl_texture, 0, 0,
-                              CLUTTER_INT_TO_FIXED (width),
-                              CLUTTER_INT_TO_FIXED (height),
-                              t_x, t_y, t_x+t_w, t_y+t_h);
+      cogl_set_source_texture (cogl_texture);
+      cogl_rectangle_with_texture_coords (0, 0,
+                                          width,
+                                          height,
+                                          t_x, t_y, t_x+t_w, t_y+t_h);
     }
   else
     {
@@ -197,25 +203,25 @@ tidy_sub_texture_paint (ClutterActor *self)
                 if (y+h > height)
                   h = height-y;
 
-                rect[0].x = CLUTTER_INT_TO_FIXED(x);
-                rect[0].y = CLUTTER_INT_TO_FIXED(y);
+                rect[0].x = x;
+                rect[0].y = y;
                 rect[0].z = 0;
                 rect[0].tx = t_x;
                 rect[0].ty = t_y;
-                rect[1].x = CLUTTER_INT_TO_FIXED(x+w);
-                rect[1].y = CLUTTER_INT_TO_FIXED(y);
+                rect[1].x = x + w;
+                rect[1].y = y;
                 rect[1].z = 0;
                 rect[1].tx = t_x+(t_w*w/region.width);
                 rect[1].ty = t_y;
-                rect[2].x = CLUTTER_INT_TO_FIXED(x+w);
-                rect[2].y = CLUTTER_INT_TO_FIXED(y+h);
+                rect[2].x = x + w;
+                rect[2].y = y + h;
                 rect[2].z = 0;
                 rect[2].tx = t_x+(t_w*w/region.width);
                 rect[2].ty = t_y+(t_h*h/region.height);
                 rect[3] = rect[0];
                 rect[4] = rect[2];
-                rect[5].x = CLUTTER_INT_TO_FIXED(x);
-                rect[5].y = CLUTTER_INT_TO_FIXED(y+h);
+                rect[5].x = x;
+                rect[5].y = y + h;
                 rect[5].z = 0;
                 rect[5].tx = t_x;
                 rect[5].ty = t_y+(t_h*h/region.height);
@@ -225,10 +231,8 @@ tidy_sub_texture_paint (ClutterActor *self)
               }
 
           /* render! */
-          cogl_texture_triangles (cogl_texture,
-                                  6*c,
-                                  verts,
-                                  FALSE);
+          cogl_set_source_texture(cogl_texture);
+          cogl_polygon (verts, 6*c, FALSE);
           g_free(verts);
         }
     }

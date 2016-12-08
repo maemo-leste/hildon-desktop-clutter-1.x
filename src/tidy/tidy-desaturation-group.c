@@ -178,7 +178,7 @@ static void
 tidy_desaturation_group_allocate_textures (TidyDesaturationGroup *self)
 {
   TidyDesaturationGroupPrivate *priv = self->priv;
-  guint tex_width, tex_height;
+  gfloat tex_width, tex_height;
 
 #ifdef __i386__
   if (!cogl_features_available(COGL_FEATURE_OFFSCREEN))
@@ -200,9 +200,11 @@ tidy_desaturation_group_allocate_textures (TidyDesaturationGroup *self)
   clutter_actor_get_size(CLUTTER_ACTOR(self), &tex_width, &tex_height);
 
   priv->tex_a = cogl_texture_new_with_size(
-            tex_width, tex_height, 0, FALSE /* mipmap */,
+            tex_width, tex_height, COGL_TEXTURE_NO_AUTO_MIPMAP,
             COGL_PIXEL_FORMAT_RGBA_8888);
+#ifdef UPSTREAM_DISABLED
   cogl_texture_set_filters(priv->tex_a, CGL_NEAREST, CGL_NEAREST);
+#endif
   priv->fbo_a = cogl_offscreen_new_to_texture(priv->tex_a);
 
   priv->current_desaturation_step = 0;
@@ -248,7 +250,7 @@ recursive_set_linear_texture_filter(ClutterActor *actor, GArray *filters)
 
       quality = clutter_texture_get_filter_quality(tex);
       g_array_append_val(filters, quality);
-      clutter_texture_set_filter_quality(tex, GL_LINEAR);
+      clutter_texture_set_filter_quality(tex, CLUTTER_TEXTURE_QUALITY_LOW);
     }
 }
 
@@ -288,8 +290,8 @@ tidy_desaturation_group_paint (ClutterActor *actor)
     return;
 
   clutter_actor_get_allocation_box(actor, &box);
-  width  = CLUTTER_UNITS_TO_DEVICE(box.x2 - box.x1);
-  height = CLUTTER_UNITS_TO_DEVICE(box.y2 - box.y1);
+  width  = box.x2 - box.x1; /* FIXME */
+  height = box.y2 - box.y1;
 
   /* If we are rendering normally then shortcut all this, and
    just render directly without the texture */
@@ -317,10 +319,11 @@ tidy_desaturation_group_paint (ClutterActor *actor)
       cogl_push_matrix();
       tidy_util_cogl_push_offscreen_buffer(priv->fbo_a);
 
-      cogl_scale(CFX_ONE*tex_width/width, CFX_ONE*tex_height/height);
-
+      cogl_scale(1.0*tex_width/width, 1.0*tex_height/height, 1.0); /* FIXME */
+#ifdef UPSTREAM_DISABLED
       cogl_paint_init(&bgcol);
       cogl_color (&white);
+#endif
       /* Actually do the drawing of the children, but ensure that they are
        * all linear sampled so they are smoothly interpolated. Restore after. */
       filters = g_array_new(FALSE, FALSE, sizeof(ClutterTextureQuality));
@@ -341,10 +344,10 @@ tidy_desaturation_group_paint (ClutterActor *actor)
     clutter_actor_queue_redraw(actor);
 
   gfloat mx, my, zx, zy;
-  mx = CLUTTER_INT_TO_FIXED (width) / 2;
-  my = CLUTTER_INT_TO_FIXED (height) / 2;
-  zx = CLUTTER_FLOAT_TO_FIXED(width * 0.5f);
-  zy = CLUTTER_FLOAT_TO_FIXED(height * 0.5f);
+  mx = width / 2.0;
+  my = height / 2.0;
+  zx = width * 0.5f;
+  zy = height * 0.5f;
 
   /* Render what we've desaturated to the screen */
   col.red = 255;
@@ -358,24 +361,30 @@ tidy_desaturation_group_paint (ClutterActor *actor)
     {
 
       clutter_shader_set_is_enabled (priv->shader_saturate, !priv->undo_desaturation);
-      if (!priv->undo_desaturation)        
-        clutter_shader_set_uniform_1f (priv->shader_saturate, "saturation",
-                                       0);
-    }
+      if (!priv->undo_desaturation)
+        {
+          GValue v = G_VALUE_INIT;
 
+          g_value_init(&v, G_TYPE_FLOAT);
+          g_value_set_float(&v, 0.0f);
+
+          clutter_shader_set_uniform (priv->shader_saturate, "saturation", &v);
+        }
+    }
+#ifdef UPSTREAM_DISABLED
   cogl_color (&col);
 
   /* Set the desaturation texture to linear interpolation - so we draw it smoothly
    * Onto the screen */
   cogl_texture_set_filters(priv->tex_a, CGL_LINEAR, CGL_LINEAR);
-
   cogl_texture_rectangle (priv->tex_a,
                           mx-zx, my-zy,
                           mx+zx, my+zy,
-                          0, 0, CFX_ONE, CFX_ONE);
+                          0, 0, 1.0, 1.0);
 
   /* Reset the filters on the tex_a texture ready for normal desaturating */
   cogl_texture_set_filters(priv->tex_a, CGL_NEAREST, CGL_NEAREST);
+#endif
 
   if (priv->use_shader && priv->shader_saturate && !priv->undo_desaturation)
     clutter_shader_set_is_enabled (priv->shader_saturate, FALSE);
@@ -410,7 +419,9 @@ tidy_desaturation_group_class_init (TidyDesaturationGroupClass *klass)
   gobject_class->dispose = tidy_desaturation_group_dispose;
 
   actor_class->paint = tidy_desaturation_group_paint;
+#ifdef UPSTREAM_DISABLED
   actor_class->notify_modified = tidy_desaturation_group_notify_modified_real;
+#endif
 }
 
 static void

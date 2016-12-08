@@ -421,9 +421,10 @@ hd_launcher_editor_init (HdLauncherEditor *editor)
                                                      G_TYPE_STRING);
 
   /* and the icon view. */
+#ifdef UPSTREAM_DISABLED
   priv->icon_view = hildon_gtk_icon_view_new_with_model (HILDON_UI_MODE_EDIT,
                                                          priv->model);
-
+#endif
   renderer = gtk_cell_renderer_pixbuf_new ();
   g_object_set (G_OBJECT (renderer),
                 "xalign", 0.5,
@@ -524,7 +525,7 @@ hd_launcher_editor_show (GtkWidget *window)
 {
   gtk_widget_realize (window);
 
-  GdkWindow *gdk_window = window->window;
+  GdkWindow *gdk_window = gtk_widget_get_window(window);
   GdkDisplay *gdk_display = gdk_display_get_default ();
   Display *display = GDK_DISPLAY_XDISPLAY (gdk_display);
   Window xwindow = xwindow = GDK_WINDOW_XID (gdk_window);

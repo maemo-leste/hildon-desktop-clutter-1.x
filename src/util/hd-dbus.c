@@ -239,7 +239,9 @@ hd_dbus_system_bus_signal_handler (DBusConnection *conn,
                   /* Allow redraws again... */
                   clutter_actor_show(
                       CLUTTER_ACTOR(hd_render_manager_get()));
+#ifdef UPSTREAM_DISABLED
                   clutter_actor_set_allow_redraw(stage, TRUE);
+#endif
                   /* make a blocking redraw to draw any new window (such as
                    * the "swipe to unlock") first, otherwise just a black
                    * screen will be visible (see below) */
@@ -261,7 +263,9 @@ hd_dbus_system_bus_signal_handler (DBusConnection *conn,
                    * conflict. */
                   clutter_actor_hide(
                       CLUTTER_ACTOR(hd_render_manager_get()));
+#ifdef UPSTREAM_DISABLED
                   clutter_actor_set_allow_redraw(stage, FALSE);
+#endif
                   hd_dbus_display_is_off = TRUE;
                   /* Hiding before set_allow_redraw will queue a redraw,
                    * which will draw a black screen (because hdrm is hidden).

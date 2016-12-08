@@ -37,7 +37,7 @@
 #include <gdk/gdkx.h>
 #include <hildon/hildon-main.h>
 #include <clutter/clutter.h>
-#include <libgnomevfs/gnome-vfs.h>
+#include <clutter/x11/clutter-x11.h>
 #include <gdk-pixbuf-xlib/gdk-pixbuf-xlib.h>
 
 #include "hildon-desktop.h"
@@ -130,7 +130,7 @@ take_screenshot (void)
   static gchar datestamp[255];
   static time_t secs = 0;
   struct tm *tm = NULL;
-  GdkDrawable *window;
+  GdkWindow *window;
   int width, height;
   GdkPixbuf *image;
   GError *error = NULL;
@@ -173,13 +173,11 @@ take_screenshot (void)
   g_free (path);
 
   window = gdk_get_default_root_window();
-  gdk_drawable_get_size(window, &width, &height);
-  image = gdk_pixbuf_get_from_drawable(NULL,
-				       window,
-				       gdk_drawable_get_colormap(window),
-				       0, 0,
-				       0, 0,
-				       width, height);
+  width = gdk_window_get_width(window);
+  height = gdk_window_get_height(window);
+  image = gdk_pixbuf_get_from_window(window,
+               0, 0,
+  width, height);
   ret = gdk_pixbuf_save (image, filename, "png", &error, NULL);
   g_object_unref(image);
 
@@ -257,7 +255,7 @@ key_binding_func (MBWindowManager   *wm,
 {
 	int action;
 
-  action = (int)(userdata);
+  action = GPOINTER_TO_INT(userdata);
 
   switch (action)
     {
@@ -616,10 +614,6 @@ main (int argc, char **argv)
   bindtextdomain (GETTEXT_PACKAGE, "/usr/share/locale");
   textdomain (GETTEXT_PACKAGE);
 
-  g_thread_init (NULL);
-
-  gnome_vfs_init ();
-
   mb_wm_object_init();
 
   mb_wm_theme_set_custom_theme_type_func (theme_type_func, NULL);
@@ -646,11 +640,12 @@ main (int argc, char **argv)
   clutter_init (&argc, &argv);
   /* Disable mipmapping of text, as it is seldom scaled down and this
    * saves us memory/bandwidth/update speed */
-  clutter_set_use_mipmapped_text(FALSE);
+  clutter_set_font_flags(0);
   /* Use software-based selection, which is much faster on SGX than rendering
    * with 'GL and reading back */
+#ifdef UPSTREAM_DISABLED
   clutter_set_software_selection(TRUE);
-
+#endif
 #ifndef DISABLE_A11Y
   hildon_desktop_a11y_init ();
 #endif

@@ -46,8 +46,8 @@ G_DEFINE_TYPE (TidyFingerScroll, tidy_finger_scroll, TIDY_TYPE_SCROLL_VIEW)
 
 typedef struct {
   /* Units to store the origin of a click when scrolling */
-  ClutterUnit x;
-  ClutterUnit y;
+  gfloat x;
+  gfloat y;
   GTimeVal    time;
 } TidyFingerScrollMotion;
 
@@ -67,17 +67,15 @@ struct _TidyFingerScrollPrivate
   /* Variables for storing acceleration information for kinetic mode */
   ClutterTimeline       *deceleration_timeline;
   int                    deceleration_timeline_lastframe;
-  ClutterUnit            dx;
-  ClutterUnit            dy;
+  gfloat            dx;
+  gfloat            dy;
   gfloat           decel_rate;
   gfloat           bouncing_decel_rate;
   gfloat           bounce_back_speed_rate;
 
   /* Variables to fade in/out scroll-bars */
-  ClutterEffectTemplate *template_in;
-  ClutterEffectTemplate *template_out;
-  ClutterTimeline       *hscroll_timeline;
-  ClutterTimeline       *vscroll_timeline;
+  ClutterAnimation       *hscroll_timeline;
+  ClutterAnimation       *vscroll_timeline;
 
   /* Timeout for removing scrollbars after they first appear */
   guint                  scrollbar_timeout;
@@ -167,17 +165,6 @@ tidy_finger_scroll_dispose (GObject *object)
       priv->vscroll_timeline = NULL;
     }
 
-  if (priv->template_in)
-    {
-      g_object_unref (priv->template_in);
-      priv->template_in = NULL;
-    }
-  if (priv->template_out)
-    {
-      g_object_unref (priv->template_out);
-      priv->template_out = NULL;
-    }
-
   G_OBJECT_CLASS (tidy_finger_scroll_parent_class)->dispose (object);
 }
 
@@ -217,14 +204,11 @@ motion_event_cb (ClutterActor *actor,
                  ClutterMotionEvent *event,
                  TidyFingerScroll *scroll)
 {
-  ClutterUnit x, y;
+  gfloat x, y;
 
   TidyFingerScrollPrivate *priv = scroll->priv;
 
-  if (clutter_actor_transform_stage_point (actor,
-                                           CLUTTER_UNITS_FROM_DEVICE(event->x),
-                                           CLUTTER_UNITS_FROM_DEVICE(event->y),
-                                           &x, &y))
+  if (clutter_actor_transform_stage_point (actor, event->x, event->y, &x, &y))
     {
       TidyFingerScrollMotion *motion;
       ClutterActor *child =
@@ -241,19 +225,17 @@ motion_event_cb (ClutterActor *actor,
 
           motion = &g_array_index (priv->motion_buffer,
                                    TidyFingerScrollMotion, priv->last_motion);
-          dx = CLUTTER_UNITS_TO_FIXED(motion->x - x) +
-               tidy_adjustment_get_valuex (hadjust);
-          dy = CLUTTER_UNITS_TO_FIXED(motion->y - y) +
-               tidy_adjustment_get_valuex (vadjust);
+          dx = motion->x - x + tidy_adjustment_get_valuex (hadjust);
+          dy = motion->y - y + tidy_adjustment_get_valuex (vadjust);
 
           /* Has the drag treshold been reached? */
           if (!priv->move)
             {
                 gfloat d1 = x - priv->first_x;
                 gfloat d2 = y - priv->first_y;
-                priv->move = clutter_qmulx (d1, d1) + clutter_qmulx (d2, d2)
-                  >= CLUTTER_INT_TO_FIXED (TIDY_FINGER_SCROLL_DRAG_TRASHOLD
-                                           * TIDY_FINGER_SCROLL_DRAG_TRASHOLD);
+                priv->move = d1 * d1 + d2 * d2 >=
+                    TIDY_FINGER_SCROLL_DRAG_TRASHOLD *
+                    TIDY_FINGER_SCROLL_DRAG_TRASHOLD;
             }
 
           /* If not, do everything as if it had (we already did) except
@@ -285,13 +267,13 @@ motion_event_cb (ClutterActor *actor,
 }
 
 static void
-hfade_complete_cb (ClutterActor *scrollbar, TidyFingerScroll *scroll)
+hfade_complete_cb (TidyFingerScroll *scroll)
 {
   scroll->priv->hscroll_timeline = NULL;
 }
 
 static void
-vfade_complete_cb (ClutterActor *scrollbar, TidyFingerScroll *scroll)
+vfade_complete_cb (TidyFingerScroll *scroll)
 {
   scroll->priv->vscroll_timeline = NULL;
 }
@@ -327,6 +309,9 @@ show_scrollbars (TidyFingerScroll *scroll, gboolean show)
 {
   ClutterActor *hscroll, *vscroll;
   TidyFingerScrollPrivate *priv = scroll->priv;
+  guint duration = show ? TIDY_FINGER_SCROLL_FADE_SCROLLBAR_IN_TIME :
+                          TIDY_FINGER_SCROLL_FADE_SCROLLBAR_IN_TIME;
+  guint8 opacity = show ? 0xFF : 0x00;
 
   stop_scrollbars (scroll);
   hscroll = tidy_scroll_view_get_hscroll_bar (TIDY_SCROLL_VIEW (scroll));
@@ -334,20 +319,18 @@ show_scrollbars (TidyFingerScroll *scroll, gboolean show)
 
   /* Create new ones */
   if (!CLUTTER_ACTOR_IS_REACTIVE (hscroll))
-    priv->hscroll_timeline = clutter_effect_fade (
-                               show ? priv->template_in : priv->template_out,
-                               hscroll,
-                               show ? 0xFF : 0x00,
-                               (ClutterEffectCompleteFunc)hfade_complete_cb,
-                               scroll);
+    priv->hscroll_timeline =
+        clutter_actor_animate (hscroll, CLUTTER_LINEAR, duration,
+                               "opacity", opacity,
+                               "signal-swapped::completed",
+                               G_CALLBACK(hfade_complete_cb), scroll, NULL);
 
   if (!CLUTTER_ACTOR_IS_REACTIVE (vscroll))
-    priv->vscroll_timeline = clutter_effect_fade (
-                               show ? priv->template_in : priv->template_out,
-                               vscroll,
-                               show ? 0xFF : 0x00,
-                               (ClutterEffectCompleteFunc)vfade_complete_cb,
-                               scroll);
+    priv->vscroll_timeline =
+        clutter_actor_animate (vscroll, CLUTTER_LINEAR, duration,
+                               "opacity", opacity,
+                               "signal-swapped::completed",
+                               G_CALLBACK(vfade_complete_cb), scroll, NULL);
 }
 
 static void
@@ -382,27 +365,27 @@ get_next_delta (TidyFingerScroll *scroll,
   in_upper_danger_zone = value > upper;
   decel_rate = in_lower_danger_zone || in_upper_danger_zone
     ? priv->bouncing_decel_rate : priv->decel_rate;
-  nextdiff = clutter_qmulx (prevdiff, decel_rate);
+  nextdiff = prevdiff * decel_rate;
   if (prevdiff && decel_rate && prevdiff == nextdiff)
     /* Arithmetic underflow. */
-    nextdiff = prevdiff < 0 ? -CFX_ONE : CFX_ONE;
+    nextdiff = prevdiff < 0 ? -1.0 : 1.0;
 
   if (in_lower_danger_zone)
     {
-      if (value+nextdiff <= lowest || (-CFX_ONE < nextdiff && nextdiff <= 0))
+      if (value+nextdiff <= lowest || (-1.0 < nextdiff && nextdiff <= 0))
         {
-          nextdiff = clutter_qmulx(lower-value, priv->bounce_back_speed_rate);
+          nextdiff = lower-value * priv->bounce_back_speed_rate;
           if (!nextdiff)
-            nextdiff = CFX_ONE;
+            nextdiff = 1.0;
         }
     }
   else if (in_upper_danger_zone)
     {
-      if (value+nextdiff >= highest || (0 <= nextdiff && nextdiff < CFX_ONE))
+      if (value+nextdiff >= highest || (0 <= nextdiff && nextdiff < 1.0))
         {
-          nextdiff = clutter_qmulx(upper-value, priv->bounce_back_speed_rate);
+          nextdiff = upper-value * priv->bounce_back_speed_rate;
           if (!nextdiff)
-            nextdiff = -CFX_ONE;
+            nextdiff = -1.0;
         }
     }
 
@@ -425,12 +408,12 @@ advance_value (gfloat lowest, gfloat lower,
           diff -= *valuep - lowest;
           *valuep = lowest;
         }
-      else if (*valuep < lower && 0 < diff && diff < CFX_ONE)
+      else if (*valuep < lower && 0 < diff && diff < 1.0)
         { /* Leaving the top danger zone, snap it to the boundary. */
           diff = 0;
           *valuep = lower;
         }
-      else if (*valuep > upper && -CFX_ONE < diff && diff < 0)
+      else if (*valuep > upper && -1.0 < diff && diff < 0)
         { /* Same for the bottom danger zone. */
           diff = 0;
           *valuep = upper;
@@ -454,7 +437,7 @@ advance_value (gfloat lowest, gfloat lower,
  */
 static void
 deceleration_new_frame_cb (ClutterTimeline *timeline,
-                           gint frame_num,
+                           guint msecs,
                            TidyFingerScroll *scroll)
 {
   TidyFingerScrollPrivate *priv = scroll->priv;
@@ -477,7 +460,7 @@ deceleration_new_frame_cb (ClutterTimeline *timeline,
   tidy_adjustment_get_valuesx (vadjust, &vvalue, &vlower, &vupper,
                                NULL, NULL, &vpage);
   vupper -= vpage;
-
+#ifdef UPSTREAM_DISABLED
   /* We need to keep track of how many frames were skipped so we can
    * make up for it... */
   for (; priv->deceleration_timeline_lastframe < frame_num;
@@ -492,20 +475,21 @@ deceleration_new_frame_cb (ClutterTimeline *timeline,
       priv->dy = get_next_delta (scroll,
                    vlowest, vlower, vvalue, priv->dy, vupper, vhighest);
     }
+#endif
   tidy_adjustment_set_valuex (hadjust, hvalue);
   tidy_adjustment_set_valuex (vadjust, vvalue);
 
   /* Stop the timeline if we don't move anymore,
    * or extend it if we're running out of frames. */
   if (   vlower <= vvalue && vvalue <= vupper
-      && -CFX_ONE < priv->dy && priv->dy < CFX_ONE
+      && -1.0 < priv->dy && priv->dy < 1.0
       && hlower <= hvalue && hvalue <= hupper
-      && -CFX_ONE < priv->dx && priv->dx < CFX_ONE)
+      && -1.0 < priv->dx && priv->dx < 1.0)
     /* Not in danger zone and not moving. */
     deceleration_completed_cb (timeline, scroll);
-  else if (clutter_timeline_get_n_frames (timeline) < frame_num+60)
+  else if (clutter_timeline_get_duration (timeline) < msecs + 1000)
     /* Extend our lifetime. */
-    clutter_timeline_set_n_frames (timeline, frame_num+60);
+    clutter_timeline_set_duration (timeline, msecs + 1000);
 }
 
 /*
@@ -538,12 +522,12 @@ initial_speed (TidyFingerScroll *scroll, TidyAdjustment *adjust,
                                NULL, NULL, &page);
   upper -= page;
 
-  if (diff > 0 && value < lower
-      && value + clutter_qmulx (diff, 1-priv->bouncing_decel_rate) < lower)
-    return clutter_qmulx(lower-value, priv->bounce_back_speed_rate);
-  else if (diff < 0 && value > upper
-      && value + clutter_qmulx (diff, 1-priv->bouncing_decel_rate) > upper)
-    return clutter_qmulx(upper-value, priv->bounce_back_speed_rate);
+  if (diff > 0 && value < lower && value +
+      diff * (1 - priv->bouncing_decel_rate) < lower)
+    return lower-value * priv->bounce_back_speed_rate;
+  else if (diff < 0 && value > upper && value +
+           diff * (1-priv->bouncing_decel_rate) > upper)
+    return upper-value * priv->bounce_back_speed_rate;
   else
     return diff;
 }
@@ -572,14 +556,12 @@ button_release_event_cb (ClutterActor *actor,
 
   if ((priv->mode == TIDY_FINGER_SCROLL_MODE_KINETIC) && (child))
     {
-      ClutterUnit x, y;
+      gfloat x, y;
 
-      if (clutter_actor_transform_stage_point (actor,
-                                               CLUTTER_UNITS_FROM_DEVICE(event->x),
-                                               CLUTTER_UNITS_FROM_DEVICE(event->y),
+      if (clutter_actor_transform_stage_point (actor, event->x, event->y,
                                                &x, &y))
         {
-          ClutterUnit frac, x_origin, y_origin;
+          gfloat frac, x_origin, y_origin;
           GTimeVal release_time, motion_time;
           TidyAdjustment *hadjust, *vadjust;
           glong time_diff;
@@ -606,12 +588,8 @@ button_release_event_cb (ClutterActor *actor,
               motion_time.tv_sec += motion->time.tv_sec;
               motion_time.tv_usec += motion->time.tv_usec;
             }
-          x_origin = CLUTTER_UNITS_FROM_FIXED (
-            clutter_qdivx (CLUTTER_UNITS_TO_FIXED (x_origin),
-                           CLUTTER_INT_TO_FIXED (priv->last_motion)));
-          y_origin = CLUTTER_UNITS_FROM_FIXED (
-            clutter_qdivx (CLUTTER_UNITS_TO_FIXED (y_origin),
-                           CLUTTER_INT_TO_FIXED (priv->last_motion)));
+          x_origin = x_origin / priv->last_motion;
+          y_origin =  y_origin / priv->last_motion;
           motion_time.tv_sec /= priv->last_motion;
           motion_time.tv_usec /= priv->last_motion;
 
@@ -622,14 +600,11 @@ button_release_event_cb (ClutterActor *actor,
                         (G_USEC_PER_SEC - motion_time.tv_usec);
 
           /* Work out the fraction of 1/60th of a second that has elapsed */
-          frac = clutter_qdivx (CLUTTER_FLOAT_TO_FIXED (time_diff/1000.0),
-                                CLUTTER_FLOAT_TO_FIXED (1000.0/60.0));
+          frac = (time_diff/1000.0) / (1000.0/60.0);
 
           /* See how many units to move in 1/60th of a second */
-          priv->dx = CLUTTER_UNITS_FROM_FIXED(clutter_qdivx (
-                     CLUTTER_UNITS_TO_FIXED(x_origin - x), frac));
-          priv->dy = CLUTTER_UNITS_FROM_FIXED(clutter_qdivx (
-                     CLUTTER_UNITS_TO_FIXED(y_origin - y), frac));
+          priv->dx = x_origin - x / frac;
+          priv->dy = y_origin - y / frac;
 
           /* Get adjustments to do step-increment snapping */
           tidy_scrollable_get_adjustments (TIDY_SCROLLABLE (child),
@@ -640,8 +615,7 @@ button_release_event_cb (ClutterActor *actor,
           priv->dx = initial_speed (scroll, hadjust, priv->dx);
           priv->dy = initial_speed (scroll, vadjust, priv->dy);
 
-          if (ABS(CLUTTER_UNITS_TO_INT(priv->dx)) > 1 ||
-              ABS(CLUTTER_UNITS_TO_INT(priv->dy)) > 1)
+          if (ABS(priv->dx) > 1 || ABS(priv->dy) > 1)
             {
               gdouble value, lower, step_increment, d, a, x, y, n;
 
@@ -658,8 +632,8 @@ button_release_event_cb (ClutterActor *actor,
                * As z = 1, this will cause stops to be slightly abrupt -
                * add a constant 15 frames to compensate.
                */
-              x = CLUTTER_FIXED_TO_FLOAT (MAX(ABS(priv->dx), ABS(priv->dy)));
-              y = CLUTTER_FIXED_TO_FLOAT (priv->decel_rate);
+              x = MAX(ABS(priv->dx), ABS(priv->dy));
+              y = priv->decel_rate;
               n = logf (x) * logf (y) + 15.0;
 
               /* Now we have n, adjust dx/dy so that we finish on a step
@@ -686,22 +660,23 @@ button_release_event_cb (ClutterActor *actor,
               a = (1.0 - pow (y, n + 1)) / (1.0 - y);
 
               /* Solving for dx */
-              d = a * CLUTTER_UNITS_TO_FLOAT (priv->dx);
+              d = a * priv->dx;
               tidy_adjustment_get_values (hadjust, &value, &lower, NULL,
                                           &step_increment, NULL, NULL);
               d = ((rint (((value + d) - lower) / step_increment) *
                     step_increment) + lower) - value;
-              priv->dx = CLUTTER_UNITS_FROM_FLOAT (d / a);
+              priv->dx = d / a;
 
               /* Solving for dy */
-              d = a * CLUTTER_UNITS_TO_FLOAT (priv->dy);
+              d = a * priv->dy;
               tidy_adjustment_get_values (vadjust, &value, &lower, NULL,
                                           &step_increment, NULL, NULL);
               d = ((rint (((value + d) - lower) / step_increment) *
                     step_increment) + lower) - value;
-              priv->dy = CLUTTER_UNITS_FROM_FLOAT (d / a);
+              priv->dy = d / a;
 
-              priv->deceleration_timeline = clutter_timeline_new ((gint)n, 60);
+              priv->deceleration_timeline =
+                  clutter_timeline_new ((1000 * n) / 60);
             }
           else
             {
@@ -710,22 +685,22 @@ button_release_event_cb (ClutterActor *actor,
               /* Start a short effects timeline to snap to the nearest step
                * boundary (see equations above)
                */
-              y = CLUTTER_FIXED_TO_FLOAT (priv->decel_rate);
+              y = priv->decel_rate;
               a = (1.0 - pow (y, 4 + 1)) / (1.0 - y);
 
               tidy_adjustment_get_values (hadjust, &value, &lower, NULL,
                                           &step_increment, NULL, NULL);
               d = ((rint ((value - lower) / step_increment) *
                     step_increment) + lower) - value;
-              priv->dx = CLUTTER_UNITS_FROM_FLOAT (d / a);
+              priv->dx = d / a;
 
               tidy_adjustment_get_values (vadjust, &value, &lower, NULL,
                                           &step_increment, NULL, NULL);
               d = ((rint ((value - lower) / step_increment) *
                     step_increment) + lower) - value;
-              priv->dy = CLUTTER_UNITS_FROM_FLOAT (d / a);
+              priv->dy = d / a;
 
-              priv->deceleration_timeline = clutter_timeline_new (4, 60);
+              priv->deceleration_timeline = clutter_timeline_new ((4 * 1000) / 60);
             }
 
           g_signal_connect (priv->deceleration_timeline, "new_frame",
@@ -794,10 +769,8 @@ captured_event_cb (ClutterActor     *actor,
       motion = &g_array_index (priv->motion_buffer, TidyFingerScrollMotion, 0);
 
       if ((bevent->button == 1) &&
-          (clutter_actor_transform_stage_point (actor,
-                                           CLUTTER_UNITS_FROM_DEVICE(bevent->x),
-                                           CLUTTER_UNITS_FROM_DEVICE(bevent->y),
-                                           &motion->x, &motion->y)))
+          (clutter_actor_transform_stage_point (actor, bevent->x, bevent->y,
+                                                &motion->x, &motion->y)))
         {
           g_get_current_time (&motion->time);
 
@@ -859,8 +832,7 @@ hscroll_notify_reactive_cb (ClutterActor     *bar,
     {
       if (priv->hscroll_timeline)
         {
-          clutter_timeline_stop (priv->hscroll_timeline);
-          g_object_unref (priv->hscroll_timeline);
+          clutter_animation_completed (priv->hscroll_timeline);
           priv->hscroll_timeline = NULL;
         }
       clutter_actor_set_opacity (bar, 0xFF);
@@ -879,8 +851,7 @@ vscroll_notify_reactive_cb (ClutterActor     *bar,
     {
       if (priv->vscroll_timeline)
         {
-          clutter_timeline_stop (priv->vscroll_timeline);
-          g_object_unref (priv->vscroll_timeline);
+          clutter_animation_completed (priv->vscroll_timeline);
           priv->vscroll_timeline = NULL;
         }
       clutter_actor_set_opacity (bar, 0xFF);
@@ -891,8 +862,6 @@ static void
 tidy_finger_scroll_init (TidyFingerScroll *self)
 {
   ClutterActor *scrollbar;
-  ClutterTimeline *effect_timeline_in;
-  ClutterTimeline *effect_timeline_out;
   TidyFingerScrollPrivate *priv = self->priv = FINGER_SCROLL_PRIVATE (self);
   gfloat qn;
   guint i;
@@ -900,10 +869,10 @@ tidy_finger_scroll_init (TidyFingerScroll *self)
   priv->motion_buffer = g_array_sized_new (FALSE, TRUE,
                                            sizeof (TidyFingerScrollMotion), 3);
   g_array_set_size (priv->motion_buffer, 3);
-  priv->decel_rate = CLUTTER_FLOAT_TO_FIXED (
-       hd_transition_get_double("launcher", "deceleration_rate", 0.99));
-  priv->bouncing_decel_rate = CLUTTER_FLOAT_TO_FIXED (
-       hd_transition_get_double("launcher", "strong_deceleration_rate", 0.7));
+  priv->decel_rate =
+      hd_transition_get_double("launcher", "deceleration_rate", 0.99);
+  priv->bouncing_decel_rate =
+       hd_transition_get_double("launcher", "strong_deceleration_rate", 0.7);
 
   /*
    * @bounce_back_speed_rate :=
@@ -919,12 +888,10 @@ tidy_finger_scroll_init (TidyFingerScroll *self)
    *    * (1-@bouncing_decel_rate^@nframes)/(1-@bouncing_decel_rate)
    *  solved for @initial_speed.)
    */
-  qn = CFX_ONE;
+  qn = 1.0;
   for (i = (clutter_get_default_frame_rate ()) / 2; i > 0; i--)
-    qn = clutter_qmulx(qn, priv->bouncing_decel_rate);
-  priv->bounce_back_speed_rate = clutter_qdivx (
-                                    CFX_ONE - priv->bouncing_decel_rate,
-                                    CFX_ONE - qn);
+    qn = qn * priv->bouncing_decel_rate;
+  priv->bounce_back_speed_rate = 1.0 - priv->bouncing_decel_rate / 1.0 - qn;
 
   clutter_actor_set_reactive (CLUTTER_ACTOR (self), TRUE);
 
@@ -945,15 +912,6 @@ tidy_finger_scroll_init (TidyFingerScroll *self)
   clutter_actor_set_opacity (scrollbar, 0x00);
   g_signal_connect (scrollbar, "notify::reactive",
                     G_CALLBACK (vscroll_notify_reactive_cb), self);
-
-  effect_timeline_in = clutter_timeline_new_for_duration
-                            (TIDY_FINGER_SCROLL_FADE_SCROLLBAR_IN_TIME);
-  priv->template_in = clutter_effect_template_new (effect_timeline_in,
-                                                   CLUTTER_ALPHA_RAMP_INC);
-  effect_timeline_out = clutter_timeline_new_for_duration
-                            (TIDY_FINGER_SCROLL_FADE_SCROLLBAR_OUT_TIME);
-  priv->template_out = clutter_effect_template_new (effect_timeline_out,
-                                                    CLUTTER_ALPHA_RAMP_INC);
 }
 
 ClutterActor *
@@ -974,8 +932,7 @@ tidy_finger_scroll_stop (TidyFingerScroll *scroll)
 
   if (priv->deceleration_timeline)
     {
-      clutter_timeline_stop (priv->deceleration_timeline);
-      g_object_unref (priv->deceleration_timeline);
+      clutter_animation_completed (priv->deceleration_timeline);
       priv->deceleration_timeline = NULL;
     }
 }

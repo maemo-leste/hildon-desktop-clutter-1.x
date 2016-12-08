@@ -12,10 +12,10 @@ typedef struct _TidyPadding             TidyPadding;
 
 struct _TidyPadding
 {
-  ClutterUnit top;
-  ClutterUnit right;
-  ClutterUnit bottom;
-  ClutterUnit left;
+  gint32 top;
+  gint32 right;
+  gint32 bottom;
+  gint32 left;
 };
 
 GType tidy_padding_get_type (void) G_GNUC_CONST;

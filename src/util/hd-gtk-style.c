@@ -215,7 +215,7 @@ hd_gtk_style_get_base_color (HDGtkWidgetSingleton  widget_id,
  * Gets a string representation of the font description held within
  * the GtkStyle of the specified widget. The string is suitable
  * for passing to pango_font_description_from_string and thus
- * clutter_label_new_full.
+ * clutter_text_new_full.
  *
  * Return value: a new string that must be freed with g_free().
  */

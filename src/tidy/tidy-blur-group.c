@@ -22,6 +22,8 @@
 
 #include "util/hd-transition.h"
 
+#include <GL/gl.h>
+
 /* #define it something sane */
 #define TIDY_IS_SANE_BLUR_GROUP(obj)    ((obj) != NULL)
 
@@ -247,7 +249,7 @@ static void
 tidy_blur_group_allocate_textures (TidyBlurGroup *self)
 {
   TidyBlurGroupPrivate *priv = self->priv;
-  guint tex_width, tex_height;
+  gfloat tex_width, tex_height;
 
 #ifdef __i386__
   if (!cogl_features_available(COGL_FEATURE_OFFSCREEN))
@@ -290,17 +292,21 @@ tidy_blur_group_allocate_textures (TidyBlurGroup *self)
     }
 
   priv->tex_a = cogl_texture_new_with_size(
-            tex_width, tex_height, 0, FALSE /* mipmap */,
+            tex_width, tex_height, COGL_TEXTURE_NO_AUTO_MIPMAP,
             priv->use_alpha ? COGL_PIXEL_FORMAT_RGBA_8888 :
                               COGL_PIXEL_FORMAT_RGB_565);
+#ifdef UPSTREAM_DISABLED
   cogl_texture_set_filters(priv->tex_a, CGL_NEAREST, CGL_NEAREST);
+#endif
   priv->fbo_a = cogl_offscreen_new_to_texture(priv->tex_a);
 
   priv->tex_b = cogl_texture_new_with_size(
-            tex_width, tex_height, 0, FALSE /* mipmap */,
+            tex_width, tex_height, COGL_TEXTURE_NO_AUTO_MIPMAP,
             priv->use_alpha ? COGL_PIXEL_FORMAT_RGBA_8888 :
                               COGL_PIXEL_FORMAT_RGB_565);
+#ifdef UPSTREAM_DISABLED
   cogl_texture_set_filters(priv->tex_b, CGL_NEAREST, CGL_NEAREST);
+#endif
   priv->fbo_b = cogl_offscreen_new_to_texture(priv->tex_b);
 
   priv->current_blur_step = 0;
@@ -334,58 +340,68 @@ tidy_blur_group_children_visible(ClutterGroup *group)
 static void
 tidy_blur_group_fallback_blur(TidyBlurGroup *group, int tex_width, int tex_height)
 {
-  ClutterColor    col = { 0x3f, 0x3f, 0x3f, 0x3f };
+  CoglColor    col;
 
   TidyBlurGroupPrivate *priv = group->priv;
   CoglHandle tex = priv->current_is_a ? priv->tex_a : priv->tex_b;
   gfloat diffx, diffy;
-  diffx = CLUTTER_FLOAT_TO_FIXED(1.0f / tex_width);
-  diffy = CLUTTER_FLOAT_TO_FIXED(1.0f / tex_height);
 
-  cogl_blend_func(CGL_ONE, CGL_ZERO);
-  cogl_color (&col);
-  cogl_texture_rectangle (tex,
-                          0, 0,
-                          CLUTTER_INT_TO_FIXED (tex_width),
-                          CLUTTER_INT_TO_FIXED (tex_height),
-                          -diffx, 0, CFX_ONE-diffx, CFX_ONE);
-  cogl_blend_func(CGL_ONE, CGL_ONE);
-  cogl_texture_rectangle (tex,
+  diffx = 1.0f / tex_width;
+  diffy = 1.0f / tex_height;
+  glBlendFunc(GL_ONE, GL_ZERO);
+
+  tidy_set_cogl_color(&col, 0x3f, 0x3f, 0x3f, 0x3f);
+/* FIXME - do we need to set scr texture for every draw?*/
+  cogl_set_source_color (&col);
+  cogl_set_source_texture (tex);
+  cogl_rectangle_with_texture_coords (0, 0,
+                                      tex_width,
+                                      tex_height,
+                                      -diffx, 0, 1.0-diffx, 1.0);
+  glBlendFunc(GL_ONE, GL_ONE);
+
+  cogl_set_source_texture (tex);
+  cogl_rectangle_with_texture_coords (
                             0, 0,
-                            CLUTTER_INT_TO_FIXED (tex_width),
-                            CLUTTER_INT_TO_FIXED (tex_height),
-                            0, diffy, CFX_ONE+diffx, CFX_ONE);
-  cogl_texture_rectangle (tex,
+                            tex_width,
+                            tex_height,
+                            0, diffy, 1.0+diffx, 1.0);
+  cogl_set_source_texture (tex);
+  cogl_rectangle_with_texture_coords (
                             0, 0,
-                            CLUTTER_INT_TO_FIXED (tex_width),
-                            CLUTTER_INT_TO_FIXED (tex_height),
-                            0, -diffy, CFX_ONE, CFX_ONE-diffy);
-  cogl_texture_rectangle (tex,
+                            tex_width,
+                            tex_height,
+                            0, -diffy, 1.0, 1.0-diffy);
+  cogl_set_source_texture (tex);
+  cogl_rectangle_with_texture_coords (
                             0, 0,
-                            CLUTTER_INT_TO_FIXED (tex_width),
-                            CLUTTER_INT_TO_FIXED (tex_height),
-                            0, diffy, CFX_ONE, CFX_ONE+diffy);
-  cogl_blend_func(CGL_SRC_ALPHA, CGL_ONE_MINUS_SRC_ALPHA);
+                            tex_width,
+                            tex_height,
+                            0, diffy, 1.0, 1.0+diffy);
+
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
 /* If priv->chequer, draw a chequer pattern over the screen */
 static void
 tidy_blur_group_do_chequer(TidyBlurGroup *group, guint width, guint height)
 {
-  static const ClutterColor black = { 0x00, 0x00, 0x00, 0xFF };
+  static const CoglColor black = { 0x00, 0x00, 0x00, 0xFF };
   TidyBlurGroupPrivate *priv = group->priv;
 
   if (!priv->chequer)
     return;
 
-  cogl_color (&black);
+  cogl_set_source_color (&black);
+#ifdef UPSTREAM_DISABLED
   cogl_texture_rectangle (priv->tex_chequer,
                           0, 0,
-                          CLUTTER_INT_TO_FIXED (width),
-                          CLUTTER_INT_TO_FIXED (height),
+                          width,
+                          height,
                           0, 0,
-                          CFX_ONE*width/CHEQUER_SIZE,
-                          CFX_ONE*height/CHEQUER_SIZE);
+                          1.0*width/CHEQUER_SIZE,
+                          1.0*height/CHEQUER_SIZE);
+#endif
 }
 
 /* Recursively set texture filtering state on this actor and children, and
@@ -404,7 +420,7 @@ recursive_set_linear_texture_filter(ClutterActor *actor, GArray *filters)
 
       quality = clutter_texture_get_filter_quality(tex);
       g_array_append_val(filters, quality);
-      clutter_texture_set_filter_quality(tex, GL_LINEAR);
+      clutter_texture_set_filter_quality(tex, CLUTTER_TEXTURE_QUALITY_LOW);
     }
 }
 
@@ -431,8 +447,8 @@ recursive_reset_texture_filter(ClutterActor *actor,
 static void
 tidy_blur_group_paint (ClutterActor *actor)
 {
-  static const ClutterColor white = { 0xff, 0xff, 0xff, 0xff };
-  static const ClutterColor bgcol = { 0x00, 0x00, 0x00, 0xff };
+  static const CoglColor white = { 0xff, 0xff, 0xff, 0xff };
+  static const CoglColor bgcol = { 0x00, 0x00, 0x00, 0xff };
   ClutterGroup *group         = CLUTTER_GROUP(actor);
   TidyBlurGroup *container    = TIDY_BLUR_GROUP(group);
   TidyBlurGroupPrivate *priv  = container->priv;
@@ -441,7 +457,7 @@ tidy_blur_group_paint (ClutterActor *actor)
   ClutterActorBox              box;
   gint                         width, height, tex_width, tex_height;
   gboolean                     rotate_90;
-  ClutterColor                 col;
+  CoglColor                 col;
   GArray                      *filters;
   const ClutterTextureQuality *filters_array;
 
@@ -449,9 +465,13 @@ tidy_blur_group_paint (ClutterActor *actor)
     return;
 
   clutter_actor_get_allocation_box(actor, &box);
+#ifdef UPSTREAM_DISABLED
   width  = CLUTTER_UNITS_TO_DEVICE(box.x2 - box.x1);
   height = CLUTTER_UNITS_TO_DEVICE(box.y2 - box.y1);
-
+#else
+  width  = box.x2 - box.x1;
+  height = box.y2 - box.y1;
+#endif
   /* If we are rendering normally then shortcut all this, and
    just render directly without the texture */
   if (!tidy_blur_group_source_buffered(actor) ||
@@ -474,7 +494,7 @@ tidy_blur_group_paint (ClutterActor *actor)
       col.blue = priv->brightness * 255;
       col.red = col.green = priv->brightness * 127;
       col.alpha = (1-priv->saturation) * 255;
-      cogl_color (&col);
+      cogl_set_source_color (&col);
       cogl_rectangle (0, 0, width, height);
       tidy_blur_group_do_chequer(container, width, height);
       return;
@@ -503,20 +523,20 @@ tidy_blur_group_paint (ClutterActor *actor)
       tidy_util_cogl_push_offscreen_buffer(priv->fbo_a);
 
       if (rotate_90) {
-        cogl_scale(CFX_ONE*tex_width/height, CFX_ONE*tex_height/width);
-        cogl_translatex(CFX_ONE*height/2, CFX_ONE*width/2, 0);
+        cogl_scale(1.0*tex_width/height, 1.0*tex_height/width, 1.0); /* FIXME */
+        cogl_translate(1.0*height/2, 1.0*width/2, 0);/* FIXME */
         cogl_rotate(90, 0, 0, 1);
-        cogl_translatex(-CFX_ONE*width/2, -CFX_ONE*height/2, 0);
+        cogl_translate(-1.0*width/2, -1.0*height/2, 0);/* FIXME */
       } else {
-        cogl_scale(CFX_ONE*tex_width/width, CFX_ONE*tex_height/height);
+        cogl_scale(1.0*tex_width/width, 1.0*tex_height/height, 1.0); /* FIXME */
       }
 
       /* translate a bit to let bilinear filter smooth out intermediate pixels */
       if (!priv->tweaks_blurless)
-        cogl_translatex(CFX_ONE/2,CFX_ONE/2,0);
+        cogl_translate(1.0/2, 1.0/2, 0);/* FIXME */
 
-      cogl_paint_init(&bgcol);
-      cogl_color (&white);
+      cogl_clear(&bgcol, COGL_BUFFER_BIT_COLOR); /* FIXME */
+      cogl_set_source_color (&white);
       /* Actually do the drawing of the children, but ensure that they are
        * all linear sampled so they are smoothly interpolated. Restore after. */
       filters = g_array_new(FALSE, FALSE, sizeof(ClutterTextureQuality));
@@ -555,26 +575,33 @@ tidy_blur_group_paint (ClutterActor *actor)
             }
           else
             {
+              GValue v = G_VALUE_INIT;
+
+              g_value_init(&v, G_TYPE_FLOAT);
               clutter_shader_set_is_enabled (priv->shader_blur, TRUE);
-              clutter_shader_set_uniform_1f (priv->shader_blur, "blurx",
-                                             1.0f / tex_width);
-              clutter_shader_set_uniform_1f (priv->shader_blur, "blury",
-                                             1.0f / tex_height);
+              g_value_set_float(&v, 1.0f / tex_width);
+              clutter_shader_set_uniform (priv->shader_blur, "blurx", &v);
+              g_value_set_float(&v, 1.0f / tex_height);
+              clutter_shader_set_uniform (priv->shader_blur, "blury", &v);
             }
         }
 
       if (priv->use_shader)
         {
+#ifdef UPSTREAM_DISABLED
           cogl_blend_func(CGL_ONE, CGL_ZERO);
-          cogl_color (&white);
+#endif
+          cogl_set_source_color (&white);
+#ifdef UPSTREAM_DISABLED
           cogl_texture_rectangle (priv->current_is_a ? priv->tex_a : priv->tex_b,
                                   0, 0,
-                                  CLUTTER_INT_TO_FIXED (tex_width),
-                                  CLUTTER_INT_TO_FIXED (tex_height),
+                                  tex_width,
+                                  tex_height,
                                   0, 0,
-                                  CFX_ONE,
-                                  CFX_ONE);
+                                  1.0,
+                                  1.0);
           cogl_blend_func(CGL_SRC_ALPHA, CGL_ONE_MINUS_SRC_ALPHA);
+#endif
         }
       else
         tidy_blur_group_fallback_blur(container, tex_width, tex_height);
@@ -601,16 +628,17 @@ skip_progress:
     clutter_actor_queue_redraw(actor);
 
   gfloat mx, my, zx, zy;
-  mx = CLUTTER_INT_TO_FIXED (width) / 2;
-  my = CLUTTER_INT_TO_FIXED (height) / 2;
-  zx = CLUTTER_FLOAT_TO_FIXED(width*0.5f*priv->zoom);
-  zy = CLUTTER_FLOAT_TO_FIXED(height*0.5f*priv->zoom);
+  mx = width / 2.0f;
+  my = height / 2.0f;
+  zx = width*0.5f*priv->zoom;
+  zy = height*0.5f*priv->zoom;
 
   /* Render what we've blurred to the screen */
-  col.red = (int)(priv->brightness*255);
-  col.green = (int)(priv->brightness*255);
-  col.blue = (int)(priv->brightness*255);
-  col.alpha = clutter_actor_get_paint_opacity (actor);
+  cogl_color_set_red(&col, priv->brightness);
+  cogl_color_set_green(&col, priv->brightness);
+  cogl_color_set_blue(&col, priv->brightness);
+  cogl_color_set_alpha(&col,
+                       (float)clutter_actor_get_paint_opacity (actor) / 255.0);
 
   /* If we're blurring out, do it by adjusting the opacity of what we're
    * rendering now... */
@@ -618,25 +646,24 @@ skip_progress:
     {
       priv->current_blur_step = priv->blur_step;
       if (priv->max_blur_step > 0)
-        col.alpha = col.alpha * priv->current_blur_step / priv->max_blur_step;
+        cogl_color_set_alpha(&col,
+                             cogl_color_get_alpha(&col) *
+                             priv->current_blur_step / priv->max_blur_step);
       else
-        col.alpha = 0;
+        cogl_color_set_alpha(&col, 0);
 
       /* And we must render ourselves properly so we can render
        * the blur over the top */
       cogl_push_matrix();
-      cogl_translatex(
-                 CLUTTER_FLOAT_TO_FIXED(width*(1-priv->zoom)/2),
-                 CLUTTER_FLOAT_TO_FIXED(height*(1-priv->zoom)/2),
-                 0);
-      cogl_scale(CLUTTER_FLOAT_TO_FIXED(priv->zoom),
-                 CLUTTER_FLOAT_TO_FIXED(priv->zoom));
+      cogl_translate(
+                 width*(1-priv->zoom)/2,
+                 height*(1-priv->zoom)/2,
+                 0); /* FIXME */
+      cogl_scale(priv->zoom, priv->zoom, 1.0); /* FIXME */
 
-      cogl_clip_set(0, 0,
-                    CLUTTER_INT_TO_FIXED(width),
-                    CLUTTER_INT_TO_FIXED(height));
+      cogl_clip_push_window_rectangle(0, 0, width, height);
       CLUTTER_ACTOR_CLASS(tidy_blur_group_parent_class)->paint(actor);
-      cogl_clip_unset();
+      cogl_clip_pop();
 
       /* If we're zooming less than 1, we want to re-render everything
        * mirrored around each edge. So render a 3x3 box, and flip the
@@ -651,20 +678,14 @@ skip_progress:
                   gint sx = (x==1) ? 1 : -1;
                   gint sy = (y==1) ? 1 : -1;
                   cogl_push_matrix();
-                  cogl_translatex(
-                             CLUTTER_FLOAT_TO_FIXED(width*(x-1) + width/2),
-                             CLUTTER_FLOAT_TO_FIXED(height*(y-1) + height/2),
-                             0);
-                  cogl_scale( sx*CFX_ONE, sy*CFX_ONE );
-                  cogl_translatex(
-                                  CLUTTER_FLOAT_TO_FIXED(-width/2),
-                                  CLUTTER_FLOAT_TO_FIXED(-height/2),
-                                  0);
-                  cogl_clip_set(0, 0,
-                                CLUTTER_INT_TO_FIXED(width),
-                                CLUTTER_INT_TO_FIXED(height));
+                  cogl_translate(width*(x-1) + width/2,
+                                  height*(y-1) + height/2, 0); /* FIXME */
+                  cogl_scale( sx*1.0, sy*1.0 ,1.0); /* FIXME */
+                  cogl_translate(-width/2, -height/2, 0);/* FIXME */
+
+                  cogl_clip_push_window_rectangle(0, 0, width, height);
                   CLUTTER_ACTOR_CLASS(tidy_blur_group_parent_class)->paint(actor);
-                  cogl_clip_unset();
+                  cogl_clip_pop();
                   cogl_pop_matrix();
                 }
         }
@@ -675,7 +696,7 @@ skip_progress:
 /*  g_debug("%s: Blur act: %d, cur:%d, max:%d - alpha:%d", __FUNCTION__,
       priv->blur_step, priv->current_blur_step, priv->max_blur_step, col.alpha);*/
 
-  if (col.alpha == 0)
+  if (cogl_color_get_alpha(&col) == 0)
     {
       tidy_blur_group_do_chequer(container, width, height);
       return;
@@ -689,38 +710,47 @@ skip_progress:
 
       if (priv->tweaks_blurless)
         {
-          clutter_shader_set_uniform_1f (priv->shader_saturate, "saturation",
-                                         priv->blurless_saturation);
+          GValue v = G_VALUE_INIT;
+
+          g_value_init(&v, G_TYPE_FLOAT);
+          g_value_set_float(&v, priv->blurless_saturation);
+          clutter_shader_set_uniform (priv->shader_saturate, "saturation", &v);
         }
       else
         {
-          clutter_shader_set_uniform_1f (priv->shader_saturate, "saturation",
-                                         priv->saturation);
+          GValue v = G_VALUE_INIT;
+
+          g_value_init(&v, G_TYPE_FLOAT);
+          g_value_set_float(&v, priv->saturation);
+          clutter_shader_set_uniform (priv->shader_saturate, "saturation", &v);
         }
     }
 
-  cogl_color (&col);
+  cogl_set_source_color (&col);
 
   if (rotate_90)
     {
       cogl_push_matrix();
-      cogl_translatex(CFX_ONE*width/2, CFX_ONE*height/2, 0);
+      cogl_translate(1.0*width/2, 1.0*height/2, 0);  /* FIXME */
       cogl_rotate(90, 0, 0, 1);
-      cogl_scale(-CFX_ONE*height/width, -CFX_ONE*width/height);
-      cogl_translatex(-CFX_ONE*width/2, -CFX_ONE*height/2, 0);
+      cogl_scale(-1.0*height/width, -1.0*width/height, 1.0); /* FIXME */
+      cogl_translate(-1.0*width/2, -1.0*height/2, 0); /* FIXME */
     }
 
   /* Set the blur texture to linear interpolation - so we draw it smoothly
    * Onto the screen */
   current_tex = priv->current_is_a ? priv->tex_a : priv->tex_b;
+#ifdef UPSTREAM_DISABLED
   cogl_texture_set_filters(current_tex, CGL_LINEAR, CGL_LINEAR);
-
+#endif
   if ((priv->zoom >= 1) || !priv->use_mirror)
     {
+#ifdef UPSTREAM_DISABLED
       cogl_texture_rectangle (current_tex,
                               mx-zx, my-zy,
                               mx+zx, my+zy,
-                              0, 0, CFX_ONE, CFX_ONE);
+                              0, 0, 1.0, 1.0);
+#endif
     }
   else
     {
@@ -761,27 +791,28 @@ skip_progress:
             v->x = mx+(zx*(fx*2-VIGNETTE_TILES)/(VIGNETTE_TILES-2));
             v->y = my+(zy*(fy*2-VIGNETTE_TILES)/(VIGNETTE_TILES-2));
             v->z = 0;
-            v->tx = (fx-1) * CFX_ONE / (VIGNETTE_TILES-2);
-            v->ty = (fy-1) * CFX_ONE / (VIGNETTE_TILES-2);
+            v->tx = (fx-1) * 1.0 / (VIGNETTE_TILES-2);
+            v->ty = (fy-1) * 1.0 / (VIGNETTE_TILES-2);
             /* mirror edges */
             if (v->tx < 0)
               v->tx = -v->tx;
-            if (v->tx > CFX_ONE)
-              v->tx = CFX_ONE*2 - v->tx;
+            if (v->tx > 1.0)
+              v->tx = 1.0*2 - v->tx;
             if (v->ty < 0)
               v->ty = -v->ty;
-            if (v->ty > CFX_ONE)
-              v->ty = CFX_ONE*2 - v->ty;
+            if (v->ty > 1.0)
+              v->ty = 1.0*2 - v->ty;
             /* Colour value...
              * 'edge' is the distance from the edge (almost) - it is whichever
              * is the smallest out of the distances to all 4 edges. */
             edge = MIN(MIN(x, MIN(y, MIN(VIGNETTE_TILES-x, VIGNETTE_TILES-y))),
                        VIGNETTE_COLOURS-1);
             c = priv->vignette_colours[edge];
-            v->color.red = col.red * c / 255;
-            v->color.green = col.green * c / 255;
-            v->color.blue = col.blue * c / 255;
-            v->color.alpha = col.alpha;
+            cogl_color_set_red(&v->color, cogl_color_get_red(&col) * c);
+            cogl_color_set_green(&v->color, cogl_color_get_green(&col) * c);
+            cogl_color_set_blue(&v->color, cogl_color_get_blue(&col) * c);
+            cogl_color_set_alpha(&v->color, cogl_color_get_alpha(&col));
+
             /* next vertex */
             v++;
           }
@@ -823,15 +854,13 @@ skip_progress:
             v+=6;
           }
       /* render! */
-      cogl_texture_triangles (current_tex,
-                              6*(VIGNETTE_TILES*VIGNETTE_TILES),
-                              verts,
-                              TRUE);
+      cogl_set_source_texture(current_tex);
+      cogl_polygon (verts, 6*(VIGNETTE_TILES*VIGNETTE_TILES), TRUE);
     }
-
+#ifdef UPSTREAM_DISABLED
   /* Reset the filters on the current texture ready for normal blurring */
   cogl_texture_set_filters(current_tex, CGL_NEAREST, CGL_NEAREST);
-
+#endif
   if (rotate_90)
     {
       cogl_pop_matrix();
@@ -885,7 +914,9 @@ tidy_blur_group_class_init (TidyBlurGroupClass *klass)
   /* Provide implementations for ClutterActor vfuncs: */
   if (!hd_transition_get_int("blur", "turbo", 0))
     actor_class->paint = tidy_blur_group_paint;
+#ifdef UPSTREAM_DISABLED
   actor_class->notify_modified = tidy_blur_group_notify_modified_real;
+#endif
 }
 
 static void
@@ -945,8 +976,7 @@ tidy_blur_group_init (TidyBlurGroup *self)
   priv->tex_chequer = cogl_texture_new_from_data(
       CHEQUER_SIZE,
       CHEQUER_SIZE,
-      0,
-      0,
+      COGL_TEXTURE_NO_AUTO_MIPMAP,
       COGL_PIXEL_FORMAT_A_8,
       COGL_PIXEL_FORMAT_A_8,
       CHEQUER_SIZE,

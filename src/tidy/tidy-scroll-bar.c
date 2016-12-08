@@ -47,7 +47,7 @@ struct _TidyScrollBarPrivate
   TidyAdjustment *adjustment;
   guint           refresh_source;
   
-  ClutterUnit     x_origin;
+  gfloat     x_origin;
   
   ClutterActor   *handle;
   ClutterActor   *texture;
@@ -163,17 +163,16 @@ tidy_scroll_bar_paint (ClutterActor *actor)
     clutter_actor_paint (priv->texture);
   else
     {
-      ClutterColor bg_color;
-      guint w, h;
+      CoglColor bg_color;
+      gfloat w, h;
 
       clutter_actor_get_size (actor, &w, &h);
 
-      bg_color = priv->bg_color;
-      bg_color.alpha = clutter_actor_get_opacity (actor)
-                     * priv->bg_color.alpha
-                     / 255;
+      tidy_set_cogl_from_clutter_color(&bg_color, &priv->bg_color);
+      cogl_color_set_alpha(&bg_color,
+                           ((float)priv->bg_color.alpha * clutter_actor_get_opacity (actor)) / 255.0);
 
-      cogl_color (&bg_color);
+      cogl_set_source_color (&bg_color);
       cogl_rectangle (0, 0, w, h);
     }
 
@@ -207,13 +206,13 @@ tidy_scroll_bar_allocate (ClutterActor          *actor,
     allocate (actor, box, absolute_origin_changed);
 
   if (priv->texture)
-    clutter_actor_set_sizeu (priv->texture,
+    clutter_actor_set_size (priv->texture,
                              box->x2 - box->x1,
                              box->y2 - box->y1);
 
   if (priv->adjustment)
     {
-      ClutterUnit real_width, real_height, min_sizeu, max_sizeu;
+      gfloat real_width, real_height, min_sizeu, max_sizeu;
       gfloat lower, upper, page_size, size, increment;
       ClutterActorBox child_box;
       guint min_size, max_size;
@@ -233,25 +232,25 @@ tidy_scroll_bar_allocate (ClutterActor          *actor,
       real_height = box->y2 - box->y1 - padding.top - padding.bottom;
 
       if (upper == lower)
-        increment = CFX_ONE;
+        increment = 1.0;
       else
-        increment = clutter_qdivx (page_size, upper - lower);
+        increment = page_size / (upper - lower);
       
-      size = clutter_qmulx (CLUTTER_UNITS_TO_FIXED (real_width), increment);
+      size = real_width * increment;
       if (size > real_width) size = real_width;
 
       tidy_stylable_get (TIDY_STYLABLE (actor),
                          "min-size", &min_size,
                          "max-size", &max_size,
                          NULL);
-      min_sizeu = CLUTTER_UNITS_FROM_INT (min_size);
-      max_sizeu = CLUTTER_UNITS_FROM_INT (max_size);
+      min_sizeu = min_size;
+      max_sizeu = max_size;
 
-      clutter_actor_get_positionu (priv->handle, &child_box.x1, &child_box.y1);
+      clutter_actor_get_position (priv->handle, &child_box.x1, &child_box.y1);
       child_box.x2 = child_box.x1 +
                       MIN (max_sizeu,
                            MAX (min_sizeu,
-                                CLUTTER_UNITS_FROM_FIXED (size)));
+                                size));
       child_box.y2 = child_box.y1 + real_height;
       
       clutter_actor_allocate (priv->handle,
@@ -393,21 +392,19 @@ static void
 move_slider (TidyScrollBar *bar, gint x, gint y, gboolean interpolate)
 {
   gfloat position, lower, upper, page_size;
-  ClutterUnit ux, width;
+  gfloat ux, width;
   
   TidyScrollBarPrivate *priv = bar->priv;
 
   if (!priv->adjustment)
     return;
 
-  if (!clutter_actor_transform_stage_point (CLUTTER_ACTOR(bar),
-                                            CLUTTER_UNITS_FROM_DEVICE(x),
-                                            CLUTTER_UNITS_FROM_DEVICE(y),
+  if (!clutter_actor_transform_stage_point (CLUTTER_ACTOR(bar), x, y,
                                             &ux, NULL))
     return;
   
-  width = clutter_actor_get_widthu (CLUTTER_ACTOR (bar)) -
-          clutter_actor_get_widthu (priv->handle);
+  width = clutter_actor_get_width (CLUTTER_ACTOR (bar)) -
+          clutter_actor_get_width (priv->handle);
   
   if (width == 0)
     return;
@@ -423,11 +420,8 @@ move_slider (TidyScrollBar *bar, gint x, gint y, gboolean interpolate)
                                NULL,
                                &page_size);
 
-  position =
-    clutter_qmulx (clutter_qdivx (CLUTTER_UNITS_TO_FIXED (ux),
-                                  CLUTTER_UNITS_TO_FIXED (width)),
-                   upper - lower - page_size) + lower;
-  
+  position = (ux / width) * (upper - lower - page_size) + lower;
+#ifdef UPSTREAM_DISABLED
   if (interpolate)
     {
       guint mfreq = clutter_get_motion_events_frequency ();
@@ -440,7 +434,7 @@ move_slider (TidyScrollBar *bar, gint x, gint y, gboolean interpolate)
                                     fps);
       return;
     }
-  
+#endif
   tidy_adjustment_set_valuex (priv->adjustment, position);
 }
 
@@ -482,9 +476,7 @@ button_press_event_cb (ClutterActor       *actor,
   if (event->button != 1)
     return FALSE;
   
-  if (!clutter_actor_transform_stage_point (actor,
-                                            CLUTTER_UNITS_FROM_DEVICE(event->x),
-                                            CLUTTER_UNITS_FROM_DEVICE(event->y),
+  if (!clutter_actor_transform_stage_point (actor, event->x, event->y,
                                             &priv->x_origin, NULL))
     return FALSE;
   
@@ -528,7 +520,7 @@ tidy_scroll_bar_refresh (TidyScrollBar *bar)
 {
   ClutterActor *actor = CLUTTER_ACTOR (bar);
   TidyScrollBarPrivate *priv = bar->priv;
-  ClutterUnit width, button_width;
+  gfloat width, button_width;
   gfloat lower, upper, value, page_size;
   gfloat x, position;
   
@@ -548,16 +540,14 @@ tidy_scroll_bar_refresh (TidyScrollBar *bar)
       return FALSE;
     }
   
-  width = clutter_actor_get_widthu (actor);
-  button_width = clutter_actor_get_widthu (priv->handle);
+  width = clutter_actor_get_width (actor);
+  button_width = clutter_actor_get_width (priv->handle);
 
-  position = clutter_qdivx (value - lower, upper - lower - page_size);
+  position = (value - lower) / (upper - lower - page_size);
 
   /* Set padding on trough */
-  x = clutter_qmulx (position, CLUTTER_UNITS_TO_FIXED (width - button_width));
-  clutter_actor_set_positionu (CLUTTER_ACTOR (priv->handle),
-                               CLUTTER_UNITS_FROM_FIXED (x),
-                               0);
+  x = position * (width - button_width);
+  clutter_actor_set_position (CLUTTER_ACTOR (priv->handle), x, 0);
   
   clutter_actor_queue_redraw (actor);
   
@@ -703,15 +693,15 @@ tidy_scroll_bar_set_texture (TidyScrollBar *bar,
 
   if (texture)
     {
-      ClutterUnit width, height;
+      gfloat width, height;
 
-      clutter_actor_get_sizeu (CLUTTER_ACTOR (bar), &width, &height);
+      clutter_actor_get_size (CLUTTER_ACTOR (bar), &width, &height);
 
       priv->texture = texture;
       clutter_actor_set_parent (priv->texture, CLUTTER_ACTOR (bar));
 
-      clutter_actor_set_positionu (priv->texture, 0, 0);
-      clutter_actor_set_sizeu (priv->texture, width, height);
+      clutter_actor_set_position (priv->texture, 0, 0);
+      clutter_actor_set_size (priv->texture, width, height);
     }
 
   if (CLUTTER_ACTOR_IS_VISIBLE (bar))

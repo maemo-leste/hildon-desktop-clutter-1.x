@@ -38,15 +38,17 @@ gboolean hd_task_navigator_has_window (HdTaskNavigator * self,
 ClutterActor *hd_task_navigator_find_app_actor (HdTaskNavigator *self,
                                                 const gchar *id);
 
+typedef void (*hd_task_navigator_closure_t)(ClutterActor *, gpointer);
+
 void hd_task_navigator_scroll_back (HdTaskNavigator *self);
 
 void hd_task_navigator_zoom_in   (HdTaskNavigator *self,
                                   ClutterActor *win,
-                                  ClutterEffectCompleteFunc fun,
+                                  hd_task_navigator_closure_t fun,
                                   gpointer funparam);
 void hd_task_navigator_zoom_out  (HdTaskNavigator *self,
                                   ClutterActor *win,
-                                  ClutterEffectCompleteFunc fun,
+                                  hd_task_navigator_closure_t fun,
                                   gpointer funparam);
 
 void hd_task_navigator_transition_done  (HdTaskNavigator *self);
@@ -55,7 +57,7 @@ void hd_task_navigator_add_window       (HdTaskNavigator *self,
                                          ClutterActor *win);
 void hd_task_navigator_remove_window    (HdTaskNavigator *self,
                                          ClutterActor *win,
-                                         ClutterEffectCompleteFunc fun,
+                                         hd_task_navigator_closure_t fun,
                                          gpointer funparam);
 
 void hd_task_navigator_hibernate_window (HdTaskNavigator *self,

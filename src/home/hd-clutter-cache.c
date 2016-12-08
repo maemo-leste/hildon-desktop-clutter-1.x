@@ -190,7 +190,7 @@ hd_clutter_cache_get_texture(const char *filename, gboolean from_theme)
   if (!texture)
     texture = hd_clutter_cache_get_broken_texture();
   else
-    texture = clutter_clone_texture_new(CLUTTER_TEXTURE(texture));
+    texture = clutter_clone_new(CLUTTER_TEXTURE(texture));
   clutter_actor_set_name(texture, filename);
   return texture;
 }

@@ -346,7 +346,7 @@ static Bool hd_wm_client_hang (MBWindowManager *wm,
   gtk_widget_realize (dialog);
   gdk_win = gtk_widget_get_window (dialog);
   if (gdk_win)
-    hdwm->priv->hung_client_dialog_xid = gdk_x11_drawable_get_xid (gdk_win);
+    hdwm->priv->hung_client_dialog_xid = gdk_x11_window_get_xid (gdk_win);
 
   response = gtk_dialog_run (GTK_DIALOG (dialog));
   gtk_widget_destroy (dialog);

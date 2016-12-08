@@ -47,10 +47,10 @@ G_DEFINE_TYPE (TidyCachedGroup,
 static void
 tidy_cached_group_paint (ClutterActor *actor)
 {
-  ClutterColor    white = { 0xff, 0xff, 0xff, 0xff };
-  ClutterColor    bgcol = { 0x00, 0x00, 0x00, 0xff };
-  ClutterColor    col = { 0xff, 0xff, 0xff, 0xff };
-  gint            x_1, y_1, x_2, y_2;
+  CoglColor    white;
+  CoglColor    bgcol;
+  CoglColor    col;
+  ClutterActorBox box;
   gboolean        rotate_90;
 
   if (!TIDY_IS_CACHED_GROUP(actor))
@@ -60,9 +60,10 @@ tidy_cached_group_paint (ClutterActor *actor)
   TidyCachedGroup *container = TIDY_CACHED_GROUP(group);
   TidyCachedGroupPrivate *priv = container->priv;
 
-  clutter_actor_get_allocation_coords (actor, &x_1, &y_1, &x_2, &y_2);
-  int width = x_2 - x_1;
-  int height = y_2 - y_1;
+  clutter_actor_get_allocation_box(actor, &box);
+
+  int width = box.x2 - box.x1;
+  int height = box.y2 - box.y1;
 
   /* If we are rendering normally, or for some reason the size has been
    * set so small we couldn't create a texture then shortcut all this, and
@@ -114,10 +115,12 @@ tidy_cached_group_paint (ClutterActor *actor)
       tex_height = exp_height;
 
       priv->tex = cogl_texture_new_with_size(
-                tex_width, tex_height, 0, FALSE /*mipmap*/,
+                tex_width, tex_height, COGL_TEXTURE_NO_AUTO_MIPMAP,
                 priv->use_alpha ? COGL_PIXEL_FORMAT_RGBA_8888 :
                                   COGL_PIXEL_FORMAT_RGB_565);
+#ifdef UPSTREAM_DISABLED
       cogl_texture_set_filters(priv->tex, CGL_NEAREST, CGL_NEAREST);
+#endif
       priv->fbo = cogl_offscreen_new_to_texture (priv->tex);
     }
   /* It may be that we have resized, but the texture has not.
@@ -137,18 +140,22 @@ tidy_cached_group_paint (ClutterActor *actor)
       cogl_push_matrix();
       tidy_util_cogl_push_offscreen_buffer(priv->fbo);
       /* translate a bit to let bilinear filter smooth out intermediate pixels */
-      cogl_translatex(CFX_ONE/2,CFX_ONE/2,0);
+      cogl_translate(1.0/2,1.0/2,0);
       if (rotate_90) {
-        cogl_scale(CFX_ONE*tex_width/height, CFX_ONE*tex_height/width);
-        cogl_translatex(CFX_ONE*height/2, CFX_ONE*width/2, 0);
+        cogl_scale(1.0*tex_width/height, 1.0*tex_height/width, 1.0); /* FIXME */
+        cogl_translate(1.0*height/2, 1.0*width/2, 0); /* FIXME */
         cogl_rotate(90, 0, 0, 1);
-        cogl_translatex(-CFX_ONE*width/2, -CFX_ONE*height/2, 0);
+        cogl_translate(-1.0*width/2, -1.0*height/2, 0);
       } else {
-        cogl_scale(CFX_ONE*tex_width/width, CFX_ONE*tex_height/height);
+        cogl_scale(1.0*tex_width/width, 1.0*tex_height/height, 1.0);
       }
 
-      cogl_paint_init(&bgcol);
-      cogl_color (&white);
+      tidy_set_cogl_color(&white, 0xff, 0xff, 0xff, 0xff);
+      tidy_set_cogl_color(&bgcol, 0x00, 0x00, 0x00, 0xff);
+
+      cogl_clear(&bgcol, COGL_BUFFER_BIT_COLOR);
+      cogl_set_source_color (&white);
+
       CLUTTER_ACTOR_CLASS (tidy_cached_group_parent_class)->paint(actor);
 
       tidy_util_cogl_pop_offscreen_buffer();
@@ -158,37 +165,38 @@ tidy_cached_group_paint (ClutterActor *actor)
     }
 
   /* Render what we've blurred to the screen */
-  col.alpha = clutter_actor_get_paint_opacity (actor);
+  tidy_set_cogl_color(&col, 0xff, 0xff, 0xff,
+                      clutter_actor_get_paint_opacity (actor));
 
   /* if cache_amount isn't 1, we merge the two images by rendering the
    * real one first, then rendering the other one after... */
   if (priv->cache_amount < 0.99)
     {
-      cogl_color (&white);
+      cogl_set_source_color (&white);
       /* And we must render ourselves properly so we can render
        * the blur over the top */
       cogl_push_matrix();
       CLUTTER_ACTOR_CLASS (tidy_cached_group_parent_class)->paint(actor);
       cogl_pop_matrix();
-      col.alpha = (int)(priv->cache_amount*255);
+      cogl_color_set_alpha(&col, priv->cache_amount);
     }
 
   /* Now we render the image we have... */
-  cogl_color (&col);
+  cogl_set_source_color (&col);
 
   if (rotate_90)
     {
       cogl_push_matrix();
-      cogl_translatex(CFX_ONE*width/2, CFX_ONE*height/2, 0);
+      cogl_translate(1.0*width/2, 1.0*height/2, 0);
       cogl_rotate(90, 0, 0, 1);
-      cogl_scale(-CFX_ONE*height/width, -CFX_ONE*width/height);
-      cogl_translatex(-CFX_ONE*width/2, -CFX_ONE*height/2, 0);
+      cogl_scale(-1.0*height/width, -1.0*width/height, 1.0);
+      cogl_translate(-1.0*width/2, -1.0*height/2, 0);
     }
-  cogl_texture_rectangle (priv->tex,
-                          0, 0,
-                          CLUTTER_INT_TO_FIXED (width),
-                          CLUTTER_INT_TO_FIXED (height),
-                          0, 0, CFX_ONE, CFX_ONE);
+
+  cogl_set_source_texture (priv->tex);
+  cogl_rectangle_with_texture_coords  (
+                          0, 0, width, height,
+                          0, 0, 1.0, 1.0);
   if (rotate_90)
     {
       cogl_pop_matrix();

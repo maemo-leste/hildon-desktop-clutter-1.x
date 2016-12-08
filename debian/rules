@@ -18,7 +18,7 @@ else
 CFLAGS += -O0
 endif
 
-CFLAGS += -DG_DISABLE_CHECKS -Winline
+CFLAGS += -DG_DISABLE_CHECKS -Winline -Wno-deprecated-declarations
 
 DEB_CONFIGURE_EXTRA_FLAGS += \
 	$(ENABLE_A11Y) \

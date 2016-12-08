@@ -39,7 +39,7 @@ AC_PATH_PROG(DBUS_BINDING_TOOL, dbus-binding-tool)
 # Misc build flags
 #++++++++++++++++++
 
-CFLAGS="$CFLAGS -Wall -Wno-format-extra-args -ansi -Wmissing-prototypes -Wmissing-declarations -Werror -std=gnu99 -DG_DISABLE_CAST_CHECKS -fgnu89-inline"
+CFLAGS="$CFLAGS -Wall -Wno-format-extra-args -ansi -Wmissing-prototypes -Wmissing-declarations -std=gnu99 -DG_DISABLE_CAST_CHECKS -fgnu89-inline"
 
 AC_SUBST(CFLAGS)
 
@@ -116,22 +116,25 @@ if test "$ac_cv_enable_static_mb2" = yes; then
         PKG_CHECK_MODULES([MB2], [libmatchbox2-0.1])
         MB2_STATIC_LIB=/usr/lib/libmatchbox2-0.1.a
 
-        PKG_CHECK_MODULES(HD, [clutter-0.8 dnl
+        PKG_CHECK_MODULES(HD, [clutter-1.0 dnl
                        glib-2.0 >= 2.12 dnl
                        gthread-2.0 dnl
-		       dbus-1 dnl
-		       x11 dnl
-		       xcomposite dnl
-		       xfixes dnl
-		       xrandr dnl
-		       gtk+-2.0 dnl
-		       gconf-2.0 dnl
-		       hildon-1 dnl
-		       libhildondesktop-1 dnl
-		       libcanberra dnl
-		       gnome-vfs-2.0 dnl
-		       libgnome-menu dnl
-		       gdk-pixbuf-xlib-2.0 dnl
+                       dbus-1 dnl
+                       x11 dnl
+                       xcomposite dnl
+                       xfixes dnl
+                       xrandr dnl
+                       xrender dnl
+                       gtk+-3.0 dnl
+                       gconf-2.0 dnl
+                       gl dnl
+                       hildon-3 dnl
+                       libhildondesktop-3 dnl
+                       libcanberra dnl
+                       libgnome-menu dnl
+                       libpng12 dnl
+                       expat dnl
+                       gdk-pixbuf-xlib-2.0 dnl
                        pangoxft dnl
                        xft dnl
                        profile dnl
@@ -139,22 +142,25 @@ if test "$ac_cv_enable_static_mb2" = yes; then
 else
         MB2_CFLAGS=''
         MB2_STATIC_LIB=''
-        PKG_CHECK_MODULES(HD, [clutter-0.8 dnl
+        PKG_CHECK_MODULES(HD, [clutter-1.0 dnl
                        glib-2.0 >= 2.12 dnl
                        gthread-2.0 dnl
-		       dbus-1 dnl
-		       x11 dnl
-		       xcomposite dnl
-		       xfixes dnl
-		       xrandr dnl
-		       gtk+-2.0 dnl
-		       gconf-2.0 dnl
-		       hildon-1 dnl
-		       libhildondesktop-1 dnl
-		       libcanberra dnl
-		       gnome-vfs-2.0 dnl
-		       libgnome-menu dnl
-		       gdk-pixbuf-xlib-2.0 dnl
+                       dbus-1 dnl
+                       x11 dnl
+                       xcomposite dnl
+                       xfixes dnl
+                       xrandr dnl
+                       xrender dnl
+                       gtk+-3.0 dnl
+                       gconf-2.0 dnl
+                       gl dnl
+                       hildon-3 dnl
+                       libhildondesktop-3 dnl
+                       libcanberra dnl
+                       libgnome-menu dnl
+                       libpng12 dnl
+                       expat dnl
+                       gdk-pixbuf-xlib-2.0 dnl
                        xft dnl
                        libmatchbox2-0.1 dnl
                        profile dnl

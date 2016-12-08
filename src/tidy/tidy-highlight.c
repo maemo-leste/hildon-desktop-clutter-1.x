@@ -73,9 +73,9 @@ struct _TidyHighlightPrivate
 
 static void
 tidy_highlight_get_preferred_width (ClutterActor *self,
-                                           ClutterUnit   for_height,
-                                           ClutterUnit  *min_width_p,
-                                           ClutterUnit  *natural_width_p)
+                                           gfloat   for_height,
+                                           gfloat  *min_width_p,
+                                           gfloat  *natural_width_p)
 {
   TidyHighlightPrivate *priv = TIDY_HIGHLIGHT(self)->priv;
   ClutterActor *parent_texture;
@@ -107,9 +107,9 @@ tidy_highlight_get_preferred_width (ClutterActor *self,
 
 static void
 tidy_highlight_get_preferred_height (ClutterActor *self,
-                                            ClutterUnit   for_width,
-                                            ClutterUnit  *min_height_p,
-                                            ClutterUnit  *natural_height_p)
+                                            gfloat   for_width,
+                                            gfloat  *min_height_p,
+                                            gfloat  *natural_height_p)
 {
   TidyHighlightPrivate *priv = TIDY_HIGHLIGHT (self)->priv;
   ClutterActor *parent_texture;
@@ -145,11 +145,12 @@ tidy_highlight_paint (ClutterActor *self)
   TidyHighlightPrivate  *priv;
   ClutterActor                *parent_texture;
   gint                         x_1, y_1, x_2, y_2;
-  ClutterColor                 col = { 0xff, 0xff, 0xff, 0xff };
+  CoglColor                    col;
   CoglHandle                   cogl_texture;
   guint                        tex_width, tex_height;
   gfloat                 overlapx, overlapy;
   CoglTextureVertex            verts[4];
+  ClutterActorBox box;
 
   priv = TIDY_HIGHLIGHT (self)->priv;
 
@@ -164,11 +165,16 @@ tidy_highlight_paint (ClutterActor *self)
   if (!CLUTTER_ACTOR_IS_REALIZED (parent_texture))
     clutter_actor_realize (parent_texture);
 
-  col = priv->color;
-  col.alpha = col.alpha * clutter_actor_get_paint_opacity (self) / 256;
-  cogl_color (&col);
-
-  clutter_actor_get_allocation_coords (self, &x_1, &y_1, &x_2, &y_2);
+  tidy_set_cogl_from_clutter_color(&col, &priv->color);
+  cogl_color_set_alpha(&col, cogl_color_get_alpha(&col) *
+                       (float)clutter_actor_get_paint_opacity (self) / 255.0);
+  cogl_set_source_color (&col);
+/* FIXME */
+  clutter_actor_get_allocation_box(self, &box);
+  x_1 = box.x1;
+  y_1 = box.y1;
+  x_2 = box.x2;
+  y_2 = box.y2;
 
   cogl_texture = clutter_texture_get_cogl_texture (priv->parent_texture);
 
@@ -180,11 +186,17 @@ tidy_highlight_paint (ClutterActor *self)
 
   if (priv->shader)
     {
+      GValue v = G_VALUE_INIT;
+
+      g_value_init(&v, G_TYPE_FLOAT);
+
       clutter_shader_set_is_enabled (priv->shader, TRUE);
-      clutter_shader_set_uniform_1f (priv->shader, "blurx",
-                                     priv->amount / tex_width);
-      clutter_shader_set_uniform_1f (priv->shader, "blury",
-                                     priv->amount / tex_height);
+
+      g_value_set_float(&v, priv->amount / tex_width);
+      clutter_shader_set_uniform (priv->shader, "blurx", &v);
+
+      g_value_set_float(&v, priv->amount / tex_height);
+      clutter_shader_set_uniform (priv->shader, "blury", &v);
     }
 
 
@@ -192,34 +204,33 @@ tidy_highlight_paint (ClutterActor *self)
    * our edges outside those of the texture. We have to do this with
    * cogl_texture_polygon not cogl_rectangle, because clutter thinks
    * that we want to repeat rectangles and messes everything up */
-  overlapx = CLUTTER_FLOAT_TO_FIXED(
-      ((x_2 - x_1) - tex_width) / (float)(tex_width*2));
-  overlapy = CLUTTER_FLOAT_TO_FIXED(
-      ((y_2 - y_1) - tex_height) / (float)(tex_height*2));
+  overlapx =  ((x_2 - x_1) - tex_width) / (float)(tex_width*2);
+  overlapy =  ((y_2 - y_1) - tex_height) / (float)(tex_height*2);
 
   verts[0].x = 0;
   verts[0].y = 0;
   verts[0].z = 0;
   verts[0].tx = -overlapx;
   verts[0].ty = -overlapy;
-  verts[1].x = CLUTTER_INT_TO_FIXED (x_2 - x_1);
+  verts[1].x = x_2 - x_1;
   verts[1].y = 0;
   verts[1].z = 0;
-  verts[1].tx = CFX_ONE+overlapx;
+  verts[1].tx = 1.0+overlapx;
   verts[1].ty = -overlapy;
-  verts[2].x = CLUTTER_INT_TO_FIXED (x_2 - x_1);
-  verts[2].y = CLUTTER_INT_TO_FIXED (y_2 - y_1);
+  verts[2].x = x_2 - x_1;
+  verts[2].y = y_2 - y_1;
   verts[2].z = 0;
-  verts[2].tx = CFX_ONE+overlapx;
-  verts[2].ty = CFX_ONE+overlapy;
+  verts[2].tx = 1.0+overlapx;
+  verts[2].ty = 1.0+overlapy;
   verts[3].x = 0;
-  verts[3].y = CLUTTER_INT_TO_FIXED (y_2 - y_1);
+  verts[3].y = y_2 - y_1;
   verts[3].z = 0;
   verts[3].tx = -overlapx;
-  verts[3].ty = CFX_ONE+overlapy;
+  verts[3].ty = 1.0+overlapy;
 
   /* Parent paint translated us into position */
-  cogl_texture_polygon (cogl_texture, 4, verts, FALSE);
+  cogl_set_source_texture(cogl_texture);
+  cogl_polygon (verts, 4, FALSE);
 
   if (priv->shader)
     clutter_shader_set_is_enabled (priv->shader, FALSE);

@@ -3712,8 +3712,8 @@ dump_clutter_actor_tree (ClutterActor *actor, GString *indent)
   if (!indent)
     indent = g_string_new ("");
 
-  if (!(name = clutter_actor_get_name (actor)) && CLUTTER_IS_LABEL (actor))
-    name = clutter_label_get_text (CLUTTER_LABEL (actor));
+  if (!(name = clutter_actor_get_name (actor)) && CLUTTER_IS_TEXT (actor))
+    name = clutter_text_get_text (CLUTTER_TEXT (actor));
   cmgrc = g_object_get_data(G_OBJECT (actor), "HD-MBWMCompMgrClutterClient");
 
   clutter_actor_get_geometry (actor, &geo);

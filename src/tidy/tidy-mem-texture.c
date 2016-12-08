@@ -8,6 +8,7 @@
 #endif
 
 #include "tidy-mem-texture.h"
+#include "tidy-util.h"
 #include <clutter/clutter.h>
 
 #include <string.h>
@@ -90,10 +91,10 @@ tidy_mem_texture_paint (ClutterActor *self)
 {
   TidyMemTexture              *texture = TIDY_MEM_TEXTURE(self);
   TidyMemTexturePrivate       *priv;
-  gint                         x_1, y_1, x_2, y_2;
-  ClutterColor                 col = { 0xff, 0xff, 0xff, 0xff };
-
-  gint                        width, height;
+  gfloat                       x_1, y_1, x_2, y_2;
+  CoglColor                    col;
+  ClutterActorBox box;
+  gfloat                       width, height;
   GList                       *tiles;
 
   priv = TIDY_MEM_TEXTURE (self)->priv;
@@ -101,10 +102,16 @@ tidy_mem_texture_paint (ClutterActor *self)
   /* parent texture may have been hidden, there for need to make sure its
    * realised with resources available.
   */
-  col.alpha = clutter_actor_get_paint_opacity (self);
-  cogl_color (&col);
+  tidy_set_cogl_color(&col, 0xff, 0xff, 0xff,
+                      clutter_actor_get_paint_opacity (self));
+  cogl_set_source_color (&col);
+/* FIXME */
+  clutter_actor_get_allocation_box(self, &box);
+  x_1 = box.x1;
+  y_1 = box.y1;
+  x_2 = box.x2;
+  y_2 = box.y2;
 
-  clutter_actor_get_allocation_coords (self, &x_1, &y_1, &x_2, &y_2);
   width = x_2 - x_1;
   height = y_2 - y_1;
 
@@ -127,9 +134,9 @@ tidy_mem_texture_paint (ClutterActor *self)
         {
           gfloat x1,y1,x2,y2;
           tidy_mem_texture_tile_coords(texture, tile, &x1, &y1, &x2, &y2);
-          cogl_texture_rectangle (tile->texture,
-                                  x1, y1, x2, y2,
-                                  0, 0, CFX_ONE, CFX_ONE);
+          cogl_set_source_texture (tile->texture);
+          cogl_rectangle_with_texture_coords (x1, y1, x2, y2,
+                                              0, 0, 1.0, 1.0);
         }
     }
 }
@@ -181,8 +188,8 @@ tidy_mem_texture_init (TidyMemTexture *self)
   priv->texture_format = 0;
   priv->offset_x = 0;
   priv->offset_y = 0;
-  priv->scale_x = CFX_ONE;
-  priv->scale_y = CFX_ONE;
+  priv->scale_x = 1.0;
+  priv->scale_y = 1.0;
 
   priv->tiles = 0;
 }
@@ -244,18 +251,10 @@ tidy_mem_texture_tile_coords(TidyMemTexture *texture,
 {
   TidyMemTexturePrivate *priv = texture->priv;
 
-  *x1 = CFX_QMUL(
-          priv->offset_x+CLUTTER_INT_TO_FIXED(tile->pos.x),
-          priv->scale_x);
-  *y1 = CFX_QMUL(
-          priv->offset_y+CLUTTER_INT_TO_FIXED(tile->pos.y),
-          priv->scale_y);
-  *x2 = CFX_QMUL(
-          priv->offset_x+CLUTTER_INT_TO_FIXED(tile->pos.x+tile->pos.width),
-          priv->scale_x);
-  *y2 = CFX_QMUL(
-          priv->offset_y+CLUTTER_INT_TO_FIXED(tile->pos.y+tile->pos.height),
-          priv->scale_y);
+  *x1 = (priv->offset_x + tile->pos.x) * priv->scale_x;
+  *y1 = (priv->offset_y + tile->pos.y) * priv->scale_y;
+  *x2 = (priv->offset_x + tile->pos.x + tile->pos.width) * priv->scale_x;
+  *y2 = (priv->offset_y + tile->pos.y + tile->pos.height) * priv->scale_y;
 }
 
 static gboolean
@@ -266,8 +265,8 @@ tidy_mem_texture_tile_visible(TidyMemTexture *texture,
   gfloat x1, y1, x2, y2;
   tidy_mem_texture_tile_coords(texture, tile, &x1, &y1, &x2, &y2);
   return (x2 >= 0 && y2 >= 0 &&
-          x1 <= CLUTTER_INT_TO_FIXED(width) &&
-          y1 <= CLUTTER_INT_TO_FIXED(height));
+          x1 <= width &&
+          y1 <= height);
 }
 
 /* Copies the pixels into a buffer with the correct row stride so
@@ -383,8 +382,9 @@ void tidy_mem_texture_set_data(TidyMemTexture *texture,
               tile->pos.height = priv->texture_height - tile->pos.y;
             /* alloc texture */
             tile->texture = cogl_texture_new_with_size(
-                tile->pos.width, tile->pos.height, -1 /* no waste */,
-                FALSE, priv->texture_format);
+                  tile->pos.width, tile->pos.height,
+                  COGL_TEXTURE_NO_AUTO_MIPMAP,
+                  priv->texture_format);
             /* set whole area to be modified */
             tile->modified.x = 0;
             tile->modified.y = 0;

@@ -1658,7 +1658,7 @@ void hd_render_manager_set_state(HDRMStateEnum state)
                   /* Make sure @cmgrcc stays around as long as needed. */
                   mb_wm_object_ref (MB_WM_OBJECT (cmgrcc));
                   hd_task_navigator_zoom_out (priv->task_nav, actor,
-                                              G_CALLBACK(zoom_out_completed),
+                                              (hd_task_navigator_closure_t)zoom_out_completed,
                                               cmgrcc);
                 }
               else if (

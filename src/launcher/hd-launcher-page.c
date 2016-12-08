@@ -94,7 +94,7 @@ static void hd_launcher_page_show (ClutterActor *actor);
 static void hd_launcher_page_tile_clicked (HdLauncherTile *tile,
                                            gpointer data);
 static void hd_launcher_page_new_frame(ClutterTimeline *timeline,
-                                       gint frame_num, gpointer data);
+                                       gint msecs, gpointer data);
 static void hd_launcher_page_transition_end(ClutterTimeline *timeline,
                                             gpointer data);
 
@@ -195,26 +195,26 @@ hd_launcher_page_constructed (GObject *object)
   gchar *font_string;
   HdLauncherPage *page = HD_LAUNCHER_PAGE(object);
   HdLauncherPagePrivate *priv = HD_LAUNCHER_PAGE_GET_PRIVATE (object);
-  guint x1, y1;
-  guint label_width, label_height;
-  guint page_width = HD_LAUNCHER_PAGE_WIDTH;
-  guint page_height = HD_LAUNCHER_PAGE_HEIGHT;
+  gfloat x1, y1;
+  gfloat label_width, label_height;
+  gfloat page_width = HD_LAUNCHER_PAGE_WIDTH;
+  gfloat page_height = HD_LAUNCHER_PAGE_HEIGHT;
 
   /* Create the label that says this page is empty */
   hd_gtk_style_get_text_color (HD_GTK_BUTTON_SINGLETON,
                                GTK_STATE_NORMAL,
                                &text_color);
   font_string = hd_gtk_style_get_font_string (HD_GTK_BUTTON_SINGLETON);
-  priv->empty_label = clutter_label_new_full(font_string,
+  priv->empty_label = clutter_text_new_full(font_string,
                                              _("tana_li_of_noapps"),
                                              &text_color);
-  clutter_label_set_line_wrap (CLUTTER_LABEL (priv->empty_label), TRUE);
-  clutter_label_set_ellipsize (CLUTTER_LABEL (priv->empty_label),
-                               PANGO_ELLIPSIZE_NONE);
-  clutter_label_set_alignment (CLUTTER_LABEL (priv->empty_label),
-                               PANGO_ALIGN_CENTER);
-  clutter_label_set_line_wrap_mode (CLUTTER_LABEL (priv->empty_label),
-                                    PANGO_WRAP_WORD);
+  clutter_text_set_line_wrap (CLUTTER_TEXT (priv->empty_label), TRUE);
+  clutter_text_set_ellipsize (CLUTTER_TEXT (priv->empty_label),
+                              PANGO_ELLIPSIZE_NONE);
+  clutter_text_set_line_alignment (CLUTTER_TEXT (priv->empty_label),
+                                   PANGO_ALIGN_CENTER);
+  clutter_text_set_line_wrap_mode (CLUTTER_TEXT (priv->empty_label),
+                                   PANGO_WRAP_WORD);
 
   clutter_actor_get_size(priv->empty_label, &label_width, &label_height);
 
@@ -393,7 +393,7 @@ void hd_launcher_page_transition(HdLauncherPage *page, HdLauncherPageTransition 
 
   hd_launcher_grid_transition_begin(HD_LAUNCHER_GRID(priv->grid), trans_type);
 
-  priv->transition = clutter_timeline_new_for_duration(
+  priv->transition = clutter_timeline_new(
       hd_transition_get_int(
                 hd_launcher_page_get_transition_string(priv->transition_type),
                 "duration",
@@ -426,18 +426,18 @@ void hd_launcher_page_transition_stop(HdLauncherPage *page)
 
 static void
 hd_launcher_page_new_frame(ClutterTimeline *timeline,
-                          gint frame_num, gpointer data)
+                          gint msecs, gpointer data)
 {
   HdLauncherPage *page = HD_LAUNCHER_PAGE(data);
   HdLauncherPagePrivate *priv = HD_LAUNCHER_PAGE_GET_PRIVATE (page);
-  gint frames;
+  guint duration;
   float amt;
 
   if (!HD_IS_LAUNCHER_PAGE(data))
     return;
 
-  frames = clutter_timeline_get_n_frames(timeline);
-  amt = frame_num / (float)frames;
+  duration = clutter_timeline_get_duration(timeline);
+  amt = (float)msecs / (float)duration;
 
   hd_launcher_grid_transition(HD_LAUNCHER_GRID(priv->grid),
                               page,
@@ -507,7 +507,7 @@ hd_launcher_page_transition_end(ClutterTimeline *timeline,
   }
 }
 
-ClutterFixed hd_launcher_page_get_scroll_y(HdLauncherPage *page)
+gfloat hd_launcher_page_get_scroll_y(HdLauncherPage *page)
 {
   HdLauncherPagePrivate *priv;
   ClutterActor *bar;

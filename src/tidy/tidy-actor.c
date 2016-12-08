@@ -93,13 +93,11 @@ tidy_actor_set_property (GObject      *gobject,
       break;
 
     case PROP_X_ALIGN:
-      actor->priv->x_align =
-        CLUTTER_FIXED_TO_FLOAT (g_value_get_double (value));
+      actor->priv->x_align = g_value_get_double (value);
       break;
 
     case PROP_Y_ALIGN:
-      actor->priv->y_align =
-        CLUTTER_FIXED_TO_FLOAT (g_value_get_double (value));
+      actor->priv->y_align = g_value_get_double (value);
       break;
 
     case PROP_STYLE:
@@ -134,11 +132,11 @@ tidy_actor_get_property (GObject    *gobject,
       break;
 
     case PROP_X_ALIGN:
-      g_value_set_double (value, CLUTTER_FIXED_TO_FLOAT (priv->x_align));
+      g_value_set_double (value, priv->x_align);
       break;
 
     case PROP_Y_ALIGN:
-      g_value_set_double (value, CLUTTER_FIXED_TO_FLOAT (priv->y_align));
+      g_value_set_double (value, priv->y_align);
       break;
 
     case PROP_STYLE:
@@ -304,7 +302,7 @@ tidy_actor_init (TidyActor *actor)
   priv->padding.right = priv->padding.left = 0;
 
   /* middle align */
-  priv->x_align = priv->y_align = CLUTTER_FLOAT_TO_FIXED (0.5);
+  priv->x_align = priv->y_align = 0.5;
 
   clutter_actor_set_reactive (CLUTTER_ACTOR (actor), TRUE);
 }
@@ -374,10 +372,10 @@ tidy_actor_set_alignment (TidyActor *actor,
   x_align = CLAMP (x_align, 0.0, 1.0);
   y_align = CLAMP (y_align, 0.0, 1.0);
 
-  priv->x_align = CLUTTER_FLOAT_TO_FIXED (x_align);
+  priv->x_align = x_align;
   g_object_notify (G_OBJECT (actor), "x-align");
   
-  priv->y_align = CLUTTER_FLOAT_TO_FIXED (y_align);
+  priv->y_align = y_align;
   g_object_notify (G_OBJECT (actor), "y-align");
 
   if (CLUTTER_ACTOR_IS_VISIBLE (actor))
@@ -410,10 +408,10 @@ tidy_actor_get_alignment (TidyActor *actor,
   priv = actor->priv;
 
   if (x_align)
-    *x_align = CLUTTER_FIXED_TO_FLOAT (priv->x_align);
+    *x_align = priv->x_align;
 
   if (y_align)
-    *y_align = CLUTTER_FIXED_TO_FLOAT (priv->y_align);
+    *y_align = priv->y_align;
 }
 
 /**
@@ -441,8 +439,8 @@ tidy_actor_set_alignmentx (TidyActor    *actor,
 
   priv = actor->priv;
 
-  x_align = CLAMP (x_align, 0, CFX_ONE);
-  y_align = CLAMP (y_align, 0, CFX_ONE);
+  x_align = CLAMP (x_align, 0.0, 1.0);
+  y_align = CLAMP (y_align, 0.0, 1.0);
 
   if (priv->x_align != x_align)
     {

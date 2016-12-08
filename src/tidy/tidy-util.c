@@ -1,5 +1,7 @@
 #include "tidy-util.h"
 
+#include <GL/gl.h>
+
 /* The code below is to handle stacks of Offscreen buffers - for example when
  * rendering to a tidy-blur-group *while* rendering to a tidy-cached-group.
  * It also deals with properly saving the scissor state, as pretty much all
@@ -44,7 +46,7 @@ void tidy_util_cogl_push_offscreen_buffer(CoglHandle fbo)
   /* Remove scissoring as we're rendering to a texture */
   glScissor (0, 0, 0, 0);
   glDisable (GL_SCISSOR_TEST);
-  cogl_draw_buffer (COGL_OFFSCREEN_BUFFER, fbo);
+  cogl_set_draw_buffer (COGL_OFFSCREEN_BUFFER, fbo);
 
   obe++;
   obe->fbo = fbo;
@@ -67,6 +69,22 @@ void tidy_util_cogl_pop_offscreen_buffer(void)
   else
     glDisable (GL_SCISSOR_TEST);
 
-  cogl_draw_buffer (obe->fbo ? COGL_OFFSCREEN_BUFFER : COGL_WINDOW_BUFFER,
-                    obe->fbo);
+  cogl_set_draw_buffer (obe->fbo ? COGL_OFFSCREEN_BUFFER : COGL_WINDOW_BUFFER,
+                        obe->fbo);
+}
+
+void tidy_set_cogl_color(CoglColor *c, guint8 r, guint8 g, guint8 b, guint8 a)
+{
+  cogl_color_set_red(c, (float)r / 255.0);
+  cogl_color_set_green(c, (float)g / 255.0);
+  cogl_color_set_blue(c, (float)b / 255.0);
+  cogl_color_set_alpha(c, (float)a / 255.0);
+}
+
+void tidy_set_cogl_from_clutter_color(CoglColor *c, const ClutterColor *cl)
+{
+  cogl_color_set_red(c, (float)cl->red / 255.0);
+  cogl_color_set_green(c, (float)cl->green / 255.0);
+  cogl_color_set_blue(c, (float)cl->blue / 255.0);
+  cogl_color_set_alpha(c, (float)cl->alpha / 255.0);
 }

@@ -33,7 +33,6 @@
 #include <glib/gstdio.h>
 
 #include <gconf/gconf-client.h>
-#include <libgnomevfs/gnome-vfs.h>
 
 #include <matchbox/core/mb-wm.h>
 
@@ -71,7 +70,7 @@ struct _HdHomeViewContainerPrivate
   /* animation */
   ClutterTimeline *timeline;
   int timeline_offset;
-  guint frames;
+  guint duration;
   gboolean animation_overshoot;
 
   gboolean in_move;
@@ -79,7 +78,8 @@ struct _HdHomeViewContainerPrivate
   /* GConf */
   GConfClient *gconf_client;
 
-  GnomeVFSMonitorHandle *backgrounds_dir_monitor;
+  GFile *bg_file;
+  GFileMonitor *backgrounds_dir_monitor;
 
   guint views_active_notify;
 };
@@ -116,23 +116,24 @@ hd_home_view_container_update_previous_and_next_view (HdHomeViewContainer *self)
 }
 
 static void
-backgrounds_dir_changed (GnomeVFSMonitorHandle    *handler,
-                         const gchar              *monitor_uri,
-                         const gchar              *info_uri,
-                         GnomeVFSMonitorEventType  event_type,
-                         HdHomeViewContainer      *view_container)
+backgrounds_dir_changed (GFileMonitor        *monitor,
+                         GFile               *monitor_file,
+                         GFile               *info,
+                         GFileMonitorEvent    event_type,
+                         HdHomeViewContainer *view_container)
 {
   HdHomeViewContainerPrivate *priv = view_container->priv;
+  gchar *info_uri = g_file_get_uri (info);
 
-  if (event_type == GNOME_VFS_MONITOR_EVENT_CREATED ||
-      event_type == GNOME_VFS_MONITOR_EVENT_CHANGED)
+  if (event_type == G_FILE_MONITOR_EVENT_CREATED ||
+      event_type == G_FILE_MONITOR_EVENT_CHANGED)
     {
       gchar *filename, *basename;
 
       g_debug ("%s. %s %s.",
                __FUNCTION__,
                info_uri,
-               event_type == GNOME_VFS_MONITOR_EVENT_CREATED ?
+               event_type == G_FILE_MONITOR_EVENT_CREATED ?
                              "created" : "changed");
 
       filename = g_filename_from_uri (info_uri, NULL, NULL);
@@ -338,7 +339,7 @@ remove_global_live_bg (HdHomeViewContainer *container)
 
   if (priv->live_bg->window->live_background == -1)
     {
-      clutter_actor_remove_child (container, actor);
+      clutter_actor_remove_child (CLUTTER_ACTOR(container), actor);
       clutter_actor_hide (actor);
     }
   else if (priv->live_bg->window->live_background == -101)
@@ -467,8 +468,7 @@ hd_home_view_container_constructed (GObject *self)
   guint i;
   MBWindowManager *wm;
   long propvalue[1];
-  gchar *backgrounds_dir, *backgrounds_dir_uri;
-  GnomeVFSResult result;
+  gchar *backgrounds_dir;
   GError *error = NULL;
 
   if (G_OBJECT_CLASS (hd_home_view_container_parent_class)->constructed)
@@ -532,23 +532,16 @@ hd_home_view_container_constructed (GObject *self)
       g_warning ("Could not make %s dir", backgrounds_dir);
     }
 
-  backgrounds_dir_uri = gnome_vfs_get_uri_from_local_path (backgrounds_dir);
-  result = gnome_vfs_monitor_add (&priv->backgrounds_dir_monitor,
-                                  backgrounds_dir_uri,
-                                  GNOME_VFS_MONITOR_DIRECTORY,
-                                  (GnomeVFSMonitorCallback) backgrounds_dir_changed,
-                                  self);
+  priv->bg_file = g_file_new_for_path (backgrounds_dir);
+  priv->backgrounds_dir_monitor =
+      g_file_monitor_directory (priv->bg_file, G_FILE_MONITOR_NONE, NULL, NULL);
 
-  if (result == GNOME_VFS_OK)
-    g_debug ("%s. Started to monitor %s",
-             __FUNCTION__,
-             backgrounds_dir_uri);
-  else
-    g_warning ("Cannot monitor directory ~/.backgrounds for changed background files. %s",
-               gnome_vfs_result_to_string (result));
+  g_signal_connect (G_OBJECT (priv->backgrounds_dir_monitor),
+                    "changed",
+                    G_CALLBACK (backgrounds_dir_changed),
+                    (gpointer)self);
 
   g_free (backgrounds_dir);
-  g_free (backgrounds_dir_uri);
 
   hd_home_view_container_update_active_views (container, TRUE);
 }
@@ -562,7 +555,12 @@ hd_home_view_container_dispose (GObject *self)
     priv->home = (g_object_unref (priv->home), NULL);
 
   if (priv->backgrounds_dir_monitor)
-    priv->backgrounds_dir_monitor = (gnome_vfs_monitor_cancel (priv->backgrounds_dir_monitor), NULL);
+    {
+      g_file_monitor_cancel (priv->backgrounds_dir_monitor);
+      g_object_unref (priv->backgrounds_dir_monitor);
+    }
+
+  g_object_unref (priv->bg_file);
 
   G_OBJECT_CLASS (hd_home_view_container_parent_class)->dispose (self);
 }
@@ -619,27 +617,28 @@ hd_home_view_container_get_property (GObject    *self,
 static void
 hd_home_view_container_allocate (ClutterActor          *self,
                                  const ClutterActorBox *box,
-                                 gboolean               absolute_origin_changed)
+                                 ClutterAllocationFlags flags)
 {
   HdHomeViewContainer *container = HD_HOME_VIEW_CONTAINER (self);
   HdHomeViewContainerPrivate *priv = container->priv;
-  ClutterUnit width, height;
+  gfloat width, height;
   guint i;
   ClutterActorBox child_box = { 0, };
-  ClutterUnit offset = 0;
+  gfloat offset = 0;
 
   /* Chain up */
   CLUTTER_ACTOR_CLASS (hd_home_view_container_parent_class)->allocate (self,
                                                                        box,
-                                                                       absolute_origin_changed);
+                                                                       flags);
 
   width = box->x2 - box->x1;
   height = box->y2 - box->y1;
 
   if (priv->previous_view != priv->current_view
       && priv->next_view != priv->current_view)
-    offset = CLUTTER_UNITS_FROM_INT(priv->offset) +
-             CLUTTER_UNITS_FROM_INT(priv->offset_anim);
+  {
+    offset = priv->offset + priv->offset_anim;
+  }
 
   if( hd_comp_mgr_is_portrait()
       && hd_home_get_vertical_scrolling(priv->home))
@@ -670,7 +669,7 @@ hd_home_view_container_allocate (ClutterActor          *self,
             child_box.y2 += offset;
           }
 
-        clutter_actor_allocate (priv->views[i], &child_box, absolute_origin_changed);
+        clutter_actor_allocate (priv->views[i], &child_box, flags);
 
         /* Make sure offscreen views are hidden. Views positioned offscreen
          * wouldn't be seen anyway, but they introduce extra overheads in
@@ -718,7 +717,7 @@ hd_home_view_container_allocate (ClutterActor          *self,
             child_box.x2 += offset;
           }
 
-        clutter_actor_allocate (priv->views[i], &child_box, absolute_origin_changed);
+        clutter_actor_allocate (priv->views[i], &child_box, flags);
 
         /* Make sure offscreen views are hidden. Views positioned offscreen
          * wouldn't be seen anyway, but they introduce extra overheads in
@@ -786,7 +785,10 @@ hd_home_view_container_init (HdHomeViewContainer *self)
 
   /* Create priv member */
   priv = self->priv = G_TYPE_INSTANCE_GET_PRIVATE (self,
-                                                   HD_TYPE_HOME_VIEW_CONTAINER, HdHomeViewContainerPrivate);
+                                                   HD_TYPE_HOME_VIEW_CONTAINER,
+                                                   HdHomeViewContainerPrivate);
+  priv->backgrounds_dir_monitor = NULL;
+  priv->bg_file = NULL;
 }
 
 ClutterActor *
@@ -908,7 +910,7 @@ hd_home_view_container_get_active (HdHomeViewContainer *container,
 
 void
 hd_home_view_container_set_offset (HdHomeViewContainer *container,
-                                   ClutterUnit          offset)
+                                   gfloat               offset)
 {
   HdHomeViewContainerPrivate *priv;
 
@@ -916,19 +918,19 @@ hd_home_view_container_set_offset (HdHomeViewContainer *container,
 
   priv = container->priv;
 
-  priv->offset = CLUTTER_UNITS_TO_INT(offset);
+  priv->offset = offset;
 
   clutter_actor_queue_relayout (CLUTTER_ACTOR (container));
 }
 
 static void
 scroll_back_new_frame_cb (ClutterTimeline     *timeline,
-                          gint                 frame_num,
+                          guint                msecs,
                           HdHomeViewContainer *container)
 {
   HdHomeViewContainerPrivate *priv = container->priv;
 
-  float amt = frame_num / (float)priv->frames;
+  float amt = msecs / (float)priv->duration;
   amt = hd_transition_ease_out(amt);
   /* If we overshoot, go negative for the first part of the transition */
   if (priv->animation_overshoot)
@@ -970,8 +972,7 @@ void
 hd_home_view_container_scroll_back (HdHomeViewContainer *container, gint velocity)
 {
   HdHomeViewContainerPrivate *priv;
-  guint width;
-  gint offset;
+  gfloat width, offset;
 
   g_return_if_fail (HD_IS_HOME_VIEW_CONTAINER (container));
 
@@ -1009,17 +1010,16 @@ hd_home_view_container_scroll_back (HdHomeViewContainer *container, gint velocit
   /* we use 1570, because it's roughly 1000 * PI/2 - this keeps the initial speed
    * the same as the drag velocity given in the argument (because the ease_out
    * function in scroll_back_new_frame_cb uses sin, and sin(x)==x near 0) */
-  priv->timeline = clutter_timeline_new_for_duration
-                        (ABS (offset) * 1570 / velocity);
+  priv->timeline = clutter_timeline_new (ABS (offset) * 1570 / velocity);
 
-  priv->frames = clutter_timeline_get_n_frames (priv->timeline);
+  priv->duration = clutter_timeline_get_duration (priv->timeline);
   priv->timeline_offset = offset;
   /* We reset this and use a separate offset (offset_anim) for animation so
    * the user can still pan while we're animating */
   priv->offset = 0;
 
-  g_debug ("frames: %u, offset: %d",
-           priv->frames, priv->timeline_offset);
+  g_debug ("duration: %u, offset: %d",
+           priv->duration, priv->timeline_offset);
 
   g_signal_connect (priv->timeline, "new-frame",
                     G_CALLBACK (scroll_back_new_frame_cb), container);
@@ -1036,7 +1036,7 @@ void
 hd_home_view_container_scroll_to_previous (HdHomeViewContainer *container, gint velocity)
 {
   HdHomeViewContainerPrivate *priv;
-  guint width;
+  gfloat width;
 
   g_return_if_fail (HD_IS_HOME_VIEW_CONTAINER (container));
 
@@ -1055,7 +1055,7 @@ ClutterTimeline *
 hd_home_view_container_scroll_to_next (HdHomeViewContainer *container, gint velocity)
 {
   HdHomeViewContainerPrivate *priv;
-  guint width;
+  gfloat width;
 
   g_return_val_if_fail (HD_IS_HOME_VIEW_CONTAINER (container), NULL);
 
