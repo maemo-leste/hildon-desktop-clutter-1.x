@@ -275,14 +275,14 @@ recursive_reset_texture_filter(ClutterActor *actor,
 static void
 tidy_desaturation_group_paint (ClutterActor *actor)
 {
-  static const ClutterColor white = { 0xff, 0xff, 0xff, 0xff };
-  static const ClutterColor bgcol = { 0x00, 0x00, 0x00, 0xff };
+  CoglColor white = { 0xff, 0xff, 0xff, 0xff };
+  CoglColor bgcol = { 0x00, 0x00, 0x00, 0xff };
   ClutterGroup *group         = CLUTTER_GROUP(actor);
   TidyDesaturationGroup *container    = TIDY_DESATURATION_GROUP(group);
   TidyDesaturationGroupPrivate *priv  = container->priv;
   ClutterActorBox              box;
   gint                         width, height, tex_width, tex_height;
-  ClutterColor                 col;
+  CoglColor                 col;
   GArray                      *filters;
   const ClutterTextureQuality *filters_array;
 
@@ -320,10 +320,13 @@ tidy_desaturation_group_paint (ClutterActor *actor)
       tidy_util_cogl_push_offscreen_buffer(priv->fbo_a);
 
       cogl_scale(1.0*tex_width/width, 1.0*tex_height/height, 1.0); /* FIXME */
-#ifdef UPSTREAM_DISABLED
-      cogl_paint_init(&bgcol);
-      cogl_color (&white);
-#endif
+      /* FIXME - do nit init every time */
+      tidy_set_cogl_color(&white, 0xff, 0xff, 0xff, 0xff);
+      tidy_set_cogl_color(&bgcol, 0x00, 0x00, 0x00, 0xff);
+
+      cogl_clear(&bgcol, COGL_BUFFER_BIT_COLOR);
+      cogl_set_source_color (&white);
+
       /* Actually do the drawing of the children, but ensure that they are
        * all linear sampled so they are smoothly interpolated. Restore after. */
       filters = g_array_new(FALSE, FALSE, sizeof(ClutterTextureQuality));
@@ -350,11 +353,6 @@ tidy_desaturation_group_paint (ClutterActor *actor)
   zy = height * 0.5f;
 
   /* Render what we've desaturated to the screen */
-  col.red = 255;
-  col.green = 255;
-  col.blue = 255;
-  col.alpha = clutter_actor_get_paint_opacity (actor);
-
   /* Now we render the image we have, with a desaturation pixel
    * shader */
   if (priv->use_shader && priv->shader_saturate)
@@ -371,18 +369,24 @@ tidy_desaturation_group_paint (ClutterActor *actor)
           clutter_shader_set_uniform (priv->shader_saturate, "saturation", &v);
         }
     }
-#ifdef UPSTREAM_DISABLED
-  cogl_color (&col);
+
+  tidy_set_cogl_color(&col, 0xff, 0xff, 0xff,
+                      clutter_actor_get_paint_opacity (actor));
+  cogl_set_source_color (&col);
 
   /* Set the desaturation texture to linear interpolation - so we draw it smoothly
    * Onto the screen */
+#ifdef UPSTREAM_DISABLED
   cogl_texture_set_filters(priv->tex_a, CGL_LINEAR, CGL_LINEAR);
-  cogl_texture_rectangle (priv->tex_a,
+#endif
+  cogl_set_source_texture (priv->tex_a);
+  cogl_rectangle_with_texture_coords (
                           mx-zx, my-zy,
                           mx+zx, my+zy,
                           0, 0, 1.0, 1.0);
 
   /* Reset the filters on the tex_a texture ready for normal desaturating */
+#ifdef UPSTREAM_DISABLED
   cogl_texture_set_filters(priv->tex_a, CGL_NEAREST, CGL_NEAREST);
 #endif
 
