@@ -2961,8 +2961,8 @@ clutter_actor_effect_fade(ClutterActor *actor, guint msecs, guint8 opacity,
   {
     ClutterTransition *transition =
         clutter_actor_get_transition (actor, "opacity");
-    g_signal_connect (transition, "stopped", G_CALLBACK(fade_stopped_cb),
-                      (gpointer)actor);
+    g_signal_connect (transition, "completed",
+                      G_CALLBACK(fade_stopped_cb), (gpointer)actor);
   }
 }
 
@@ -3036,16 +3036,8 @@ hd_task_navigator_zoom_out (HdTaskNavigator * self, ClutterActor * win,
   clutter_actor_set_opacity (apthumb->titlebar, 255);
   clutter_actor_effect_fade(apthumb->titlebar, ZOOM_EFFECT_DURATION, 0,
                      (hd_task_navigator_closure_t)hide_when_complete);
-/*
-  clutter_effect_fade (Zoom_effect, apthumb->titlebar,   0,
-                       (ClutterEffectCompleteFunc)hide_when_complete,
-                       apthumb->titlebar);
-                       */
 
   clutter_actor_set_opacity (apthumb->plate,      0);
-  /*
-  clutter_effect_fade (Zoom_effect, apthumb->plate,    255, NULL, NULL);
-*/
   clutter_actor_effect_fade(apthumb->plate, ZOOM_EFFECT_DURATION, 255, NULL);
 
   /* Fade in .notwin smoothly. */
