@@ -393,15 +393,14 @@ tidy_blur_group_do_chequer(TidyBlurGroup *group, guint width, guint height)
     return;
 
   cogl_set_source_color (&black);
-#ifdef UPSTREAM_DISABLED
-  cogl_texture_rectangle (priv->tex_chequer,
-                          0, 0,
-                          width,
-                          height,
-                          0, 0,
-                          1.0*width/CHEQUER_SIZE,
-                          1.0*height/CHEQUER_SIZE);
-#endif
+  cogl_set_source_texture (priv->tex_chequer);
+  cogl_rectangle_with_texture_coords (
+                            0, 0,
+                            width,
+                            height,
+                            0, 0,
+                            1.0*width/CHEQUER_SIZE,
+                            1.0*height/CHEQUER_SIZE);
 }
 
 /* Recursively set texture filtering state on this actor and children, and
@@ -447,8 +446,8 @@ recursive_reset_texture_filter(ClutterActor *actor,
 static void
 tidy_blur_group_paint (ClutterActor *actor)
 {
-  static const CoglColor white = { 0xff, 0xff, 0xff, 0xff };
-  static const CoglColor bgcol = { 0x00, 0x00, 0x00, 0xff };
+  CoglColor white;
+  CoglColor bgcol;
   ClutterGroup *group         = CLUTTER_GROUP(actor);
   TidyBlurGroup *container    = TIDY_BLUR_GROUP(group);
   TidyBlurGroupPrivate *priv  = container->priv;
@@ -465,13 +464,9 @@ tidy_blur_group_paint (ClutterActor *actor)
     return;
 
   clutter_actor_get_allocation_box(actor, &box);
-#ifdef UPSTREAM_DISABLED
-  width  = CLUTTER_UNITS_TO_DEVICE(box.x2 - box.x1);
-  height = CLUTTER_UNITS_TO_DEVICE(box.y2 - box.y1);
-#else
   width  = box.x2 - box.x1;
   height = box.y2 - box.y1;
-#endif
+
   /* If we are rendering normally then shortcut all this, and
    just render directly without the texture */
   if (!tidy_blur_group_source_buffered(actor) ||
@@ -491,9 +486,8 @@ tidy_blur_group_paint (ClutterActor *actor)
     { /* If we can't blur properly do something nicer instead :) */
       /* Otherwise crash... */
       CLUTTER_ACTOR_CLASS(tidy_blur_group_parent_class)->paint(actor);
-      col.blue = priv->brightness * 255;
-      col.red = col.green = priv->brightness * 127;
-      col.alpha = (1-priv->saturation) * 255;
+      tidy_set_cogl_color(&col, priv->brightness * 127,priv->brightness * 255 ,
+                          priv->brightness * 127, (1-priv->saturation) * 255);
       cogl_set_source_color (&col);
       cogl_rectangle (0, 0, width, height);
       tidy_blur_group_do_chequer(container, width, height);
@@ -534,6 +528,9 @@ tidy_blur_group_paint (ClutterActor *actor)
       /* translate a bit to let bilinear filter smooth out intermediate pixels */
       if (!priv->tweaks_blurless)
         cogl_translate(1.0/2, 1.0/2, 0);/* FIXME */
+
+      tidy_set_cogl_color(&white, 0xff, 0xff, 0xff, 0xff);
+      tidy_set_cogl_color(&bgcol, 0x00, 0x00, 0x00, 0xff);
 
       cogl_clear(&bgcol, COGL_BUFFER_BIT_COLOR); /* FIXME */
       cogl_set_source_color (&white);
@@ -588,20 +585,19 @@ tidy_blur_group_paint (ClutterActor *actor)
 
       if (priv->use_shader)
         {
-#ifdef UPSTREAM_DISABLED
-          cogl_blend_func(CGL_ONE, CGL_ZERO);
-#endif
+
+          glBlendFunc(GL_ONE, GL_ZERO);
+
           cogl_set_source_color (&white);
-#ifdef UPSTREAM_DISABLED
-          cogl_texture_rectangle (priv->current_is_a ? priv->tex_a : priv->tex_b,
+          cogl_set_source_texture (priv->current_is_a ? priv->tex_a : priv->tex_b);
+          cogl_rectangle_with_texture_coords (
                                   0, 0,
                                   tex_width,
                                   tex_height,
                                   0, 0,
                                   1.0,
                                   1.0);
-          cogl_blend_func(CGL_SRC_ALPHA, CGL_ONE_MINUS_SRC_ALPHA);
-#endif
+          glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         }
       else
         tidy_blur_group_fallback_blur(container, tex_width, tex_height);
@@ -745,12 +741,12 @@ skip_progress:
 #endif
   if ((priv->zoom >= 1) || !priv->use_mirror)
     {
-#ifdef UPSTREAM_DISABLED
-      cogl_texture_rectangle (current_tex,
+    cogl_set_source_texture (current_tex);
+    cogl_rectangle_with_texture_coords (
                               mx-zx, my-zy,
                               mx+zx, my+zy,
                               0, 0, 1.0, 1.0);
-#endif
+
     }
   else
     {
