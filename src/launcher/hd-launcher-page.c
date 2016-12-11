@@ -238,7 +238,7 @@ hd_launcher_page_constructed (GObject *object)
   clutter_actor_set_size(priv->scroller, page_width, page_height);
 
   priv->grid = hd_launcher_grid_new ();
-  clutter_actor_add_child (CLUTTER_ACTOR (priv->scroller), priv->grid);
+  clutter_container_add_actor (CLUTTER_CONTAINER (priv->scroller), priv->grid);
   priv->transition = 0;
 
   /* Add callbacks for de-selecting an icon after the user has moved
