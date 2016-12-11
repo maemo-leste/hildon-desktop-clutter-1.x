@@ -350,8 +350,9 @@ tidy_blur_group_fallback_blur(TidyBlurGroup *group, int tex_width, int tex_heigh
   diffy = 1.0f / tex_height;
   glBlendFunc(GL_ONE, GL_ZERO);
 
-  tidy_set_cogl_color(&col, 0x3f, 0x3f, 0x3f, 0x3f);
-/* FIXME - do we need to set scr texture for every draw?*/
+  cogl_color_init_from_4ub(&col, 0xff, 0xff, 0xff, 0xff);
+
+  /* FIXME - do we need to set scr texture for every draw?*/
   cogl_set_source_color (&col);
   cogl_set_source_texture (tex);
   cogl_rectangle_with_texture_coords (0, 0,
@@ -486,7 +487,7 @@ tidy_blur_group_paint (ClutterActor *actor)
     { /* If we can't blur properly do something nicer instead :) */
       /* Otherwise crash... */
       CLUTTER_ACTOR_CLASS(tidy_blur_group_parent_class)->paint(actor);
-      tidy_set_cogl_color(&col, priv->brightness * 127,priv->brightness * 255 ,
+      cogl_color_init_from_4ub(&col, priv->brightness * 127,priv->brightness * 255 ,
                           priv->brightness * 127, (1-priv->saturation) * 255);
       cogl_set_source_color (&col);
       cogl_rectangle (0, 0, width, height);
@@ -529,8 +530,8 @@ tidy_blur_group_paint (ClutterActor *actor)
       if (!priv->tweaks_blurless)
         cogl_translate(1.0/2, 1.0/2, 0);/* FIXME */
 
-      tidy_set_cogl_color(&white, 0xff, 0xff, 0xff, 0xff);
-      tidy_set_cogl_color(&bgcol, 0x00, 0x00, 0x00, 0xff);
+      cogl_color_init_from_4ub(&white, 0xff, 0xff, 0xff, 0xff);
+      cogl_color_init_from_4ub(&bgcol, 0x00, 0x00, 0x00, 0xff);
 
       cogl_clear(&bgcol, COGL_BUFFER_BIT_COLOR); /* FIXME */
       cogl_set_source_color (&white);
