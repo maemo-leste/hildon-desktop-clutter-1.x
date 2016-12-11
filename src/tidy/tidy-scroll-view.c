@@ -300,11 +300,11 @@ tidy_scroll_view_allocate (ClutterActor          *actor,
   if (priv->child)
     {
       clutter_actor_allocate (priv->child, &child_box, absolute_origin_changed);
-      /*clutter_actor_set_clipu (priv->child,
-                               child_box.x1,
-                               child_box.y1,
-                               child_box.x2 - child_box.x1,
-                               child_box.y2 - child_box.y1);*/
+      clutter_actor_set_clip (priv->child,
+                              child_box.x1,
+                              child_box.y1,
+                              child_box.x2 - child_box.x1,
+                              child_box.y2 - child_box.y1);
     }
 
 }
