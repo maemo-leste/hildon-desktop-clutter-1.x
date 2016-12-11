@@ -4366,7 +4366,7 @@ hd_task_navigator_init (HdTaskNavigator * self)
 #ifdef UPSTREAM_DISABLED
   clutter_actor_set_visibility_detect(Scroller, FALSE);
 #endif
-  clutter_actor_add_child (CLUTTER_ACTOR (Navigator), Scroller);
+  clutter_container_add_actor (CLUTTER_CONTAINER (Navigator), Scroller);
   g_signal_connect (Scroller, "captured-event",
                     G_CALLBACK (scroller_touched), NULL);
 
@@ -4387,7 +4387,7 @@ hd_task_navigator_init (HdTaskNavigator * self)
                           G_CALLBACK (grid_touched), NULL);
   g_signal_connect (Grid, "button-release-event",
                     G_CALLBACK (grid_clicked), NULL);
-  clutter_actor_add_child (CLUTTER_ACTOR (Scroller), CLUTTER_ACTOR (Grid));
+  clutter_container_add_actor (CLUTTER_CONTAINER (Scroller), CLUTTER_ACTOR (Grid));
 
   /* Effect timelines */
   /*Fly_effect  = new_animation (&Fly_effect_timeline,  FLY_EFFECT_DURATION);
