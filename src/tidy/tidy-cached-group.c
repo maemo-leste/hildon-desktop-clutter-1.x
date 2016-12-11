@@ -150,8 +150,8 @@ tidy_cached_group_paint (ClutterActor *actor)
         cogl_scale(1.0*tex_width/width, 1.0*tex_height/height, 1.0);
       }
 
-      tidy_set_cogl_color(&white, 0xff, 0xff, 0xff, 0xff);
-      tidy_set_cogl_color(&bgcol, 0x00, 0x00, 0x00, 0xff);
+      cogl_color_init_from_4ub(&white, 0xff, 0xff, 0xff, 0xff);
+      cogl_color_init_from_4ub(&bgcol, 0x00, 0x00, 0x00, 0xff);
 
       cogl_clear(&bgcol, COGL_BUFFER_BIT_COLOR);
       cogl_set_source_color (&white);
@@ -165,7 +165,7 @@ tidy_cached_group_paint (ClutterActor *actor)
     }
 
   /* Render what we've blurred to the screen */
-  tidy_set_cogl_color(&col, 0xff, 0xff, 0xff,
+  cogl_color_init_from_4ub(&col, 0xff, 0xff, 0xff,
                       clutter_actor_get_paint_opacity (actor));
 
   /* if cache_amount isn't 1, we merge the two images by rendering the

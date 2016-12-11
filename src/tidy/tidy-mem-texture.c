@@ -102,7 +102,7 @@ tidy_mem_texture_paint (ClutterActor *self)
   /* parent texture may have been hidden, there for need to make sure its
    * realised with resources available.
   */
-  tidy_set_cogl_color(&col, 0xff, 0xff, 0xff,
+  cogl_color_init_from_4ub(&col, 0xff, 0xff, 0xff,
                       clutter_actor_get_paint_opacity (self));
   cogl_set_source_color (&col);
 /* FIXME */

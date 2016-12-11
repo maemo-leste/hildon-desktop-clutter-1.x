@@ -125,7 +125,7 @@ tidy_sub_texture_paint (ClutterActor *self)
   if (!CLUTTER_ACTOR_IS_REALIZED (parent_texture))
     clutter_actor_realize (parent_texture);
 
-  tidy_set_cogl_color(&col, 0xff, 0xff, 0xff,
+  cogl_color_init_from_4ub(&col, 0xff, 0xff, 0xff,
                       clutter_actor_get_paint_opacity (self));
   cogl_set_source_color (&col);
 /* FIXME */

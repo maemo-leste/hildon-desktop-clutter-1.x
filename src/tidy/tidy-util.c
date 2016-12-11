@@ -73,14 +73,6 @@ void tidy_util_cogl_pop_offscreen_buffer(void)
                         obe->fbo);
 }
 
-void tidy_set_cogl_color(CoglColor *c, guint8 r, guint8 g, guint8 b, guint8 a)
-{
-  cogl_color_set_red(c, (float)r / 255.0);
-  cogl_color_set_green(c, (float)g / 255.0);
-  cogl_color_set_blue(c, (float)b / 255.0);
-  cogl_color_set_alpha(c, (float)a / 255.0);
-}
-
 void tidy_set_cogl_from_clutter_color(CoglColor *c, const ClutterColor *cl)
 {
   cogl_color_set_red(c, (float)cl->red / 255.0);
