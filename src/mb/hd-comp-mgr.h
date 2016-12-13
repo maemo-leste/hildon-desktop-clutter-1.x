@@ -30,6 +30,7 @@
 #include <matchbox/comp-mgr/mb-wm-comp-mgr.h>
 #include <matchbox/comp-mgr/mb-wm-comp-mgr-clutter.h>
 #include <gconf/gconf-client.h>
+#include <clutter/x11/clutter-x11.h>
 
 #include "hd-atoms.h"
 #include "launcher/hd-running-app.h"
@@ -37,10 +38,11 @@
 G_BEGIN_DECLS
 
 /* Hardware display dimensions */
-#define HD_COMP_MGR_LANDSCAPE_WIDTH   800
-#define HD_COMP_MGR_LANDSCAPE_HEIGHT  480
-#define HD_COMP_MGR_PORTRAIT_WIDTH   480
-#define HD_COMP_MGR_PORTRAIT_HEIGHT  800
+#define HD_COMP_MGR_LANDSCAPE_WIDTH   WidthOfScreen(ScreenOfDisplay(clutter_x11_get_default_display(),0))
+#define HD_COMP_MGR_LANDSCAPE_HEIGHT  HeightOfScreen(ScreenOfDisplay(clutter_x11_get_default_display(),0))
+#define HD_COMP_MGR_PORTRAIT_WIDTH   HeightOfScreen(ScreenOfDisplay(clutter_x11_get_default_display(),0))
+#define HD_COMP_MGR_PORTRAIT_HEIGHT  WidthOfScreen(ScreenOfDisplay(clutter_x11_get_default_display(),0))
+#define HD_COMP_MGR_SCREEN_RATIO ((double)HD_COMP_MGR_LANDSCAPE_WIDTH/HD_COMP_MGR_LANDSCAPE_HEIGHT)
 
 /* The title bar height + HALF_MARGIN border. */
 #define HD_COMP_MGR_TOP_MARGIN         56
