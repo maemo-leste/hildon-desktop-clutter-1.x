@@ -540,7 +540,7 @@ hd_switcher_relaunch_app_callback(HdSwitcherRelaunchAppData *data)
   if (STATE_IS_TASK_NAV (hd_render_manager_get_state ()) && !should_rotate)
     {
       hd_task_navigator_zoom_in (priv->task_nav, data->actor,
-                  (hd_task_navigator_closure_t)hd_switcher_relaunched_app_callback,
+                  CLUTTER_CALLBACK(hd_switcher_relaunched_app_callback),
                   data);
     }
   else
@@ -599,7 +599,7 @@ hd_switcher_relaunch_app (HdSwitcher *switcher,
     }
   else /* We're already in tasw. */
     hd_task_navigator_zoom_in (priv->task_nav, actor,
-         (hd_task_navigator_closure_t)hd_switcher_relaunched_app_callback,
+         CLUTTER_CALLBACK(hd_switcher_relaunched_app_callback),
          cb_data);
 }
 
@@ -819,7 +819,7 @@ hd_switcher_item_selected (HdSwitcher *switcher, ClutterActor *actor)
   HdSwitcherPrivate *priv = HD_SWITCHER (switcher)->priv;
 
   hd_task_navigator_zoom_in (priv->task_nav, actor,
-              (hd_task_navigator_closure_t)hd_switcher_zoom_in_complete,
+              CLUTTER_CALLBACK(hd_switcher_zoom_in_complete),
               switcher);
 }
 
@@ -956,7 +956,7 @@ hd_switcher_remove_window_actor (HdSwitcher * switcher, ClutterActor * actor,
   /* Make sure @cmgrcc stays as long as %HdTaskNavigator animates. */
   mb_wm_object_ref (MB_WM_OBJECT (cmgrcc));
   hd_task_navigator_remove_window (priv->task_nav, actor,
-                  (hd_task_navigator_closure_t)hd_switcher_window_removed,
+                  CLUTTER_CALLBACK(hd_switcher_window_removed),
                   cmgrcc);
 }
 

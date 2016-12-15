@@ -600,7 +600,7 @@ typedef struct
   /* @fun(@actor, @funparam) is what is called eventually.
    * @fun is not %NULL, @actor is g_object_ref()ed.
    * @handler_id identifies the signal handler. */
-  hd_task_navigator_closure_t  fun;
+  ClutterCallback              fun;
   ClutterActor                *actor;
   gpointer                     funparam;
   gulong                       handler_id;
@@ -687,7 +687,7 @@ static void check_and_clip (ClutterActor *, gfloat , gfloat );
 
 static void
 clutter_actor_effect_fade(ClutterActor *actor, guint msecs, guint8 opacity,
-                   hd_task_navigator_closure_t fade_stopped_cb);
+                          ClutterCallback fade_stopped_cb);
 
 static gint g_hd_task_navigator_mode=0;
 static const Flyops Fly_smoothly =
@@ -1209,7 +1209,7 @@ call_effect_closure (ClutterTimeline * timeline,
  * @timeline is "completed".  Otherwise NOP. */
 static void
 add_effect_closure (ClutterTimeline * timeline,
-                    hd_task_navigator_closure_t fun,
+                    ClutterCallback fun,
                     ClutterActor * actor, gpointer funparam)
 {
   EffectCompleteClosure *closure;
@@ -1785,7 +1785,7 @@ show_when_complete (ClutterActor * actor)
 {
   clutter_actor_hide (actor);
   add_effect_closure (Fly_effect_timeline,
-                      (hd_task_navigator_closure_t)clutter_actor_show,
+                      CLUTTER_CALLBACK(clutter_actor_show),
                       actor, NULL);
 }
 
@@ -2918,7 +2918,7 @@ zoom_in_complete (ClutterActor * navigator, const Thumbnail * apthumb)
  */
 void
 hd_task_navigator_zoom_in (HdTaskNavigator * self, ClutterActor * win,
-                           hd_task_navigator_closure_t fun, gpointer funparam)
+                           ClutterCallback fun, gpointer funparam)
 { g_debug (__FUNCTION__);
   const Thumbnail *apthumb;
 
@@ -2967,7 +2967,7 @@ hd_task_navigator_zoom_in (HdTaskNavigator * self, ClutterActor * win,
 
   /* Clean up, exit and call @fun when then animation is finished. */
   add_effect_closure (Zoom_effect_timeline,
-                      (hd_task_navigator_closure_t)zoom_in_complete,
+                      CLUTTER_CALLBACK(zoom_in_complete),
                       CLUTTER_ACTOR (self), (Thumbnail *)apthumb);
   add_effect_closure (Zoom_effect_timeline, fun, win, funparam);
   return;
@@ -2979,7 +2979,7 @@ damage_control:
 
 static void
 clutter_actor_effect_fade(ClutterActor *actor, guint msecs, guint8 opacity,
-                   hd_task_navigator_closure_t fade_stopped_cb)
+                          ClutterCallback fade_stopped_cb)
 {
   clutter_actor_set_easing_mode (actor, CLUTTER_LINEAR);
   clutter_actor_set_easing_duration (actor, msecs);
@@ -3016,7 +3016,7 @@ clutter_actor_effect_move(ClutterActor *actor, guint msecs, gfloat x, gfloat y)
  * effect completes. */
 void
 hd_task_navigator_zoom_out (HdTaskNavigator * self, ClutterActor * win,
-                            hd_task_navigator_closure_t fun, gpointer funparam)
+                            ClutterCallback fun, gpointer funparam)
 { g_debug (__FUNCTION__);
   const Thumbnail *apthumb;
   gdouble xscale, yscale;
@@ -3063,9 +3063,9 @@ hd_task_navigator_zoom_out (HdTaskNavigator * self, ClutterActor * win,
   clutter_actor_show (apthumb->titlebar);
   clutter_actor_set_opacity (apthumb->titlebar, 255);
   clutter_actor_effect_fade(apthumb->titlebar, ZOOM_EFFECT_DURATION, 0,
-                     (hd_task_navigator_closure_t)hide_when_complete);
+                            CLUTTER_CALLBACK(hide_when_complete));
 
-  clutter_actor_set_opacity (apthumb->plate,      0);
+  clutter_actor_set_opacity (apthumb->plate, 0);
   clutter_actor_effect_fade(apthumb->plate, ZOOM_EFFECT_DURATION, 255, NULL);
 
   /* Fade in .notwin smoothly. */
@@ -3375,7 +3375,7 @@ remove_window_later (ClutterActor * win, EffectCompleteClosure * closure)
 void
 hd_task_navigator_remove_window (HdTaskNavigator * self,
                                  ClutterActor * win,
-                                 hd_task_navigator_closure_t fun,
+                                 ClutterCallback fun,
                                  gpointer funparam)
 { g_debug (__FUNCTION__);
   GList *li;
@@ -3391,7 +3391,7 @@ hd_task_navigator_remove_window (HdTaskNavigator * self,
       closure->fun = fun;
       closure->funparam = funparam;
       add_effect_closure (Zoom_effect_timeline,
-                          (hd_task_navigator_closure_t)remove_window_later,
+                          CLUTTER_CALLBACK(remove_window_later),
                           win, closure);
       return;
     }
@@ -3443,10 +3443,10 @@ hd_task_navigator_remove_window (HdTaskNavigator * self,
       clutter_actor_raise_top (apthumb->thwin);
       turnoff_effect (Fly_effect_timeline, apthumb->thwin);
       add_effect_closure (Fly_effect_timeline,
-                          (hd_task_navigator_closure_t)appthumb_turned_off_1,
+                          CLUTTER_CALLBACK(appthumb_turned_off_1),
                           apthumb->thwin, apthumb);
       add_effect_closure (Fly_effect_timeline,
-                          (hd_task_navigator_closure_t)appthumb_turned_off_2,
+                          CLUTTER_CALLBACK(appthumb_turned_off_2),
                           apthumb->thwin, cmgrcc);
     }
   else
