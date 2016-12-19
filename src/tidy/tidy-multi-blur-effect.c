@@ -56,6 +56,7 @@ struct _TidyMultiBlurEffect
 
   CoglHandle tex[2];
   CoglHandle fb[2];
+  int fb_index;
 
   guint blur;
   gfloat zoom;
@@ -172,31 +173,26 @@ static void
 tidy_multi_blur_effect_do_blur(ClutterOffscreenEffect *effect, guint blur)
 {
   TidyMultiBlurEffect *self = TIDY_MULTI_BLUR_EFFECT (effect);
-  int fb_index = 0;
 
-  cogl_pipeline_set_layer_texture (self->shader_pipeline, 0, self->tex[0]);
+  cogl_pipeline_set_layer_texture (self->shader_pipeline, 0,
+                                   self->tex[self->fb_index]);
 
-  /* draw offscreen texture to fb0 */
-  cogl_framebuffer_draw_rectangle (self->fb[0], self->pipeline,
+  /* draw offscreen texture to fb */
+  cogl_framebuffer_draw_rectangle (self->fb[self->fb_index], self->pipeline,
                                    -1.0, blur % 2 ? 1.0 : -1.0,
                                    1.0, blur % 2 ? -1.0 : 1.0);
-
   blur--;
-  fb_index++;
+  self->fb_index = (self->fb_index + 1) % 2;
 
   while (blur--)
     {
-      cogl_framebuffer_draw_rectangle (self->fb[fb_index],
+      cogl_framebuffer_draw_rectangle (self->fb[self->fb_index],
                                        self->shader_pipeline,
-                                       -1.0, -1.0,
-                                       1.0, 1.0);
-
-      /* cogl segfaults without that :( */
-      cogl_framebuffer_finish (self->fb[fb_index]);
+                                       -1.0, -1.0, 1.0, 1.0);
 
       cogl_pipeline_set_layer_texture (self->shader_pipeline, 0,
-                                       self->tex[fb_index]);
-      fb_index = (fb_index + 1) % 2;
+                                       self->tex[self->fb_index]);
+      self->fb_index = (self->fb_index + 1) % 2;
     }
 }
 
