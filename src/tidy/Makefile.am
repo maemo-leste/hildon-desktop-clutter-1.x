@@ -66,6 +66,7 @@ source_c = \
 	tidy-style.c \
 	tidy-sub-texture.c \
 	tidy-util.c \
+	tidy-multi-blur-effect.c \
 	$(NULL)
 
 tidy-marshal.h: stamp-tidy-marshal.h
