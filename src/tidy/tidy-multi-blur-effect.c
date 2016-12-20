@@ -13,25 +13,41 @@
 #define TIDY_MULTI_BLUR_EFFECT_GET_CLASS(obj)      (G_TYPE_INSTANCE_GET_CLASS ((obj), TIDY_TYPE_MULTI_BLUR_EFFECT, TidyMultiBlurEffectClass))
 
 static const gchar *blur_glsl_vertex_declarations =
+    "#ifdef GL_ES\n"
+    "precision mediump float;\n"
+    "#define MEDIUMP mediump\n"
+    "#define LOWP lowp\n"
+    "#else\n"
+    "#define MEDIUMP\n"
+    "#define LOWP\n"
+    "#endif\n"
     "uniform vec2 blur;\n"
     "\n"
     "/* Outputs to the fragment shader */\n"
-    "varying vec2 tex_coord;\n"
-    "varying vec2 tex_coord_a;\n"
-    "varying vec2 tex_coord_b;\n";
+    "varying MEDIUMP vec2 tex_coord;\n"
+    "varying MEDIUMP vec2 tex_coord_a;\n"
+    "varying MEDIUMP vec2 tex_coord_b;\n";
 
 static const gchar *blur_glsl_vertext_shader =
-    "  tex_coord = cogl_tex_coord0_out.st / cogl_tex_coord0_out.q;\n"
-    "  tex_coord_a = tex_coord - blur;\n"
-    "  tex_coord_b = tex_coord + blur;\n";
+    "tex_coord = cogl_tex_coord0_out.st / cogl_tex_coord0_out.q;\n"
+    "tex_coord_a = tex_coord - blur;\n"
+    "tex_coord_b = tex_coord + blur;\n";
 
 static const gchar *blur_glsl_texture_declarations =
-    "varying vec2 tex_coord;\n"
-    "varying vec2 tex_coord_a;\n"
-    "varying vec2 tex_coord_b;\n";
+    "#ifdef GL_ES\n"
+    "precision mediump float;\n"
+    "#define MEDIUMP mediump\n"
+    "#define LOWP lowp\n"
+    "#else\n"
+    "#define MEDIUMP\n"
+    "#define LOWP\n"
+    "#endif\n"
+    "varying MEDIUMP vec2 tex_coord;\n"
+    "varying MEDIUMP vec2 tex_coord_a;\n"
+    "varying MEDIUMP vec2 tex_coord_b;\n";
 
 static const gchar *blur_glsl_texture_shader =
-    "vec4 color =\n"
+    "LOWP vec4 color =\n"
     "       texture2D (cogl_sampler, vec2(tex_coord_a.x, tex_coord_a.y)) * 0.125 + \n"
     "       texture2D (cogl_sampler, vec2(tex_coord_a.x, tex_coord_b.y)) * 0.125 + \n"
     "       texture2D (cogl_sampler, vec2(tex_coord_b.x, tex_coord_b.y)) * 0.125 + \n"
