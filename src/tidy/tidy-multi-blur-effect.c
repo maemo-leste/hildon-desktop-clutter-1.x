@@ -31,12 +31,13 @@ static const gchar *blur_glsl_texture_declarations =
     "varying vec2 tex_coord_b;\n";
 
 static const gchar *blur_glsl_texture_shader =
-    "cogl_texel =\n"
+    "vec4 color =\n"
     "       texture2D (cogl_sampler, vec2(tex_coord_a.x, tex_coord_a.y)) * 0.125 + \n"
     "       texture2D (cogl_sampler, vec2(tex_coord_a.x, tex_coord_b.y)) * 0.125 + \n"
     "       texture2D (cogl_sampler, vec2(tex_coord_b.x, tex_coord_b.y)) * 0.125 + \n"
     "       texture2D (cogl_sampler, vec2(tex_coord_b.x, tex_coord_a.y)) * 0.125 + \n"
-    "       texture2D (cogl_sampler, vec2(cogl_tex_coord0_in.x, cogl_tex_coord0_in.y)) * 0.5; \n";
+    "       texture2D (cogl_sampler, vec2(cogl_tex_coord0_in.x, cogl_tex_coord0_in.y)) * 0.5; \n"
+    "cogl_texel = color;\n";
 
 struct _TidyMultiBlurEffect
 {
@@ -59,11 +60,9 @@ struct _TidyMultiBlurEffect
   int fb_index;
 
   guint blur;
+  guint current_blur;
+  guint max_blur;
   gfloat zoom;
-#ifdef MULTI_PASS
-  guint max_blur_step;
-  guint current_blur_step;
-#endif
 };
 
 struct _TidyMultiBlurEffectClass
@@ -102,6 +101,7 @@ tidy_multi_blur_effect_create_textures(ClutterOffscreenEffect *effect,
   self->fb[0] = cogl_offscreen_new_with_texture (self->tex[0]);
   self->fb[1] = cogl_offscreen_new_with_texture (self->tex[1]);
 }
+
 
 static gboolean
 tidy_multi_blur_effect_pre_paint (ClutterEffect *effect)
@@ -170,41 +170,25 @@ tidy_multi_blur_effect_pre_paint (ClutterEffect *effect)
 }
 
 static void
-tidy_multi_blur_effect_do_blur(ClutterOffscreenEffect *effect, guint blur)
+tidy_multi_blur_effect_do_blur(ClutterOffscreenEffect *effect, gint steps)
 {
   TidyMultiBlurEffect *self = TIDY_MULTI_BLUR_EFFECT (effect);
+  gboolean invert = steps % 2;
+  gfloat x2 = invert ? 1.0 : -1.0;
+  gfloat y2 = invert ? -1.0 : 1.0;
 
-  cogl_pipeline_set_layer_texture (self->shader_pipeline, 0,
-                                   self->tex[self->fb_index]);
-
-  /* draw offscreen texture to fb */
-  cogl_framebuffer_draw_rectangle (self->fb[self->fb_index], self->pipeline,
-                                   -1.0, blur % 2 ? 1.0 : -1.0,
-                                   1.0, blur % 2 ? -1.0 : 1.0);
-  blur--;
-  self->fb_index = (self->fb_index + 1) % 2;
-
-  while (blur--)
+  while (steps--)
     {
       cogl_framebuffer_draw_rectangle (self->fb[self->fb_index],
                                        self->shader_pipeline,
-                                       -1.0, -1.0, 1.0, 1.0);
+                                        -1.0, x2,
+                                        1.0, y2);
 
       cogl_pipeline_set_layer_texture (self->shader_pipeline, 0,
                                        self->tex[self->fb_index]);
       self->fb_index = (self->fb_index + 1) % 2;
     }
 }
-
-#ifdef MULTI_PASS
-static gboolean
-tidy_multi_blur_effect_queue_repaint(ClutterEffect *effect)
-{
-  clutter_effect_queue_repaint(effect);
-
-  return G_SOURCE_REMOVE;
-}
-#endif
 
 static void
 tidy_multi_blur_effect_vignette(gfloat width, gfloat height, gint opacity,
@@ -287,39 +271,35 @@ tidy_multi_blur_effect_paint_target (ClutterOffscreenEffect *effect)
   guint8 paint_opacity = clutter_actor_get_paint_opacity (self->actor);
   CoglPipeline *pipeline;
 
-#ifndef MULTI_PASS
   if (self->blur)
     {
-      tidy_multi_blur_effect_do_blur(effect, self->blur);
+      if (self->blur > self->current_blur)
+        {
+          guint steps = self->blur - self->current_blur;
+
+          if (!self->current_blur)
+            {
+              cogl_pipeline_set_layer_texture (self->shader_pipeline, 0,
+                                               self->tex[self->fb_index]);
+
+              /* draw offscreen texture to fb */
+              cogl_framebuffer_draw_rectangle (self->fb[self->fb_index],
+                                               self->pipeline,
+                                               -1.0, 1.0,
+                                               1.0, -1.0);
+              steps--;
+              self->fb_index = (self->fb_index + 1) % 2;
+            }
+
+          tidy_multi_blur_effect_do_blur(effect, steps);
+          self->current_blur = self->blur;
+        }
+
       pipeline = self->shader_pipeline;
     }
-#else
-  if (self->blur || self->current_blur_step != self->blur)
-    {
-      if(self->current_blur_step < self->blur)
-        {
-          self->current_blur_step ++;
-          self->max_blur_step = self->current_blur_step;
-        }
-      else if(self->current_blur_step > self->blur)
-          self->current_blur_step--;
-
-      tidy_multi_blur_effect_do_blur(effect, self->current_blur_step);
-      pipeline = self->shader_pipeline;
-
-      if (self->current_blur_step != self->blur)
-        {
-          g_timeout_add(0, (GSourceFunc)tidy_multi_blur_effect_queue_repaint,
-                        CLUTTER_EFFECT(effect));
-        }
-    }
-#endif
   else
     pipeline = self->pipeline;
-#ifdef MULTI_PASS
-  if (!self->current_blur_step)
-      self->max_blur_step = 0;
-#endif
+
   ClutterActorBox box;
 
   gfloat width = self->tex_width;
@@ -462,11 +442,8 @@ tidy_multi_blur_effect_init (TidyMultiBlurEffect *self)
       cogl_pipeline_get_uniform_location (self->shader_pipeline, "blur");
 
   self->blur = 0;
+  self->current_blur = 0;
   self->zoom = 1.0f;
-#ifdef MULTI_PASS
-  self->max_blur_step = 0;
-  self->current_blur_step = 0;
-#endif
 }
 
 ClutterEffect *
@@ -476,19 +453,22 @@ tidy_multi_blur_effect_new (void)
 }
 
 void
-tidy_multi_blur_effect_set_blur(ClutterEffect *self, guint blur)
+tidy_multi_blur_effect_set_blur(ClutterEffect *effect, guint blur)
 {
-  if (!TIDY_IS_MULTI_BLUR_EFFECT(self))
+  TidyMultiBlurEffect *self;
+
+  if (!TIDY_IS_MULTI_BLUR_EFFECT(effect))
     return;
 
-  if (TIDY_MULTI_BLUR_EFFECT(self)->blur != blur)
+  self = TIDY_MULTI_BLUR_EFFECT(effect);
+
+  if (self->blur != blur)
     {
-      TIDY_MULTI_BLUR_EFFECT(self)->blur = blur;
-#ifdef MULTI_PASS
-      if (blur == 0)
-          TIDY_MULTI_BLUR_EFFECT(self)->current_blur_step = 0;
-#endif
-      clutter_effect_queue_repaint (self);
+      if (self->blur > blur)
+          self->current_blur = 0;
+
+      self->blur = blur;
+      clutter_effect_queue_repaint (effect);
     }
 }
 
