@@ -20,6 +20,8 @@ void tidy_multi_blur_effect_set_blur(ClutterEffect *self, guint blur);
 guint tidy_multi_blur_effect_get_blur(ClutterEffect *self);
 void tidy_multi_blur_effect_set_zoom(ClutterEffect *self, gfloat zoom);
 gfloat tidy_multi_blur_effect_get_zoom(ClutterEffect *self);
+void tidy_multi_blur_effect_set_brigtness(ClutterEffect *self, gfloat brigtness);
+gfloat tidy_multi_blur_effect_get_brigtness(ClutterEffect *self);
 
 G_END_DECLS
 

@@ -79,6 +79,7 @@ struct _TidyMultiBlurEffect
   guint current_blur;
   guint max_blur;
   gfloat zoom;
+  gfloat brigtness;
 };
 
 struct _TidyMultiBlurEffectClass
@@ -178,6 +179,8 @@ tidy_multi_blur_effect_pre_paint (ClutterEffect *effect)
                                        blur);
 
       cogl_pipeline_set_layer_texture (self->pipeline, 0, texture);
+
+      self->current_blur = 0;
 
       return TRUE;
     }
@@ -286,6 +289,7 @@ tidy_multi_blur_effect_paint_target (ClutterOffscreenEffect *effect)
   TidyMultiBlurEffect *self = TIDY_MULTI_BLUR_EFFECT (effect);
   guint8 paint_opacity = clutter_actor_get_paint_opacity (self->actor);
   CoglPipeline *pipeline;
+  guint8 brigtness = paint_opacity * self->brigtness;
 
   if (self->blur)
     {
@@ -314,7 +318,7 @@ tidy_multi_blur_effect_paint_target (ClutterOffscreenEffect *effect)
       pipeline = self->shader_pipeline;
     }
   else
-    pipeline = self->pipeline;
+      pipeline = self->pipeline;
 
   ClutterActorBox box;
 
@@ -325,8 +329,6 @@ tidy_multi_blur_effect_paint_target (ClutterOffscreenEffect *effect)
 
   clutter_actor_get_allocation_box(self->actor, &box);
 
-  cogl_pipeline_set_color4ub (pipeline, paint_opacity, paint_opacity,
-                              paint_opacity, paint_opacity);
   cogl_push_matrix();
 
   cogl_translate(width * zoom_factor, height * zoom_factor, 0);
@@ -335,6 +337,8 @@ tidy_multi_blur_effect_paint_target (ClutterOffscreenEffect *effect)
   cogl_clip_push_window_rectangle(box.x1, box.y1,
                                   box.x2 - box.x1, box.y2 - box.y1);
 
+  cogl_pipeline_set_color4ub (pipeline, brigtness, brigtness, brigtness,
+                              paint_opacity);
   cogl_push_source (pipeline);
   cogl_rectangle_with_texture_coords(0, 0, width, height, 0, 0, 1, 1);
 
@@ -342,12 +346,12 @@ tidy_multi_blur_effect_paint_target (ClutterOffscreenEffect *effect)
    * mirrored around each edge.
    */
   if (self->zoom < 1.0f)
-      tidy_multi_blur_effect_vignette(width, height, paint_opacity,
-                                      self->zoom);
+      tidy_multi_blur_effect_vignette(width, height, brigtness, self->zoom);
 
   cogl_pop_source ();
   cogl_clip_pop();
   cogl_pop_matrix();
+  cogl_pipeline_set_color4ub (pipeline, 255, 255, 255, 255);
 }
 
 static void
@@ -460,6 +464,7 @@ tidy_multi_blur_effect_init (TidyMultiBlurEffect *self)
   self->blur = 0;
   self->current_blur = 0;
   self->zoom = 1.0f;
+  self->brigtness = 1.0f;
 }
 
 ClutterEffect *
@@ -517,4 +522,26 @@ tidy_multi_blur_effect_get_zoom(ClutterEffect *self)
       return 0;
 
   return TIDY_MULTI_BLUR_EFFECT(self)->zoom;
+}
+
+void
+tidy_multi_blur_effect_set_brigtness(ClutterEffect *self, gfloat brigtness)
+{
+  if (!TIDY_IS_MULTI_BLUR_EFFECT(self))
+    return;
+
+  if (TIDY_MULTI_BLUR_EFFECT(self)->brigtness != brigtness)
+    {
+      TIDY_MULTI_BLUR_EFFECT(self)->brigtness = brigtness;
+      clutter_effect_queue_repaint (self);
+    }
+}
+
+gfloat
+tidy_multi_blur_effect_get_brigtness(ClutterEffect *self)
+{
+  if (!TIDY_IS_MULTI_BLUR_EFFECT(self))
+      return 0;
+
+  return TIDY_MULTI_BLUR_EFFECT(self)->brigtness;
 }

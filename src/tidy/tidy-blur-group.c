@@ -54,7 +54,6 @@ struct _TidyBlurGroupPrivate
 
   ClutterEffect *blur_effect;
   ClutterEffect *saturation_effect;
-  ClutterEffect *brightness_effect;
 };
 
 /**
@@ -179,7 +178,6 @@ tidy_blur_group_init (TidyBlurGroup *self)
                                                    TIDY_TYPE_BLUR_GROUP,
                                                    TidyBlurGroupPrivate);
   priv->saturation = 1;
-  priv->brightness = 1;
   priv->use_alpha = TRUE;
   priv->use_mirror = FALSE;
 
@@ -206,9 +204,6 @@ tidy_blur_group_init (TidyBlurGroup *self)
       COGL_PIXEL_FORMAT_A_8,
       CHEQUER_SIZE,
       dither_data);
-
-  priv->brightness_effect = clutter_brightness_contrast_effect_new();
-  clutter_actor_add_effect(CLUTTER_ACTOR(self), priv->brightness_effect);
 
   if (!hd_transition_get_int("blur", "turbo", 0))
     {
@@ -326,14 +321,7 @@ tidy_blur_group_set_brightness(ClutterActor *blur_group, float brightness)
 
   priv = TIDY_BLUR_GROUP(blur_group)->priv;
 
-  if (!priv->brightness_effect)
-      return;
-
-  clutter_brightness_contrast_effect_set_brightness(
-        CLUTTER_BRIGHTNESS_CONTRAST_EFFECT(priv->brightness_effect),
-        brightness - 1.0f);
-
-  g_warning("brightness %f", brightness - 1.0f);
+  tidy_multi_blur_effect_set_brigtness(priv->blur_effect, brightness);
 }
 
 
