@@ -3150,6 +3150,19 @@ appthumb_clicked (Thumbnail * apthumb)
   return TRUE;
 }
 
+static gboolean
+appthumb_touched(ClutterActor *actor, ClutterEvent *event,
+                 Thumbnail * apthumb)
+{
+  if (event->type == CLUTTER_TOUCH_END)
+    {
+      appthumb_clicked (apthumb);
+      return CLUTTER_EVENT_STOP;
+    }
+
+  return CLUTTER_EVENT_PROPAGATE;
+}
+
 /* Called when a %Thumbnail.close (@thwin's close button) is clicked. */
 static gboolean
 appthumb_close_clicked (const Thumbnail * apthumb)
@@ -3180,6 +3193,19 @@ appthumb_close_clicked (const Thumbnail * apthumb)
                            apthumb->apwin);
     }
   return TRUE;
+}
+
+static gboolean
+appthumb_close_touched(ClutterActor *actor, ClutterEvent *event,
+                       const Thumbnail * apthumb)
+{
+  if (event->type == CLUTTER_TOUCH_END)
+    {
+      appthumb_close_clicked(apthumb);
+      return CLUTTER_EVENT_STOP;
+    }
+
+  return CLUTTER_EVENT_PROPAGATE;
 }
 
 /* Called when the %MBWM_WINDOW_PROP_NAME of @win has changed. */
@@ -3307,9 +3333,12 @@ create_appthumb (ClutterActor * apwin)
   create_thwin (apthumb, apthumb->prison);
   g_signal_connect_swapped (apthumb->thwin, "button-release-event",
                             G_CALLBACK (appthumb_clicked), apthumb);
+  g_signal_connect (apthumb->thwin, "touch-event",
+                    G_CALLBACK (appthumb_touched), apthumb);
   g_signal_connect_swapped (apthumb->close, "button-release-event",
-                            G_CALLBACK (appthumb_close_clicked),
-                            apthumb);
+                            G_CALLBACK (appthumb_close_clicked), apthumb);
+  g_signal_connect (apthumb->close, "touch-event",
+                    G_CALLBACK (appthumb_close_touched), apthumb);
 
   /* Add our .frame. */
   create_apthumb_frame (apthumb);
@@ -4263,17 +4292,21 @@ navigator_hidden (ClutterActor * navigator, gpointer unused)
  * things if, for example, some widget wanted to have a highlighted state.
  */
 static gboolean
+navigator_clicked (ClutterActor * navigator, ClutterButtonEvent * event);
+
+static gboolean
 navigator_touched (ClutterActor * navigator, ClutterEvent * event)
 {
   static struct timeval last_press_time;
   static ClutterActor *pressed_widget;
 
-  if (event->type == CLUTTER_BUTTON_PRESS)
+  if (event->type == CLUTTER_BUTTON_PRESS || event->type == CLUTTER_TOUCH_BEGIN)
     {
       gettimeofday (&last_press_time, NULL);
       pressed_widget = clicked_widget (&event->button);
     }
-  else if (event->type == CLUTTER_BUTTON_RELEASE && pressed_widget)
+  else if ((event->type == CLUTTER_BUTTON_RELEASE ||
+            event->type == CLUTTER_TOUCH_END) && pressed_widget)
     {
       struct timeval now;
       ClutterActor *widget;
@@ -4299,6 +4332,8 @@ navigator_touched (ClutterActor * navigator, ClutterEvent * event)
       if (widget != clicked_widget (&event->button))
         return TRUE;
     }
+  else if (event->type == CLUTTER_TOUCH_END && !pressed_widget)
+      navigator_clicked (navigator, NULL);
 
   return FALSE;
 }
@@ -4382,6 +4417,8 @@ hd_task_navigator_init (HdTaskNavigator * self)
   g_signal_connect (Navigator, "show", G_CALLBACK (navigator_shown),  NULL);
   g_signal_connect (Navigator, "hide", G_CALLBACK (navigator_hidden), NULL);
   g_signal_connect (Navigator, "captured-event",
+                    G_CALLBACK (navigator_touched), NULL);
+  g_signal_connect (Navigator, "touch-event",
                     G_CALLBACK (navigator_touched), NULL);
   g_signal_connect (Navigator, "button-release-event",
                     G_CALLBACK (navigator_clicked), NULL);
