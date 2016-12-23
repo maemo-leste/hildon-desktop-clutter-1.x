@@ -1486,19 +1486,56 @@ hd_title_bar_top_right_leave (HdTitleBar *bar)
   g_signal_emit (bar, signals[LEAVE_TOP_RIGHT], 0);
 }
 
+static gboolean
+hd_title_bar_top_left_touch (ClutterActor *actor, ClutterEvent *event,
+                             HdTitleBar *bar)
+{
+  switch (event->type)
+    {
+      case CLUTTER_TOUCH_BEGIN:
+          hd_title_bar_top_left_press(bar);
+          break;
+      case CLUTTER_TOUCH_END:
+          hd_title_bar_top_left_clicked(bar);
+          break;
+      default:
+          break;
+  }
+
+  return CLUTTER_EVENT_PROPAGATE;
+}
+
+static gboolean
+hd_title_bar_top_right_touch (ClutterActor *actor, ClutterEvent *event,
+                              HdTitleBar *bar)
+{
+  switch (event->type)
+    {
+      case CLUTTER_TOUCH_BEGIN:
+          hd_title_bar_top_right_press(bar);
+          break;
+      case CLUTTER_TOUCH_END:
+          hd_title_bar_top_right_clicked(bar);
+          break;
+      default:
+          break;
+    }
+
+  return CLUTTER_EVENT_PROPAGATE;
+}
+
 static void
 hd_title_bar_add_left_signals(HdTitleBar *bar, ClutterActor *actor)
 {
   clutter_actor_set_reactive(actor, TRUE);
   g_signal_connect_swapped (actor, "button-release-event",
-                            G_CALLBACK (hd_title_bar_top_left_clicked),
-                            bar);
+                            G_CALLBACK (hd_title_bar_top_left_clicked), bar);
   g_signal_connect_swapped (actor, "button-press-event",
-                            G_CALLBACK (hd_title_bar_top_left_press),
-                            bar);
+                            G_CALLBACK (hd_title_bar_top_left_press), bar);
   g_signal_connect_swapped (actor, "leave-event",
-                            G_CALLBACK (hd_title_bar_top_left_leave),
-                            bar);
+                            G_CALLBACK (hd_title_bar_top_left_leave), bar);
+  g_signal_connect (actor, "touch-event",
+                    G_CALLBACK (hd_title_bar_top_left_touch), bar);
 }
 
 static void
@@ -1506,14 +1543,13 @@ hd_title_bar_add_right_signals(HdTitleBar *bar, ClutterActor *actor)
 {
   clutter_actor_set_reactive(actor, TRUE);
   g_signal_connect_swapped (actor, "button-release-event",
-                            G_CALLBACK (hd_title_bar_top_right_clicked),
-                            bar);
+                            G_CALLBACK (hd_title_bar_top_right_clicked), bar);
   g_signal_connect_swapped (actor, "button-press-event",
-                            G_CALLBACK (hd_title_bar_top_right_press),
-                            bar);
+                            G_CALLBACK (hd_title_bar_top_right_press), bar);
   g_signal_connect_swapped (actor, "leave-event",
-                            G_CALLBACK (hd_title_bar_top_right_leave),
-                            bar);
+                            G_CALLBACK (hd_title_bar_top_right_leave), bar);
+  g_signal_connect (actor, "touch-event",
+                    G_CALLBACK (hd_title_bar_top_right_touch), bar);
 }
 
 /* Create a fake version of the title bar that can be used in the switcher */
