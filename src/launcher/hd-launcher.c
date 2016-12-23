@@ -134,6 +134,9 @@ static gboolean hd_launcher_captured_event_cb (HdLauncher *launcher,
 static gboolean hd_launcher_background_clicked (HdLauncher *self,
                                                 ClutterButtonEvent *event,
                                                 gpointer *data);
+static gboolean hd_launcher_background_touched (HdLauncher *self,
+                                                ClutterEvent *event,
+                                                gpointer *data);
 static gboolean hd_launcher_key_pressed (HdLauncher *self,
                                                 ClutterButtonEvent *event,
                                                 gpointer *data);
@@ -243,6 +246,8 @@ static void hd_launcher_constructed (GObject *gobject)
                     G_CALLBACK(hd_launcher_background_clicked), 0);
   g_signal_connect (self, "key-pressed-event",
                     G_CALLBACK(hd_launcher_key_pressed), 0);
+  g_signal_connect (self, "touch-event",
+                    G_CALLBACK(hd_launcher_background_touched), 0);
 
   /* App launch transition */
   priv->launch_image = 0;
@@ -1242,7 +1247,7 @@ hd_launcher_captured_event_cb (HdLauncher *launcher,
     return FALSE;
   priv = HD_LAUNCHER_GET_PRIVATE (launcher);
 
-  if (event->type == CLUTTER_BUTTON_PRESS)
+  if (event->type == CLUTTER_BUTTON_PRESS || event->type == CLUTTER_TOUCH_BEGIN)
     {
       /* we need this for when the user clicks outside the page */
       if (priv->active_page)
@@ -1281,6 +1286,25 @@ hd_launcher_key_pressed (HdLauncher *self,
   hd_launcher_back_button_clicked();
 
   return TRUE;
+}
+
+static gboolean
+hd_launcher_background_touched (HdLauncher *self,
+                                ClutterEvent *event,
+                                gpointer *data)
+{
+  if (event->type == CLUTTER_TOUCH_END)
+  {
+    HdLauncherPrivate *priv = HD_LAUNCHER_GET_PRIVATE (hd_launcher_get ());
+
+    if (!priv->active_page ||
+        (hd_launcher_page_get_drag_distance(HD_LAUNCHER_PAGE(priv->active_page)) <
+                                            HD_LAUNCHER_TILE_MAX_DRAG))
+      hd_launcher_back_button_clicked();
+
+  }
+
+  return CLUTTER_EVENT_PROPAGATE;
 }
 
 void
