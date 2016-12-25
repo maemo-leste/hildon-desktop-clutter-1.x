@@ -101,13 +101,17 @@ static void hd_launcher_tile_set_property (GObject      *gobject,
 /* ClutterActor */
 static gboolean hd_launcher_tile_button_press (ClutterActor       *actor);
 static gboolean hd_launcher_tile_button_release (ClutterActor       *actor);
+static gboolean hd_launcher_tile_touched (ClutterActor *actor,
+                                          ClutterEvent *event,
+                                          ClutterActor *tile);
+
 static void hd_launcher_on_glow_frame(ClutterTimeline *timeline,
                                       gint msecs,
                                       ClutterActor *actor);
 
 static void hd_launcher_tile_allocate (ClutterActor          *self,
                                        const ClutterActorBox *box,
-                                       gboolean       absolute_origin_changed);
+                                       ClutterAllocationFlags flags);
 
 G_DEFINE_TYPE (HdLauncherTile, hd_launcher_tile, CLUTTER_TYPE_GROUP);
 
@@ -201,6 +205,8 @@ hd_launcher_tile_init (HdLauncherTile *tile)
                            G_CALLBACK (hd_launcher_tile_button_press), tile);
   g_signal_connect_swapped(priv->click_area, "button-release-event",
                            G_CALLBACK (hd_launcher_tile_button_release), tile);
+  g_signal_connect(priv->click_area, "touch-event",
+                   G_CALLBACK (hd_launcher_tile_touched), tile);
 
   tile->priv->glow_timeline = clutter_timeline_new(200);
   g_signal_connect(tile->priv->glow_timeline, "new-frame",
@@ -427,8 +433,8 @@ hd_launcher_tile_set_text (HdLauncherTile *tile,
 {
   ClutterColor text_color = {0xFF, 0xFF, 0xFF, 0xFF};
   HdLauncherTilePrivate *priv = HD_LAUNCHER_TILE_GET_PRIVATE (tile);
-  gint32 label_width;
-  guint label_height, label_width_px;
+  gfloat label_width;
+  gfloat label_height, label_width_px;
   gchar *tile_font = NULL;
 
   if (!text)
@@ -641,6 +647,25 @@ hd_launcher_tile_button_release (ClutterActor       *actor)
   return TRUE;
 }
 
+static gboolean
+hd_launcher_tile_touched (ClutterActor *actor, ClutterEvent *event,
+                          ClutterActor *tile)
+{
+  switch (event->type)
+    {
+      case CLUTTER_TOUCH_BEGIN:
+          hd_launcher_tile_button_press(tile);
+          break;
+      case CLUTTER_TOUCH_END:
+          hd_launcher_tile_button_release(tile);
+          break;
+      default:
+          break;
+  }
+
+  return CLUTTER_EVENT_PROPAGATE;
+}
+
 static void
 hd_launcher_tile_dispose (GObject *gobject)
 {
@@ -689,7 +714,7 @@ hd_launcher_tile_finalize (GObject *gobject)
 static void
 hd_launcher_tile_allocate (ClutterActor          *self,
                            const ClutterActorBox *box,
-                           gboolean               absolute_origin_changed)
+                           ClutterAllocationFlags flags)
 {
   HdLauncherTilePrivate *priv = HD_LAUNCHER_TILE_GET_PRIVATE (self);
   gint right_margin = HD_LAUNCHER_PAGE_WIDTH-HD_LAUNCHER_RIGHT_MARGIN;
@@ -699,6 +724,8 @@ hd_launcher_tile_allocate (ClutterActor          *self,
    * apart, so make us extend sideways a bit so there are no gaps */
   gint xmin = -HILDON_MARGIN_DEFAULT/2;
   gint xmax = HD_LAUNCHER_TILE_WIDTH + HILDON_MARGIN_DEFAULT/2;
+  ClutterActorClass *actor_class =
+          CLUTTER_ACTOR_CLASS (hd_launcher_tile_parent_class);
 
   /* When this tile is moved around, set our click area up so that
    * it is clipped to the margins */
@@ -710,8 +737,7 @@ hd_launcher_tile_allocate (ClutterActor          *self,
   clutter_actor_set_x(priv->click_area, xmin);
   clutter_actor_set_width(priv->click_area, xmax-xmin);
 
-  CLUTTER_ACTOR_CLASS (hd_launcher_tile_parent_class)->allocate (
-      self, box, absolute_origin_changed);
+  actor_class->allocate (self, box, flags);
 }
 
 /* Reset this tile to the state it should be in when first shown */
