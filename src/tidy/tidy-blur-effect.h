@@ -1,5 +1,5 @@
-#ifndef TIDYMULTIBLUREFFECT_H
-#define TIDYMULTIBLUREFFECT_H
+#ifndef TIDYBLUREFFECT_H
+#define TIDYBLUREFFECT_H
 
 #include <clutter/clutter.h>
 
@@ -25,4 +25,4 @@ gfloat tidy_blur_effect_get_brigtness(ClutterEffect *self);
 
 G_END_DECLS
 
-#endif /* TIDYMULTIBLUREFFECT_H */
+#endif /* TIDYBLUREFFECT_H */
