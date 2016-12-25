@@ -4,13 +4,13 @@
 #include <clutter/clutter.h>
 #include <cogl/cogl.h>
 
-#include "tidy-multi-blur-effect.h"
+#include "tidy-blur-effect.h"
 
 #include <string.h>
 
-#define TIDY_MULTI_BLUR_EFFECT_CLASS(klass)        (G_TYPE_CHECK_CLASS_CAST ((klass), TIDY_TYPE_MULTI_BLUR_EFFECT, TidyMultiBlurEffectClass))
-#define TIDY_IS_MULTI_BLUR_EFFECT_CLASS(klass)     (G_TYPE_CHECK_CLASS_TYPE ((klass), TIDY_TYPE_MULTI_BLUR_EFFECT))
-#define TIDY_MULTI_BLUR_EFFECT_GET_CLASS(obj)      (G_TYPE_INSTANCE_GET_CLASS ((obj), TIDY_TYPE_MULTI_BLUR_EFFECT, TidyMultiBlurEffectClass))
+#define TIDY_BLUR_EFFECT_CLASS(klass)        (G_TYPE_CHECK_CLASS_CAST ((klass), TIDY_TYPE_BLUR_EFFECT, TidyBlurEffectClass))
+#define TIDY_IS_BLUR_EFFECT_CLASS(klass)     (G_TYPE_CHECK_CLASS_TYPE ((klass), TIDY_TYPE_BLUR_EFFECT))
+#define TIDY_BLUR_EFFECT_GET_CLASS(obj)      (G_TYPE_INSTANCE_GET_CLASS ((obj), TIDY_TYPE_BLUR_EFFECT, TidyBlurEffectClass))
 
 static const gchar *blur_glsl_vertex_declarations =
     "#ifdef GL_ES\n"
@@ -55,7 +55,7 @@ static const gchar *blur_glsl_texture_shader =
     "       texture2D (cogl_sampler, vec2(cogl_tex_coord0_in.x, cogl_tex_coord0_in.y)) * 0.5; \n"
     "cogl_texel = color;\n";
 
-struct _TidyMultiBlurEffect
+struct _TidyBlurEffect
 {
   ClutterOffscreenEffect parent_instance;
 
@@ -82,7 +82,7 @@ struct _TidyMultiBlurEffect
   gfloat brigtness;
 };
 
-struct _TidyMultiBlurEffectClass
+struct _TidyBlurEffectClass
 {
   ClutterOffscreenEffectClass parent_class;
 
@@ -90,15 +90,15 @@ struct _TidyMultiBlurEffectClass
   CoglPipeline *shader_pipeline;
 };
 
-G_DEFINE_TYPE (TidyMultiBlurEffect,
-               tidy_multi_blur_effect,
+G_DEFINE_TYPE (TidyBlurEffect,
+               tidy_blur_effect,
                CLUTTER_TYPE_OFFSCREEN_EFFECT)
 
 static void
-tidy_multi_blur_effect_create_textures(ClutterOffscreenEffect *effect,
+tidy_blur_effect_create_textures(ClutterOffscreenEffect *effect,
                                        gfloat width, gfloat height)
 {
-  TidyMultiBlurEffect *self = TIDY_MULTI_BLUR_EFFECT (effect);
+  TidyBlurEffect *self = TIDY_BLUR_EFFECT (effect);
 
   if (self->fb[0])
     {
@@ -121,9 +121,9 @@ tidy_multi_blur_effect_create_textures(ClutterOffscreenEffect *effect,
 
 
 static gboolean
-tidy_multi_blur_effect_pre_paint (ClutterEffect *effect)
+tidy_blur_effect_pre_paint (ClutterEffect *effect)
 {
-  TidyMultiBlurEffect *self = TIDY_MULTI_BLUR_EFFECT (effect);
+  TidyBlurEffect *self = TIDY_BLUR_EFFECT (effect);
   ClutterEffectClass *parent_class;
 
   if (!clutter_actor_meta_get_enabled (CLUTTER_ACTOR_META (effect)))
@@ -145,7 +145,7 @@ tidy_multi_blur_effect_pre_paint (ClutterEffect *effect)
       return FALSE;
     }
 
-  parent_class = CLUTTER_EFFECT_CLASS (tidy_multi_blur_effect_parent_class);
+  parent_class = CLUTTER_EFFECT_CLASS (tidy_blur_effect_parent_class);
   if (parent_class->pre_paint (effect))
     {
       ClutterOffscreenEffect *offscreen_effect =
@@ -161,7 +161,7 @@ tidy_multi_blur_effect_pre_paint (ClutterEffect *effect)
       if (!self->tex[0] || self->tex_width != tex_width ||
           self->tex_height != tex_height)
         {
-          tidy_multi_blur_effect_create_textures(offscreen_effect,
+          tidy_blur_effect_create_textures(offscreen_effect,
                                                     tex_width / 2,
                                                     tex_height / 2);
         }
@@ -190,9 +190,9 @@ tidy_multi_blur_effect_pre_paint (ClutterEffect *effect)
 }
 
 static void
-tidy_multi_blur_effect_do_blur(ClutterOffscreenEffect *effect, gint steps)
+tidy_blur_effect_do_blur(ClutterOffscreenEffect *effect, gint steps)
 {
-  TidyMultiBlurEffect *self = TIDY_MULTI_BLUR_EFFECT (effect);
+  TidyBlurEffect *self = TIDY_BLUR_EFFECT (effect);
   gboolean invert = steps % 2;
   gfloat x2 = invert ? 1.0 : -1.0;
   gfloat y2 = invert ? -1.0 : 1.0;
@@ -211,7 +211,7 @@ tidy_multi_blur_effect_do_blur(ClutterOffscreenEffect *effect, gint steps)
 }
 
 static void
-tidy_multi_blur_effect_vignette(gfloat width, gfloat height, gint opacity,
+tidy_blur_effect_vignette(gfloat width, gfloat height, gint opacity,
                                 gfloat zoom)
 {
   gfloat t = (1.0f - zoom) / (2.0f * zoom);
@@ -285,9 +285,9 @@ tidy_multi_blur_effect_vignette(gfloat width, gfloat height, gint opacity,
 }
 
 static void
-tidy_multi_blur_effect_paint_target (ClutterOffscreenEffect *effect)
+tidy_blur_effect_paint_target (ClutterOffscreenEffect *effect)
 {
-  TidyMultiBlurEffect *self = TIDY_MULTI_BLUR_EFFECT (effect);
+  TidyBlurEffect *self = TIDY_BLUR_EFFECT (effect);
   guint8 opacity = clutter_actor_get_paint_opacity (self->actor);
   CoglPipeline *pipeline;
   guint8 brigtness = opacity * self->brigtness;
@@ -313,7 +313,7 @@ tidy_multi_blur_effect_paint_target (ClutterOffscreenEffect *effect)
               self->fb_index = (self->fb_index + 1) % 2;
             }
 
-          tidy_multi_blur_effect_do_blur(effect, steps);
+          tidy_blur_effect_do_blur(effect, steps);
           self->max_blur = self->blur;
           self->current_blur = self->blur;
         }
@@ -361,7 +361,7 @@ tidy_multi_blur_effect_paint_target (ClutterOffscreenEffect *effect)
        * mirrored around each edge.
        */
       if (self->zoom < 1.0f)
-          tidy_multi_blur_effect_vignette(width, height, brigtness, self->zoom);
+          tidy_blur_effect_vignette(width, height, brigtness, self->zoom);
 
       cogl_pop_source ();
       brigtness *= blur_opacity;
@@ -376,7 +376,7 @@ tidy_multi_blur_effect_paint_target (ClutterOffscreenEffect *effect)
    * mirrored around each edge.
    */
   if (self->zoom < 1.0f)
-      tidy_multi_blur_effect_vignette(width, height, brigtness, self->zoom);
+      tidy_blur_effect_vignette(width, height, brigtness, self->zoom);
 
   cogl_pop_source ();
 
@@ -386,9 +386,9 @@ tidy_multi_blur_effect_paint_target (ClutterOffscreenEffect *effect)
 }
 
 static void
-tidy_multi_blur_effect_dispose (GObject *gobject)
+tidy_blur_effect_dispose (GObject *gobject)
 {
-  TidyMultiBlurEffect *self = TIDY_MULTI_BLUR_EFFECT (gobject);
+  TidyBlurEffect *self = TIDY_BLUR_EFFECT (gobject);
 
   if (self->pipeline != NULL)
     {
@@ -417,29 +417,29 @@ tidy_multi_blur_effect_dispose (GObject *gobject)
       self->tex[1] = NULL;
     }
 
-  G_OBJECT_CLASS (tidy_multi_blur_effect_parent_class)->dispose (gobject);
+  G_OBJECT_CLASS (tidy_blur_effect_parent_class)->dispose (gobject);
 }
 
 static void
-tidy_multi_blur_effect_class_init (TidyMultiBlurEffectClass *klass)
+tidy_blur_effect_class_init (TidyBlurEffectClass *klass)
 {
   ClutterEffectClass *effect_class = CLUTTER_EFFECT_CLASS (klass);
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
   ClutterOffscreenEffectClass *offscreen_class;
 
-  gobject_class->dispose = tidy_multi_blur_effect_dispose;
+  gobject_class->dispose = tidy_blur_effect_dispose;
 
-  effect_class->pre_paint = tidy_multi_blur_effect_pre_paint;
+  effect_class->pre_paint = tidy_blur_effect_pre_paint;
 
   offscreen_class = CLUTTER_OFFSCREEN_EFFECT_CLASS (klass);
-  offscreen_class->paint_target = tidy_multi_blur_effect_paint_target;
+  offscreen_class->paint_target = tidy_blur_effect_paint_target;
 }
 
 static void
-tidy_multi_blur_effect_init (TidyMultiBlurEffect *self)
+tidy_blur_effect_init (TidyBlurEffect *self)
 {
-  TidyMultiBlurEffectClass *klass =
-      TIDY_MULTI_BLUR_EFFECT_GET_CLASS (self);
+  TidyBlurEffectClass *klass =
+      TIDY_BLUR_EFFECT_GET_CLASS (self);
 
   if (G_UNLIKELY (klass->base_pipeline == NULL))
     {
@@ -499,20 +499,20 @@ tidy_multi_blur_effect_init (TidyMultiBlurEffect *self)
 }
 
 ClutterEffect *
-tidy_multi_blur_effect_new (void)
+tidy_blur_effect_new (void)
 {
-  return g_object_new (TIDY_TYPE_MULTI_BLUR_EFFECT, NULL);
+  return g_object_new (TIDY_TYPE_BLUR_EFFECT, NULL);
 }
 
 void
-tidy_multi_blur_effect_set_blur(ClutterEffect *effect, guint blur)
+tidy_blur_effect_set_blur(ClutterEffect *effect, guint blur)
 {
-  TidyMultiBlurEffect *self;
+  TidyBlurEffect *self;
 
-  if (!TIDY_IS_MULTI_BLUR_EFFECT(effect))
+  if (!TIDY_IS_BLUR_EFFECT(effect))
     return;
 
-  self = TIDY_MULTI_BLUR_EFFECT(effect);
+  self = TIDY_BLUR_EFFECT(effect);
 
   if (self->blur != blur)
     {
@@ -522,54 +522,54 @@ tidy_multi_blur_effect_set_blur(ClutterEffect *effect, guint blur)
 }
 
 guint
-tidy_multi_blur_effect_get_blur(ClutterEffect *self)
+tidy_blur_effect_get_blur(ClutterEffect *self)
 {
-  if (!TIDY_IS_MULTI_BLUR_EFFECT(self))
+  if (!TIDY_IS_BLUR_EFFECT(self))
       return 0;
 
-  return TIDY_MULTI_BLUR_EFFECT(self)->blur;
+  return TIDY_BLUR_EFFECT(self)->blur;
 }
 
 void
-tidy_multi_blur_effect_set_zoom(ClutterEffect *self, gfloat zoom)
+tidy_blur_effect_set_zoom(ClutterEffect *self, gfloat zoom)
 {
-  if (!TIDY_IS_MULTI_BLUR_EFFECT(self))
+  if (!TIDY_IS_BLUR_EFFECT(self))
     return;
 
-  if (TIDY_MULTI_BLUR_EFFECT(self)->zoom != zoom)
+  if (TIDY_BLUR_EFFECT(self)->zoom != zoom)
     {
-      TIDY_MULTI_BLUR_EFFECT(self)->zoom = zoom;
+      TIDY_BLUR_EFFECT(self)->zoom = zoom;
       clutter_effect_queue_repaint (self);
     }
 }
 
 gfloat
-tidy_multi_blur_effect_get_zoom(ClutterEffect *self)
+tidy_blur_effect_get_zoom(ClutterEffect *self)
 {
-  if (!TIDY_IS_MULTI_BLUR_EFFECT(self))
+  if (!TIDY_IS_BLUR_EFFECT(self))
       return 0;
 
-  return TIDY_MULTI_BLUR_EFFECT(self)->zoom;
+  return TIDY_BLUR_EFFECT(self)->zoom;
 }
 
 void
-tidy_multi_blur_effect_set_brigtness(ClutterEffect *self, gfloat brigtness)
+tidy_blur_effect_set_brigtness(ClutterEffect *self, gfloat brigtness)
 {
-  if (!TIDY_IS_MULTI_BLUR_EFFECT(self))
+  if (!TIDY_IS_BLUR_EFFECT(self))
     return;
 
-  if (TIDY_MULTI_BLUR_EFFECT(self)->brigtness != brigtness)
+  if (TIDY_BLUR_EFFECT(self)->brigtness != brigtness)
     {
-      TIDY_MULTI_BLUR_EFFECT(self)->brigtness = brigtness;
+      TIDY_BLUR_EFFECT(self)->brigtness = brigtness;
       clutter_effect_queue_repaint (self);
     }
 }
 
 gfloat
-tidy_multi_blur_effect_get_brigtness(ClutterEffect *self)
+tidy_blur_effect_get_brigtness(ClutterEffect *self)
 {
-  if (!TIDY_IS_MULTI_BLUR_EFFECT(self))
+  if (!TIDY_IS_BLUR_EFFECT(self))
       return 0;
 
-  return TIDY_MULTI_BLUR_EFFECT(self)->brigtness;
+  return TIDY_BLUR_EFFECT(self)->brigtness;
 }

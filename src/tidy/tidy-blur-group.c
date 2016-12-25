@@ -5,17 +5,16 @@
  * another texture, finally rendering that to the screen. Because of this, when
  * the blurring doesn't change from frame to frame, children and NOT rendered,
  * making this pretty quick. */
+#define CLUTTER_ENABLE_EXPERIMENTAL_API
+#define COGL_ENABLE_EXPERIMENTAL_API
 
 #include "tidy-blur-group.h"
 #include "tidy-util.h"
-#include "tidy-multi-blur-effect.h"
+#include "tidy-blur-effect.h"
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-
-#define CLUTTER_ENABLE_EXPERIMENTAL_API
-#define COGL_ENABLE_EXPERIMENTAL_API
 
 #include <clutter/clutter.h>
 #include <cogl/cogl.h>
@@ -212,8 +211,9 @@ tidy_blur_group_init (TidyBlurGroup *self)
       }
     else
       {
-        priv->blur_effect = tidy_multi_blur_effect_new();
-        clutter_actor_add_effect(CLUTTER_ACTOR(self), priv->blur_effect);
+        priv->blur_effect = tidy_blur_effect_new();
+        clutter_actor_add_effect_with_name (CLUTTER_ACTOR(self), "blur",
+                                            priv->blur_effect);
       }
   }
 }
@@ -276,7 +276,7 @@ tidy_blur_group_set_blur(ClutterActor *blur_group, float blur)
   if (!priv->blur_effect)
       return;
 
-  tidy_multi_blur_effect_set_blur(priv->blur_effect, blur);
+  tidy_blur_effect_set_blur(priv->blur_effect, blur);
 }
 
 /**
@@ -321,7 +321,7 @@ tidy_blur_group_set_brightness(ClutterActor *blur_group, float brightness)
 
   priv = TIDY_BLUR_GROUP(blur_group)->priv;
 
-  tidy_multi_blur_effect_set_brigtness(priv->blur_effect, brightness);
+  tidy_blur_effect_set_brigtness(priv->blur_effect, brightness);
 }
 
 
@@ -340,7 +340,7 @@ tidy_blur_group_set_zoom(ClutterActor *blur_group, float zoom)
     return;
 
   priv = TIDY_BLUR_GROUP(blur_group)->priv;
-  tidy_multi_blur_effect_set_zoom(priv->blur_effect, zoom);
+  tidy_blur_effect_set_zoom(priv->blur_effect, zoom);
 }
 
 /**
@@ -359,7 +359,7 @@ tidy_blur_group_get_zoom(ClutterActor *blur_group)
 
   priv = TIDY_BLUR_GROUP(blur_group)->priv;
 
-  return tidy_multi_blur_effect_get_zoom(priv->blur_effect);
+  return tidy_blur_effect_get_zoom(priv->blur_effect);
 }
 
 /**
@@ -463,6 +463,6 @@ tidy_blur_group_source_buffered(ClutterActor *blur_group)
     return FALSE;
 
   priv = TIDY_BLUR_GROUP(blur_group)->priv;
-  return !(tidy_multi_blur_effect_get_blur(priv->blur_effect) == 0
+  return !(tidy_blur_effect_get_blur(priv->blur_effect) == 0
            && priv->saturation == 1 && priv->brightness == 1);
 }
