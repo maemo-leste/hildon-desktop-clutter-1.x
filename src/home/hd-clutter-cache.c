@@ -190,7 +190,7 @@ hd_clutter_cache_get_texture(const char *filename, gboolean from_theme)
   if (!texture)
     texture = hd_clutter_cache_get_broken_texture();
   else
-    texture = clutter_clone_new(CLUTTER_TEXTURE(texture));
+    texture = clutter_clone_new(texture);
   clutter_actor_set_name(texture, filename);
   return texture;
 }
@@ -267,9 +267,13 @@ hd_clutter_cache_get_sub_texture_for_area(const char *filename,
 
   if (geo.width==0 || geo.height==0)
     {
+      gfloat h,w;
+
       geo.x = 0;
       geo.y = 0;
-      clutter_actor_get_size(CLUTTER_ACTOR(texture), &geo.width, &geo.height);
+      clutter_actor_get_size(CLUTTER_ACTOR(texture), &w, &h);
+      geo.width = w;
+      geo.height = h;
     }
 
   extend_x = area->width > geo.width;
