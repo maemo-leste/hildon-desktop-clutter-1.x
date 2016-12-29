@@ -445,6 +445,7 @@ deceleration_new_frame_cb (ClutterTimeline *timeline,
   TidyAdjustment *hadjust, *vadjust;
   gfloat hvalue, hlowest, hlower, hpage, hupper, hhighest;
   gfloat vvalue, vlowest, vlower, vpage, vupper, vhighest;
+  guint frame_num = msecs / clutter_timeline_get_duration(timeline);
 
   if (!(child = tidy_scroll_view_get_child (TIDY_SCROLL_VIEW(scroll))))
     return;
@@ -460,7 +461,7 @@ deceleration_new_frame_cb (ClutterTimeline *timeline,
   tidy_adjustment_get_valuesx (vadjust, &vvalue, &vlower, &vupper,
                                NULL, NULL, &vpage);
   vupper -= vpage;
-#ifdef UPSTREAM_DISABLED
+
   /* We need to keep track of how many frames were skipped so we can
    * make up for it... */
   for (; priv->deceleration_timeline_lastframe < frame_num;
@@ -475,7 +476,7 @@ deceleration_new_frame_cb (ClutterTimeline *timeline,
       priv->dy = get_next_delta (scroll,
                    vlowest, vlower, vvalue, priv->dy, vupper, vhighest);
     }
-#endif
+
   tidy_adjustment_set_valuex (hadjust, hvalue);
   tidy_adjustment_set_valuex (vadjust, vvalue);
 
@@ -832,7 +833,8 @@ hscroll_notify_reactive_cb (ClutterActor     *bar,
     {
       if (priv->hscroll_timeline)
         {
-          clutter_animation_completed (priv->hscroll_timeline);
+          clutter_animation_completed (
+                      CLUTTER_ANIMATION(priv->hscroll_timeline));
           priv->hscroll_timeline = NULL;
         }
       clutter_actor_set_opacity (bar, 0xFF);
@@ -851,7 +853,8 @@ vscroll_notify_reactive_cb (ClutterActor     *bar,
     {
       if (priv->vscroll_timeline)
         {
-          clutter_animation_completed (priv->vscroll_timeline);
+          clutter_animation_completed (
+                      CLUTTER_ANIMATION(priv->vscroll_timeline));
           priv->vscroll_timeline = NULL;
         }
       clutter_actor_set_opacity (bar, 0xFF);
@@ -932,7 +935,8 @@ tidy_finger_scroll_stop (TidyFingerScroll *scroll)
 
   if (priv->deceleration_timeline)
     {
-      clutter_animation_completed (priv->deceleration_timeline);
+      clutter_animation_completed (
+                  CLUTTER_ANIMATION(priv->deceleration_timeline));
       priv->deceleration_timeline = NULL;
     }
 }
