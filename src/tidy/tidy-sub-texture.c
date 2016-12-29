@@ -104,11 +104,11 @@ tidy_sub_texture_paint (ClutterActor *self)
 {
   TidySubTexturePrivate  *priv;
   ClutterActor                *parent_texture;
-  gint                         x_1, y_1, x_2, y_2, width, height;
+  gfloat                         x_1, y_1, x_2, y_2, width, height;
   CoglColor                 col;
   CoglHandle                   cogl_texture;
   gfloat                 t_x, t_y, t_w, t_h;
-  guint                        tex_width, tex_height;
+  gfloat                        tex_width, tex_height;
   ClutterGeometry              region;
   ClutterActorBox box;
 
