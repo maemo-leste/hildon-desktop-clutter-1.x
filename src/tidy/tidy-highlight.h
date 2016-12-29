@@ -56,24 +56,11 @@ typedef struct _TidyHighlight        TidyHighlight;
 typedef struct _TidyHighlightPrivate TidyHighlightPrivate;
 typedef struct _TidyHighlightClass   TidyHighlightClass;
 
-struct _TidyHighlight
-{
-  ClutterActor                 parent;
-
-  /*< priv >*/
-  TidyHighlightPrivate    *priv;
-};
-
-struct _TidyHighlightClass
-{
-  ClutterActorClass parent_class;
-};
-
 GType          tidy_highlight_get_type           (void) G_GNUC_CONST;
 
 TidyHighlight *tidy_highlight_new                (ClutterTexture      *texture);
-void           tidy_highlight_set_amount(TidyHighlight *sub, float amount);
-void           tidy_highlight_set_color (TidyHighlight *sub, ClutterColor *col);
+void           tidy_highlight_set_amount(TidyHighlight *self, float amount);
+void           tidy_highlight_set_color (TidyHighlight *self, ClutterColor *col);
 
 G_END_DECLS
 
