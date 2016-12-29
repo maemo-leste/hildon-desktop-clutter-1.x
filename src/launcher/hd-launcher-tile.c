@@ -372,6 +372,7 @@ hd_launcher_tile_set_icon_name (HdLauncherTile *tile,
     {
       gint w = gdk_pixbuf_get_width(pixbuf);
       gint h = gdk_pixbuf_get_height(pixbuf);
+
       GdkPixbuf *pixbufb = gdk_pixbuf_new(
           GDK_COLORSPACE_RGB, TRUE, 8, w+2, h+2);
 
@@ -406,7 +407,6 @@ hd_launcher_tile_set_icon_name (HdLauncherTile *tile,
       HD_LAUNCHER_TILE_ICON_SIZE);
   clutter_actor_set_position (priv->icon,
       (HD_LAUNCHER_TILE_WIDTH - HD_LAUNCHER_TILE_ICON_SIZE) / 2, 0);
-  clutter_actor_add_child (CLUTTER_ACTOR(tile), priv->icon);
 
   if (priv->icon_glow)
     /* free the old one */
@@ -421,6 +421,7 @@ hd_launcher_tile_set_icon_name (HdLauncherTile *tile,
         (HD_LAUNCHER_TILE_ICON_SIZE - HD_LAUNCHER_TILE_GLOW_SIZE) / 2);
   clutter_actor_add_child (CLUTTER_ACTOR(tile), CLUTTER_ACTOR(priv->icon_glow));
   clutter_actor_lower_bottom(CLUTTER_ACTOR(priv->icon_glow));
+  clutter_actor_add_child (CLUTTER_ACTOR(tile), priv->icon);
 
   clutter_actor_hide(CLUTTER_ACTOR(priv->icon_glow));
 
@@ -579,8 +580,8 @@ hd_launcher_tile_set_glow(HdLauncherTile *tile, gboolean glow, gboolean hard)
 
   /* set our glow colour from the theme */
   glow_brightness = hd_transition_get_double("launcher_glow", "brightness", 1);
-  hd_gtk_style_get_text_color(HD_GTK_BUTTON_SINGLETON, GTK_STATE_NORMAL,
-                              &glow_col);
+  hd_gtk_style_get_light_color(HD_GTK_BUTTON_SINGLETON, GTK_STATE_ACTIVE,
+                               &glow_col);
   glow_col.alpha = (int)(glow_col.alpha * glow_brightness);
   if (priv->icon_glow)
     tidy_highlight_set_color(priv->icon_glow, &glow_col);
