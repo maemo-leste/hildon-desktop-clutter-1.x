@@ -244,7 +244,7 @@ static void hd_launcher_constructed (GObject *gobject)
                     G_CALLBACK(hd_launcher_captured_event_cb), 0);
   g_signal_connect (self, "button-release-event",
                     G_CALLBACK(hd_launcher_background_clicked), 0);
-  g_signal_connect (self, "key-pressed-event",
+  g_signal_connect (self, "key-press-event",
                     G_CALLBACK(hd_launcher_key_pressed), 0);
   g_signal_connect (self, "touch-event",
                     G_CALLBACK(hd_launcher_background_touched), 0);
