@@ -89,7 +89,7 @@ static const gchar *tidy_highlight_glsl_shader =
   "    texture2D (tex, vec2(tex_coord.x + blurx*0.3, tex_coord.y + blury*0.3)).a * 0.125 + \n"
   "    texture2D (tex, vec2(tex_coord.x + blurx*0.3, tex_coord.y - blury*0.3)).a * 0.125; \n"
 
-  "  cogl_texel= vec4(0,0,0,1.0 - 2.0*alpha);\n";
+  "  cogl_texel= alpha * vec4(2.0);\n";
 
 static void
 tidy_highlight_get_preferred_width (ClutterActor *self, gfloat for_height,
@@ -258,12 +258,13 @@ tidy_highlight_get_property (GObject *object, guint prop_id, GValue *value,
 static void
 tidy_highlight_paint_node (ClutterActor *actor, ClutterPaintNode *root)
 {
-  ClutterPaintNode *shader_node, *color_node;
+  ClutterPaintNode *shader_node;
   ClutterActorBox box, tex_box;
   gfloat width, height;
   gfloat blurx, blury;
   TidyHighlightPrivate *priv = TIDY_HIGHLIGHT(actor)->priv;
   CoglHandle tex = cogl_pipeline_get_layer_texture(priv->pipeline, 0);
+  CoglColor color;
 
   clutter_actor_get_allocation_box (actor, &box);
   clutter_actor_get_allocation_box (CLUTTER_ACTOR(priv->texture), &tex_box);
@@ -281,10 +282,12 @@ tidy_highlight_paint_node (ClutterActor *actor, ClutterPaintNode *root)
   box.x2 = box.x1 + width;
   box.y2 = box.y1 + height;
 
-  color_node = clutter_color_node_new (&priv->color);
-  clutter_paint_node_add_rectangle (color_node, &box);
-  clutter_paint_node_add_child (root, color_node);
-  clutter_paint_node_unref (color_node);
+  cogl_color_init_from_4ub(
+              &color, priv->color.red, priv->color.green, priv->color.blue,
+              priv->color.alpha *
+                         (float)clutter_actor_get_paint_opacity(actor) / 255.0);
+
+  cogl_pipeline_set_color(priv->pipeline, &color);
 
   shader_node = clutter_pipeline_node_new (priv->pipeline);
   clutter_paint_node_add_rectangle (shader_node, &box);
