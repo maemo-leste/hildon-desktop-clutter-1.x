@@ -62,11 +62,11 @@ struct _TidyBlurEffect
   /* a back pointer to our actor, so that we can query it */
   ClutterActor *actor;
 
+  CoglHandle texture;
   gint tex_width;
   gint tex_height;
 
   CoglPipeline *pipeline;
-
   CoglPipeline *shader_pipeline;
 
   gint blur_uniform;
@@ -164,20 +164,20 @@ tidy_blur_effect_pre_paint (ClutterEffect *effect)
           tidy_blur_effect_create_textures(offscreen_effect,
                                                     tex_width / 2,
                                                     tex_height / 2);
+          self->tex_width = tex_width;
+          self->tex_height = tex_height;
+
+          blur[0] = 1.0f / self->tex_width;
+          blur[1] = 1.0f / self->tex_height;
+
+          cogl_pipeline_set_uniform_float (self->shader_pipeline,
+                                           self->blur_uniform,
+                                           2, /* n_components */
+                                           1, /* count */
+                                           blur);
         }
 
-      self->tex_width = tex_width;
-      self->tex_height = tex_height;
-
-      blur[0] = 1.0f / self->tex_width;
-      blur[1] = 1.0f / self->tex_height;
-
-      cogl_pipeline_set_uniform_float (self->shader_pipeline,
-                                       self->blur_uniform,
-                                       2, /* n_components */
-                                       1, /* count */
-                                       blur);
-
+      self->texture = texture;
       cogl_pipeline_set_layer_texture (self->pipeline, 0, texture);
 
       self->current_blur = 0;
@@ -289,7 +289,7 @@ tidy_blur_effect_paint_target (ClutterOffscreenEffect *effect)
 {
   TidyBlurEffect *self = TIDY_BLUR_EFFECT (effect);
   guint8 opacity = clutter_actor_get_paint_opacity (self->actor);
-  CoglPipeline *pipeline;
+  CoglHandle texture;
   guint8 brigtness = opacity * self->brigtness;
   gfloat blur_opacity = 1.0f;
 
@@ -324,14 +324,16 @@ tidy_blur_effect_paint_target (ClutterOffscreenEffect *effect)
           blur_opacity = ((gfloat)(self->blur)) / ((gfloat)(self->max_blur));
         }
 
-      pipeline = self->shader_pipeline;
+      texture = self->tex[(self->fb_index + 1) % 2];
     }
   else
   {
       self->max_blur = 0;
       self->current_blur = 0;
-      pipeline = self->pipeline;
+      texture = self->texture;
   }
+
+  cogl_pipeline_set_layer_texture (self->pipeline, 0, texture);
 
   ClutterActorBox box;
 
@@ -367,9 +369,9 @@ tidy_blur_effect_paint_target (ClutterOffscreenEffect *effect)
       brigtness *= blur_opacity;
   }
 
-  cogl_pipeline_set_color4ub (pipeline, brigtness, brigtness, brigtness,
+  cogl_pipeline_set_color4ub (self->pipeline, brigtness, brigtness, brigtness,
                               brigtness);
-  cogl_push_source (pipeline);
+  cogl_push_source (self->pipeline);
   cogl_rectangle_with_texture_coords(0, 0, width, height, 0, 0, 1, 1);
 
   /* If we're zooming less than 1, we want to re-render everything
@@ -382,7 +384,7 @@ tidy_blur_effect_paint_target (ClutterOffscreenEffect *effect)
 
   cogl_clip_pop();
   cogl_pop_matrix();
-  cogl_pipeline_set_color4ub (pipeline, 255, 255, 255, 255);
+  cogl_pipeline_set_color4ub (self->pipeline, 255, 255, 255, 255);
 }
 
 static void
