@@ -125,11 +125,11 @@ if test "$ac_cv_enable_static_mb2" = yes; then
                        xfixes dnl
                        xrandr dnl
                        xrender dnl
-                       gtk+-3.0 dnl
+                       gtk+-2.0 dnl
                        gconf-2.0 dnl
                        gl dnl
-                       hildon-3 dnl
-                       libhildondesktop-3 dnl
+                       hildon-1 dnl
+                       libhildondesktop-1 dnl
                        libcanberra dnl
                        libgnome-menu dnl
                        libpng12 dnl
@@ -151,11 +151,11 @@ else
                        xfixes dnl
                        xrandr dnl
                        xrender dnl
-                       gtk+-3.0 dnl
+                       gtk+-2.0 dnl
                        gconf-2.0 dnl
                        gl dnl
-                       hildon-3 dnl
-                       libhildondesktop-3 dnl
+                       hildon-1 dnl
+                       libhildondesktop-1 dnl
                        libcanberra dnl
                        libgnome-menu dnl
                        libpng12 dnl
