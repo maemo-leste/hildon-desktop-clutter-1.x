@@ -130,7 +130,7 @@ take_screenshot (void)
   static gchar datestamp[255];
   static time_t secs = 0;
   struct tm *tm = NULL;
-  GdkWindow *window;
+  GdkDrawable *window;
   int width, height;
   GdkPixbuf *image;
   GError *error = NULL;
@@ -173,11 +173,13 @@ take_screenshot (void)
   g_free (path);
 
   window = gdk_get_default_root_window();
-  width = gdk_window_get_width(window);
-  height = gdk_window_get_height(window);
-  image = gdk_pixbuf_get_from_window(window,
-               0, 0,
-  width, height);
+  gdk_drawable_get_size(window, &width, &height);
+  image = gdk_pixbuf_get_from_drawable(NULL,
+                                       window,
+                                       gdk_drawable_get_colormap(window),
+                                       0, 0,
+                                       0, 0,
+                                       width, height);
   ret = gdk_pixbuf_save (image, filename, "png", &error, NULL);
   g_object_unref(image);
 

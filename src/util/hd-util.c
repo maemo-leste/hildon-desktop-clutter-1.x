@@ -651,7 +651,7 @@ hd_util_partial_redraw_if_possible(ClutterActor *actor, ClutterGeometry *bounds)
 
   valid = hd_util_get_actor_bounds(actor, &area, &visible);
   if (!visible) return;
-#ifdef MAEMO_CHANGES
+#if defined(MAEMO_CHANGES) && defined(UPSTREAM_DISABLED)
   if (valid)
     {
       /* Queue a redraw, but without updating the whole area */

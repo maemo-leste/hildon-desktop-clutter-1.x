@@ -618,7 +618,7 @@ load_background_idle (gpointer data)
       }
     else
       {
-#ifdef MAEMO_CHANGES
+#if defined(MAEMO_CHANGES) && defined(UPSTREAM_DISABLED)
         GdkPixbuf        *pixbuf;
 
         /* Load image directly. We actually want to dither it on the fly to

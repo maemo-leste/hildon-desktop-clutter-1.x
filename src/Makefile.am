@@ -12,7 +12,7 @@ bin_PROGRAMS = hildon-desktop
 
 hildon_desktop_SOURCES = main.c hildon-desktop.h
 
-UNWANTED = -Wl,--export-dynamic -export-dynamic -rdynamic
+#UNWANTED = -Wl,--export-dynamic -export-dynamic -rdynamic
 hildon_desktop_LDADD = \
 	$(filter-out $(UNWANTED),$(MY_LIBS) $(HD_LIBS) $(A11Y_LA))
 hildon_desktop_LDFLAGS = -Wl,--version-script=export.map \
