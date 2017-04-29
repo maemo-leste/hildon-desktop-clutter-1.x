@@ -421,10 +421,8 @@ hd_launcher_editor_init (HdLauncherEditor *editor)
                                                      G_TYPE_STRING);
 
   /* and the icon view. */
-#ifdef UPSTREAM_DISABLED
   priv->icon_view = hildon_gtk_icon_view_new_with_model (HILDON_UI_MODE_EDIT,
                                                          priv->model);
-#endif
   renderer = gtk_cell_renderer_pixbuf_new ();
   g_object_set (G_OBJECT (renderer),
                 "xalign", 0.5,
