@@ -11,7 +11,7 @@
 ### END INIT INFO
 
 if [ -r /etc/osso-af-init/af-defines.sh ]; then
-  source /etc/osso-af-init/af-defines.sh
+  . /etc/osso-af-init/af-defines.sh
 fi
 
 START_AS_USER=""
