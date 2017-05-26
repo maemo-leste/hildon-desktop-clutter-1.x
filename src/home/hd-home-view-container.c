@@ -117,13 +117,13 @@ hd_home_view_container_update_previous_and_next_view (HdHomeViewContainer *self)
 
 static void
 backgrounds_dir_changed (GFileMonitor        *monitor,
-                         GFile               *monitor_file,
-                         GFile               *info,
+			 GFile               *file,
+			 GFile               *other_file,
                          GFileMonitorEvent    event_type,
                          HdHomeViewContainer *view_container)
 {
   HdHomeViewContainerPrivate *priv = view_container->priv;
-  gchar *info_uri = g_file_get_uri (info);
+  gchar *info_uri = g_file_get_uri (file);
 
   if (event_type == G_FILE_MONITOR_EVENT_CREATED ||
       event_type == G_FILE_MONITOR_EVENT_CHANGED)
