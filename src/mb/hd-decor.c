@@ -350,6 +350,9 @@ hd_decor_create_actors(HdDecor *decor)
           clutter_timeline_new(1000 * HD_THEME_IMG_PROGRESS_FRAMES /
                                HD_THEME_IMG_PROGRESS_FPS));
       clutter_timeline_set_repeat_count(decor->progress_timeline, -1);
+      clutter_timeline_set_step_progress(priv->progress_timeline,
+                                         HD_THEME_IMG_PROGRESS_FRAMES,
+                                         CLUTTER_STEP_MODE_START);
       g_signal_connect (decor->progress_timeline, "new-frame",
                         G_CALLBACK (on_decor_progress_timeline_new_frame),
                         decor->progress_texture);

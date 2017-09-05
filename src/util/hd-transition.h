@@ -53,7 +53,7 @@ hd_transition_ease_out(float amt);
 /* For the animated progress indicator in the title bar */
 void
 on_decor_progress_timeline_new_frame(ClutterTimeline *timeline,
-                                     gint frame_num,
+                                     gint msecs,
                                      ClutterActor *progress_texture);
 
 void

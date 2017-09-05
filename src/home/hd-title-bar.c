@@ -382,6 +382,7 @@ hd_title_bar_init (HdTitleBar *bar)
   priv->switcher_timeline =
     clutter_timeline_new(HD_TITLE_BAR_SWITCHER_PULSE_DURATION
                                       * HD_TITLE_BAR_SWITCHER_PULSE_NPULSES);
+
   g_signal_connect (priv->switcher_timeline, "new-frame",
                         G_CALLBACK (on_switcher_timeline_new_frame), bar);
 
@@ -403,8 +404,11 @@ hd_title_bar_init (HdTitleBar *bar)
     clutter_actor_hide(priv->progress_texture);
     /* Create the timeline for animation */
     priv->progress_timeline = g_object_ref(
-        clutter_timeline_new(HD_THEME_IMG_PROGRESS_FRAMES *
+        clutter_timeline_new(1000 * HD_THEME_IMG_PROGRESS_FRAMES /
                              HD_THEME_IMG_PROGRESS_FPS));
+    clutter_timeline_set_step_progress(priv->progress_timeline,
+                                       HD_THEME_IMG_PROGRESS_FRAMES,
+                                       CLUTTER_STEP_MODE_START);
     clutter_timeline_set_loop(priv->progress_timeline, TRUE);
     g_signal_connect (priv->progress_timeline, "new-frame",
                       G_CALLBACK (on_decor_progress_timeline_new_frame),
@@ -1405,7 +1409,7 @@ on_switcher_timeline_new_frame(ClutterTimeline *timeline,
 #ifdef UPSTREAM_DISABLED
   clutter_actor_set_allow_redraw(CLUTTER_ACTOR(bar), FALSE);
 #endif
-  amt =  (float)msecs
+  amt = ((float)msecs / (float)clutter_timeline_get_duration(timeline))
               * HD_TITLE_BAR_SWITCHER_PULSE_NPULSES / 2;
   if (priv->state & HDTB_VIS_BTN_SWITCHER)
     {

@@ -349,7 +349,7 @@ extern gboolean hd_dbus_display_is_off;
 /* For the animated progress indicator in the title bar */
 void
 on_decor_progress_timeline_new_frame(ClutterTimeline *timeline,
-                                     gint frame_num,
+                                     gint msecs,
                                      ClutterActor *progress_texture)
 {
   if (!hd_dbus_display_is_off && TIDY_IS_SUB_TEXTURE(progress_texture) &&
@@ -358,8 +358,11 @@ on_decor_progress_timeline_new_frame(ClutterTimeline *timeline,
       /* The progress animation is a series of frames packed
        * into a texture - like a film strip
        */
+      guint frame_num = (msecs * HD_THEME_IMG_PROGRESS_FRAMES /
+                         clutter_timeline_get_duration(timeline));
+
       ClutterGeometry progress_region =
-         {HD_THEME_IMG_PROGRESS_SIZE*frame_num, 0,
+         {HD_THEME_IMG_PROGRESS_SIZE * frame_num, 0,
           HD_THEME_IMG_PROGRESS_SIZE, HD_THEME_IMG_PROGRESS_SIZE };
 
       tidy_sub_texture_set_region(
