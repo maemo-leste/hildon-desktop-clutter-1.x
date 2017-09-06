@@ -98,7 +98,7 @@ tidy_scroll_view_dispose (GObject *object)
   TidyScrollViewPrivate *priv = TIDY_SCROLL_VIEW (object)->priv;
 
   if (priv->child)
-    clutter_actor_remove_child (object, priv->child);
+    clutter_actor_remove_child (CLUTTER_ACTOR(object), priv->child);
 
   if (priv->vscroll)
     {
@@ -239,7 +239,7 @@ tidy_scroll_view_get_preferred_height (ClutterActor *actor,
 static void
 tidy_scroll_view_allocate (ClutterActor          *actor,
                            const ClutterActorBox *box,
-                           gboolean               absolute_origin_changed)
+                           ClutterAllocationFlags flags)
 {
   TidyPadding padding;
   ClutterActorBox child_box;
@@ -250,7 +250,7 @@ tidy_scroll_view_allocate (ClutterActor          *actor,
 
   /* Chain up */
   CLUTTER_ACTOR_CLASS (tidy_scroll_view_parent_class)->
-    allocate (actor, box, absolute_origin_changed);
+    allocate (actor, box, flags);
 
   tidy_actor_get_padding (TIDY_ACTOR (actor), &padding);
 
@@ -268,9 +268,7 @@ tidy_scroll_view_allocate (ClutterActor          *actor,
   child_box.y1 = padding.top;
   child_box.y2 = MIN(xthicknessu, box->x2 - box->x1) + padding.top;
 
-  clutter_actor_allocate (priv->vscroll,
-                          &child_box,
-                          absolute_origin_changed);
+  clutter_actor_allocate (priv->vscroll, &child_box, flags);
 
   /* Horizontal scrollbar */
   child_box.x1 = padding.left;
@@ -278,9 +276,7 @@ tidy_scroll_view_allocate (ClutterActor          *actor,
   child_box.y1 = MAX(0, box->y2 - box->y1 - ythicknessu) - padding.bottom;
   child_box.y2 = box->y2 - box->y1 - padding.bottom;
 
-  clutter_actor_allocate (priv->hscroll,
-                          &child_box,
-                          absolute_origin_changed);
+  clutter_actor_allocate (priv->hscroll, &child_box, flags);
 
   /* Child */
   child_box.x1 = 0;
@@ -299,7 +295,7 @@ tidy_scroll_view_allocate (ClutterActor          *actor,
 
   if (priv->child)
     {
-      clutter_actor_allocate (priv->child, &child_box, absolute_origin_changed);
+      clutter_actor_allocate (priv->child, &child_box, flags);
       clutter_actor_set_clip (priv->child,
                               child_box.x1,
                               child_box.y1,

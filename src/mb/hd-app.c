@@ -57,7 +57,8 @@ delete_open_menus (MBWindowManager *wm)
 
   for (c = wm->stack_top; c; c = c->stacked_below)
     {
-      if (MB_WM_CLIENT_CLIENT_TYPE (c) == HdWmClientTypeAppMenu ||
+      if ((HdWmClientType)MB_WM_CLIENT_CLIENT_TYPE (c) ==
+                                                        HdWmClientTypeAppMenu ||
           MB_WM_CLIENT_CLIENT_TYPE (c) == MBWMClientTypeMenu)
         {
           mb_wm_client_deliver_delete (c);

@@ -31,6 +31,7 @@
 #include "tidy-stylable.h"
 #include "tidy-enum-types.h"
 #include "tidy-private.h"
+#include "tidy-util.h"
 
 static void tidy_stylable_iface_init (TidyStylableIface *iface);
 static void on_style_change (TidyStyle     *style,
@@ -197,13 +198,13 @@ tidy_scroll_bar_pick (ClutterActor       *actor,
 static void
 tidy_scroll_bar_allocate (ClutterActor          *actor,
                           const ClutterActorBox *box,
-                          gboolean               absolute_origin_changed)
+                          ClutterAllocationFlags flags)
 {
   TidyScrollBarPrivate *priv = TIDY_SCROLL_BAR (actor)->priv;
 
   /* Chain up */
   CLUTTER_ACTOR_CLASS (tidy_scroll_bar_parent_class)->
-    allocate (actor, box, absolute_origin_changed);
+    allocate (actor, box, flags);
 
   if (priv->texture)
     clutter_actor_set_size (priv->texture,
@@ -253,9 +254,7 @@ tidy_scroll_bar_allocate (ClutterActor          *actor,
                                 size));
       child_box.y2 = child_box.y1 + real_height;
       
-      clutter_actor_allocate (priv->handle,
-                              &child_box,
-                              absolute_origin_changed);
+      clutter_actor_allocate (priv->handle, &child_box, flags);
     }
 }
 

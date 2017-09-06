@@ -504,7 +504,8 @@ hd_note_stacking_layer(MBWindowManagerClient *client)
       for (c = wm->stack_top; c && c != wm->desktop; c = c->stacked_below)
         {
           if (mb_wm_client_is_map_confirmed (c) &&
-              MB_WM_CLIENT_CLIENT_TYPE (c) == HdWmClientTypeAppMenu)
+              (HdWmClientType)MB_WM_CLIENT_CLIENT_TYPE (c) ==
+                                                          HdWmClientTypeAppMenu)
             return c->stacking_layer;
         }
     }

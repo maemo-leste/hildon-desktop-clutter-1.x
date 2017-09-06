@@ -408,7 +408,7 @@ void tidy_mem_texture_damage(TidyMemTexture *texture,
 {
   TidyMemTexturePrivate *priv;
   GList *tiles;
-  guint actor_width, actor_height;
+  gfloat actor_width, actor_height;
   gboolean redraw = FALSE;
 
   if (!TIDY_IS_MEM_TEXTURE(texture))

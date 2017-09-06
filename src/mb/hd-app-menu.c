@@ -71,8 +71,10 @@ hd_app_menu_init (MBWMObject *this, va_list vap)
 
   for (c = wm->stack_top; c; c = c->stacked_below)
     {
-      if (MB_WM_CLIENT_CLIENT_TYPE (c) == HdWmClientTypeAppMenu ||
-          MB_WM_CLIENT_CLIENT_TYPE (c) == MBWMClientTypeMenu)
+      MBWMClientType type = MB_WM_CLIENT_CLIENT_TYPE (c);
+
+      if ((HdWmClientType)type == HdWmClientTypeAppMenu ||
+          type == MBWMClientTypeMenu)
         {
           mb_wm_client_deliver_delete (c);
         }
