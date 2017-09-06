@@ -346,7 +346,7 @@ key_binding_func_key (MBWindowManager   *wm,
   int action;
   char s[32];
 
-  action = (int)(userdata);
+  action = (intptr_t)(userdata);
   sprintf(s,"%i",action);
 
   hd_dbus_send_event (s);
@@ -778,7 +778,7 @@ main (int argc, char **argv)
 						keys1,
 						key_binding_func_key,
 						NULL,
-						(void*)(192+c-'a'+1));
+						(void*)(intptr_t)(192+c-'a'+1));
 	  }
   }
 

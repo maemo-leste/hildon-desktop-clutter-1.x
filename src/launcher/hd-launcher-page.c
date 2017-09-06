@@ -579,7 +579,7 @@ hd_launcher_page_update_emptylabel (HdLauncherPage *page, gboolean is_portrait)
 
   HdLauncherPagePrivate *priv = HD_LAUNCHER_PAGE_GET_PRIVATE (page);
   guint x1, y1;
-  guint label_width, label_height;
+  gfloat label_width, label_height;
   guint page_width = is_portrait ? HD_LAUNCHER_PAGE_HEIGHT : HD_LAUNCHER_PAGE_WIDTH;
   guint page_height = is_portrait ? HD_LAUNCHER_PAGE_WIDTH : HD_LAUNCHER_PAGE_HEIGHT;
 

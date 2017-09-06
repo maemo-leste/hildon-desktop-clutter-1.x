@@ -651,18 +651,17 @@ hd_util_partial_redraw_if_possible(ClutterActor *actor, ClutterGeometry *bounds)
 
   valid = hd_util_get_actor_bounds(actor, &area, &visible);
   if (!visible) return;
-#if defined(MAEMO_CHANGES) && defined(UPSTREAM_DISABLED)
   if (valid)
     {
       /* Queue a redraw, but without updating the whole area */
-      clutter_stage_set_damaged_area(stage, area);
-      clutter_actor_queue_redraw_damage(stage);
+      cairo_rectangle_int_t clip = {
+        area.x, area.y, area.width, area.height
+      };
+
+      clutter_actor_queue_redraw_with_clip(stage, &clip);
     }
   else
-#endif
-    {
       clutter_actor_queue_redraw(stage);
-    }
 }
 
 /* Check to see whether clients above this one totally obscure it */

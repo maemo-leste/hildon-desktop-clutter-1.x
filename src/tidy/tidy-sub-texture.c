@@ -446,6 +446,13 @@ void tidy_sub_texture_set_region (TidySubTexture *sub,
   sub->priv->region = *region;
 }
 
+void tidy_sub_texture_get_region (TidySubTexture *sub,
+                                  ClutterGeometry *region)
+{
+  g_return_if_fail (TIDY_IS_SUB_TEXTURE (sub));
+  *region = sub->priv->region;
+}
+
 /* Set whether to tile (rather than stretch) the image */
 void tidy_sub_texture_set_tiled (TidySubTexture *sub,
                                 gboolean tile)

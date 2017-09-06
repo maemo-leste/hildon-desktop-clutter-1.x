@@ -364,16 +364,22 @@ on_decor_progress_timeline_new_frame(ClutterTimeline *timeline,
       ClutterGeometry progress_region =
          {HD_THEME_IMG_PROGRESS_SIZE * frame_num, 0,
           HD_THEME_IMG_PROGRESS_SIZE, HD_THEME_IMG_PROGRESS_SIZE };
+      ClutterGeometry old_region;
 
-      tidy_sub_texture_set_region(
-          TIDY_SUB_TEXTURE(progress_texture),
-          &progress_region);
+      tidy_sub_texture_get_region(TIDY_SUB_TEXTURE(progress_texture),
+                                  &old_region);
+      if (old_region.x != progress_region.x)
+      {
+        tidy_sub_texture_set_region(
+              TIDY_SUB_TEXTURE(progress_texture),
+              &progress_region);
 
-      /* We just queue damage with an area like we do for windows.
+        /* We just queue damage with an area like we do for windows.
        * Otherwise we end up updating the whole screen for this.
        * This also takes account of visibility. */
-      hd_util_partial_redraw_if_possible(progress_texture, 0);
-    }
+        hd_util_partial_redraw_if_possible(progress_texture, 0);
+      }
+  }
 }
 
 static void

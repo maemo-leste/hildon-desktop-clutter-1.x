@@ -406,10 +406,7 @@ hd_title_bar_init (HdTitleBar *bar)
     priv->progress_timeline = g_object_ref(
         clutter_timeline_new(1000 * HD_THEME_IMG_PROGRESS_FRAMES /
                              HD_THEME_IMG_PROGRESS_FPS));
-    clutter_timeline_set_step_progress(priv->progress_timeline,
-                                       HD_THEME_IMG_PROGRESS_FRAMES,
-                                       CLUTTER_STEP_MODE_START);
-    clutter_timeline_set_loop(priv->progress_timeline, TRUE);
+    clutter_timeline_set_repeat_count(priv->progress_timeline, -1);
     g_signal_connect (priv->progress_timeline, "new-frame",
                       G_CALLBACK (on_decor_progress_timeline_new_frame),
                       priv->progress_texture);
