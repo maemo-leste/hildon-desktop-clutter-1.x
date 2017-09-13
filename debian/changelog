@@ -1,5 +1,11 @@
 hildon-desktop (1:2.2.155-3) unstable; urgency=low
 
+  * enable git builds
+
+ -- Ivan J. <parazyd@dyne.org>  Wed, 13 Sep 2017 10:50:00 +0200
+
+hildon-desktop (1:2.2.155-3) unstable; urgency=low
+
   * Do not rotate screen on portraited client when its parent does not
     support portrait mode.
     This fixes http://talk.maemo.org/showpost.php?p=1424500&postcount=2058
