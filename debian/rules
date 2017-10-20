@@ -18,6 +18,10 @@ else
 CFLAGS += -O0
 endif
 
+ifeq ($(DEB_BUILD_ARCH), armel)
+	CFLAGS += -mcpu=armv5
+endif
+
 CFLAGS += -DG_DISABLE_CHECKS -Winline -Wno-deprecated-declarations
 
 DEB_CONFIGURE_EXTRA_FLAGS += \
