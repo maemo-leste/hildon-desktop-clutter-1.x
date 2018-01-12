@@ -1,8 +1,9 @@
 hildon-desktop (1:2.2.156) unstable; urgency=medium
 
-  * Update configure.ac for Ascii package versions
+  * Update configure.ac for Ascii package versions (parazyd@dyne.org)
+  * port to libgnome-menu-3-0
 
- -- Ivan J. <parazyd@dyne.org>  Wed, 10 Jan 2018 21:20:00 +0100
+ -- Ivaylo Dimitrov <ivo.g.dimitrov.75@gmail.com>  Fri, 12 Jan 2018 14:07:15 +0300
 
 hildon-desktop (1:2.2.155-3) unstable; urgency=low
 
