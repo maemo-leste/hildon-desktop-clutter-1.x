@@ -5,4 +5,3 @@ debian/tmp/etc/xdg/menus
 debian/tmp/etc/powervr.d
 debian/tmp/usr/bin
 debian/tmp/usr/share
-debian/tmp/usr/lib/gtk-*/modules/*.so
