@@ -155,14 +155,13 @@ static gpointer
 walk_thread_func (gpointer user_data)
 {
   WalkThreadData *data = user_data;
-  GSList *entries;
-  GSList *tmp;
+  GMenuTreeIter *iter;
+  GMenuTreeItemType next_type;
 
-  entries = gmenu_tree_directory_get_contents (data->root);
-  tmp = entries;
-  while (tmp)
+  iter = gmenu_tree_directory_iter (data->root);
+
+  while ((next_type = gmenu_tree_iter_next (iter)) != GMENU_TREE_ITEM_INVALID)
     {
-      GMenuTreeItem *tmp_entry = tmp->data;
       HdLauncherItem *item = NULL;
       gchar *id;
       const gchar *key_file_path;
@@ -170,24 +169,29 @@ walk_thread_func (gpointer user_data)
       struct stat key_file_stat;
       GError *error = NULL;
 
-      switch (gmenu_tree_item_get_type (tmp_entry))
+      switch (next_type)
       {
       case GMENU_TREE_ITEM_ENTRY:
         {
-          GMenuTreeEntry *entry = GMENU_TREE_ENTRY (tmp_entry);
+          GMenuTreeEntry *entry = gmenu_tree_iter_get_entry (iter);
           const gchar *id_desktop = NULL;
+
           /* We want the id without the .desktop suffix. */
           id_desktop = gmenu_tree_entry_get_desktop_file_id (entry);
+
           if (g_str_has_suffix (id_desktop, ".desktop"))
             id = g_strndup (id_desktop, strlen (id_desktop) - strlen (".desktop"));
           else
             id = g_strdup (id_desktop);
+
           key_file_path = gmenu_tree_entry_get_desktop_file_path (entry);
+          gmenu_tree_item_unref (entry);
+
           break;
         }
       case GMENU_TREE_ITEM_DIRECTORY:
         {
-          GMenuTreeDirectory *entry_dir = GMENU_TREE_DIRECTORY (tmp_entry);
+          GMenuTreeDirectory *entry_dir = gmenu_tree_iter_get_directory (iter);
           id = g_strdup (gmenu_tree_directory_get_menu_id (entry_dir));
           key_file_path = gmenu_tree_directory_get_desktop_file_path (entry_dir);
 
@@ -197,11 +201,11 @@ walk_thread_func (gpointer user_data)
           walk_thread_func ((gpointer)subdata);
           data->items = g_list_concat (data->items, subdata->items);
           walk_thread_data_free (subdata);
+          gmenu_tree_item_unref (entry_dir);
 
           break;
         }
       default:
-        tmp = tmp->next;
         continue;
       }
 
@@ -236,11 +240,9 @@ walk_thread_func (gpointer user_data)
         data->items = g_list_prepend (data->items, (gpointer)item);
 
       g_free (id);
-      gmenu_tree_item_unref (tmp->data);
-      tmp = tmp->next;
     }
 
-  g_slist_free (entries);
+  gmenu_tree_iter_unref (iter);
 
   if (data->level == 0)
     {
@@ -276,10 +278,7 @@ hd_launcher_tree_finalize (GObject *gobject)
 
   if (priv->tree)
     {
-      gmenu_tree_remove_monitor (priv->tree,
-                                 (GMenuTreeChangedFunc) hd_launcher_tree_handle_tree_changed,
-                                 gobject);
-      gmenu_tree_unref (priv->tree);
+      g_object_unref (priv->tree);
       priv->tree = NULL;
     }
 
@@ -337,6 +336,15 @@ hd_launcher_tree_handle_tree_changed (GMenuTree *menu_tree,
   HdLauncherTreePrivate *priv = HD_LAUNCHER_TREE_GET_PRIVATE (self);
   WalkThreadData *data;
   GMenuTreeDirectory *root;
+  GError *error = NULL;
+
+  if (!gmenu_tree_load_sync (menu_tree, &error))
+    {
+      g_printerr ("%s: Failed to load tree: %s\n", __FUNCTION__,
+                  error->message);
+      g_clear_error (&error);
+      return;
+    }
 
   /* We need to do this everytime or, for some reason, change notifications
    * stop working.
@@ -400,12 +408,23 @@ hd_launcher_tree_populate (HdLauncherTree *tree)
 {
   g_return_if_fail (HD_IS_LAUNCHER_TREE (tree));
   HdLauncherTreePrivate *priv = HD_LAUNCHER_TREE_GET_PRIVATE (tree);
+  GError *error = NULL;
 
-  priv->tree = gmenu_tree_lookup (HD_LAUNCHER_MENU_FILE,
-                                  GMENU_TREE_FLAGS_SHOW_EMPTY);
+  priv->tree = gmenu_tree_new (HD_LAUNCHER_MENU_FILE,
+                               GMENU_TREE_FLAGS_SHOW_EMPTY);
   if (!priv->tree)
     {
       g_warning ("%s: Couldn't load menu.", __FUNCTION__);
+      return;
+    }
+
+  if (!gmenu_tree_load_sync(priv->tree, &error))
+    {
+      g_printerr ("%s: Failed to load tree: %s\n", __FUNCTION__,
+                  error->message);
+      g_clear_error (&error);
+      g_object_unref (priv->tree);
+      priv->tree = NULL;
       return;
     }
 
@@ -419,9 +438,9 @@ hd_launcher_tree_populate (HdLauncherTree *tree)
 
   hd_launcher_tree_handle_tree_changed (priv->tree, tree);
 
-  gmenu_tree_add_monitor (priv->tree,
-                          (GMenuTreeChangedFunc) hd_launcher_tree_handle_tree_changed,
-                          (gpointer)tree);
+  g_signal_connect (priv->tree, "changed",
+                    G_CALLBACK (hd_launcher_tree_handle_tree_changed),
+                    (gpointer)tree);
 }
 
 GList *
