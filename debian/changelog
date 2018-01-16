@@ -1,3 +1,10 @@
+hildon-desktop (1:2.2.157) unstable; urgency=medium
+
+  * use correct parameters in cogl_pipeline_set_layer_filters call [freemangordon]
+  * use correct clutter backend - WIP [freemangordon]
+
+ -- Ivan J. <parazyd@dyne.org>  Tue, 16 Jan 2018 22:04:00 +0100
+
 hildon-desktop (1:2.2.156) unstable; urgency=medium
 
   * Update configure.ac for Ascii package versions (parazyd@dyne.org)
