@@ -23,7 +23,7 @@ start)
           . /etc/osso-af-init/matchbox.sh stop
         fi
         # HD_NOTHREADS is a workaround for NB#116766
-        HD_NOTHREADS=yes CLUTTER_VBLANK=none $START_AS_USER \
+        CLUTTER_BACKEND=x11 HD_NOTHREADS=yes CLUTTER_VBLANK=none $START_AS_USER \
           $LAUNCHWRAPPER_TRYRESTART start \
           hildon-desktop /usr/bin/hildon-desktop
         ;;
