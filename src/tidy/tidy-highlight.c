@@ -160,7 +160,7 @@ set_texture (TidyHighlight *self, ClutterTexture *texture)
 {
   TidyHighlightPrivate *priv = self->priv;
   ClutterActor *actor = CLUTTER_ACTOR (self);
-  gboolean was_visible = CLUTTER_ACTOR_IS_VISIBLE (self);
+  gboolean was_visible = clutter_actor_is_visible (CLUTTER_ACTOR(self));
 
   cogl_pipeline_set_layer_null_texture (priv->pipeline,
                                         0, /* layer number */
@@ -181,8 +181,7 @@ set_texture (TidyHighlight *self, ClutterTexture *texture)
                                        clutter_texture_get_cogl_texture(priv->texture));
 
       /* queue a redraw if the subd texture is already visible */
-      if (CLUTTER_ACTOR_IS_VISIBLE (priv->texture) &&
-          was_visible)
+      if (clutter_actor_is_visible (CLUTTER_ACTOR(priv->texture)) && was_visible)
         {
           clutter_actor_show (actor);
           clutter_actor_queue_redraw (actor);
@@ -357,8 +356,8 @@ tidy_highlight_init (TidyHighlight *self)
                                             COGL_TEXTURE_TYPE_2D);
       cogl_pipeline_set_layer_filters(
                   klass->base_pipeline, 0, /* layer number */
-                  COGL_PIPELINE_FILTER_LINEAR_MIPMAP_LINEAR,
-                  COGL_PIPELINE_FILTER_LINEAR_MIPMAP_LINEAR);
+                  COGL_PIPELINE_FILTER_LINEAR,
+                  COGL_PIPELINE_FILTER_LINEAR);
       cogl_pipeline_set_layer_wrap_mode(klass->base_pipeline,
                                         0, /* layer number */
                                         COGL_PIPELINE_WRAP_MODE_CLAMP_TO_EDGE);

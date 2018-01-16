@@ -474,8 +474,8 @@ tidy_blur_effect_init (TidyBlurEffect *self)
                                             COGL_TEXTURE_TYPE_2D);
       cogl_pipeline_set_layer_filters (klass->shader_pipeline,
                                        0, /* layer_index */
-                                       COGL_MATERIAL_FILTER_LINEAR,
-                                       COGL_MATERIAL_FILTER_LINEAR);
+                                       COGL_PIPELINE_FILTER_LINEAR,
+                                       COGL_PIPELINE_FILTER_LINEAR);
       cogl_pipeline_set_layer_wrap_mode (klass->shader_pipeline, 0,
                                          COGL_PIPELINE_WRAP_MODE_MIRRORED_REPEAT);
 
