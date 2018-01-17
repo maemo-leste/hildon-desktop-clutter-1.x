@@ -1,3 +1,9 @@
+hildon-desktop (1:2.2.157.1) unstable; urgency=medium
+
+  * do not link to unused libs [freemangordon]
+
+ -- Ivan J. <parazyd@dyne.org>  Wed, 17 Jan 2018 21:06:00 +0100
+
 hildon-desktop (1:2.2.157) unstable; urgency=medium
 
   * use correct parameters in cogl_pipeline_set_layer_filters call [freemangordon]
