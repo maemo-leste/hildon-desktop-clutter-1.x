@@ -46,7 +46,7 @@ noinst_LTLIBRARIES = liblauncher.la
 
 liblauncher_la_SOURCES = $(launcher_h) $(launcher_c) $(BUILT_SOURCES)
 liblauncher_la_CFLAGS =  $(HD_CFLAGS)
-liblauncher_la_LIBADD = -Wl,--as-needed $(HD_LIBS) \
+liblauncher_la_LIBADD = $(HD_LIBS) \
                         $(top_builddir)/src/util/libutil.la \
                         $(top_builddir)/src/tidy/libtidy.la -lm
 
