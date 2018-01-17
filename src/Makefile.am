@@ -15,8 +15,8 @@ hildon_desktop_SOURCES = main.c hildon-desktop.h
 #UNWANTED = -Wl,--export-dynamic -export-dynamic -rdynamic
 hildon_desktop_LDADD = \
 	$(filter-out $(UNWANTED),$(MY_LIBS) $(HD_LIBS) $(A11Y_LA))
-hildon_desktop_LDFLAGS = -Wl,--version-script=export.map \
-	$(filter-out $(UNWANTED),$(MAEMO_LAUNCHER_LIBS)) -lm
+hildon_desktop_LDFLAGS = -Wl,--as-needed -Wl,--version-script=export.map \
+	$(filter-out $(UNWANTED),$(MAEMO_LAUNCHER_LIBS))
 hildon_desktop_CFLAGS = -std=c99 -fgnu89-inline $(MAEMO_LAUNCHER_CFLAGS)
 
 schemadir = ${datadir}/gconf/schemas
