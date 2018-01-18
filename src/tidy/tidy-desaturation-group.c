@@ -227,7 +227,7 @@ tidy_desaturation_group_children_visible(ClutterGroup *group)
         }
       else
         {
-          if (CLUTTER_ACTOR_IS_VISIBLE(actor))
+          if (clutter_actor_is_visible(actor))
             return TRUE;
         }
     }

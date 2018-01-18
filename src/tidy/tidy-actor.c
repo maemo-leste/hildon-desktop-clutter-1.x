@@ -325,7 +325,7 @@ tidy_actor_set_padding (TidyActor         *actor,
 
   g_object_notify (G_OBJECT (actor), "padding");
 
-  if (CLUTTER_ACTOR_IS_VISIBLE (actor))
+  if (clutter_actor_is_visible (CLUTTER_ACTOR (actor)))
     clutter_actor_queue_redraw (CLUTTER_ACTOR (actor));
 }
 
@@ -378,7 +378,7 @@ tidy_actor_set_alignment (TidyActor *actor,
   priv->y_align = y_align;
   g_object_notify (G_OBJECT (actor), "y-align");
 
-  if (CLUTTER_ACTOR_IS_VISIBLE (actor))
+  if (clutter_actor_is_visible (CLUTTER_ACTOR (actor)))
     clutter_actor_queue_redraw (CLUTTER_ACTOR (actor));
 
   g_object_thaw_notify (G_OBJECT (actor));
@@ -454,7 +454,7 @@ tidy_actor_set_alignmentx (TidyActor    *actor,
       g_object_notify (G_OBJECT (actor), "y-align");
     }
 
-  if (CLUTTER_ACTOR_IS_VISIBLE (actor))
+  if (clutter_actor_is_visible (CLUTTER_ACTOR (actor)))
     clutter_actor_queue_redraw (CLUTTER_ACTOR (actor));
 
   g_object_thaw_notify (G_OBJECT (actor));

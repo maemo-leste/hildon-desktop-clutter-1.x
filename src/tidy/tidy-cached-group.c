@@ -289,7 +289,7 @@ void tidy_cached_group_set_render_cache(ClutterActor *cached_group, float amount
   if (priv->cache_amount != amount)
     {
       priv->cache_amount = amount;
-      if (CLUTTER_ACTOR_IS_VISIBLE(cached_group))
+      if (clutter_actor_is_visible(cached_group))
         clutter_actor_queue_redraw(cached_group);
     }
 }

@@ -253,7 +253,7 @@ tidy_blur_group_set_chequer(ClutterActor *blur_group, gboolean chequer)
   if (priv->chequer != chequer)
     {
       priv->chequer = chequer;
-      if (CLUTTER_ACTOR_IS_VISIBLE(blur_group))
+      if (clutter_actor_is_visible(blur_group))
         clutter_actor_queue_redraw(blur_group);
     }
 }
@@ -301,7 +301,7 @@ tidy_blur_group_set_saturation(ClutterActor *blur_group, float saturation)
   if (priv->saturation != saturation)
     {
       priv->saturation = saturation;
-      if (CLUTTER_ACTOR_IS_VISIBLE(blur_group))
+      if (clutter_actor_is_visible(blur_group))
         clutter_actor_queue_redraw(blur_group);
     }*/
 }

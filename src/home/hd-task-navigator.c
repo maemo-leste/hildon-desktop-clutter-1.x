@@ -1617,7 +1617,7 @@ turnoff_effect_frame (ClutterTimeline * timeline, gint frame,
         }
 
       clutter_actor_set_opacity (closure->all_particles, 255*sin(M_PI*t));
-      if (!CLUTTER_ACTOR_IS_VISIBLE (closure->all_particles))
+      if (!clutter_actor_is_visible (closure->all_particles))
         clutter_actor_show (closure->all_particles);
     }
 }
@@ -1808,7 +1808,7 @@ fade_in_when_complete (ClutterActor * actor, gpointer msecs)
 gboolean
 hd_task_navigator_is_active (void)
 {
-  return CLUTTER_ACTOR_IS_VISIBLE (Navigator);
+  return clutter_actor_is_visible (Navigator);
 }
 
 /* Tells whether the navigator is empty. */
@@ -2498,7 +2498,7 @@ static void
 free_thumb (Thumbnail * thumb, gboolean animate)
 {
   /* This will kill the entire actor hierarchy. */
-  if (animate && CLUTTER_ACTOR_IS_VISIBLE (thumb->thwin))
+  if (animate && clutter_actor_is_visible (thumb->thwin))
     { /* We may be adding it, no point of animation then. */
       fade_for_duration (NOTIFADE_OUT_DURATION, thumb->thwin, 0,
                          FINALLY_REMOVE, CLUTTER_ACTOR (Grid));
@@ -2704,8 +2704,8 @@ adopt_notification (Thumbnail * apthumb, TNote * tnote)
   clutter_container_raise_child (CLUTTER_CONTAINER (apthumb->thwin),
                                  tnote->notwin, apthumb->prison);
 
-  g_assert (CLUTTER_ACTOR_IS_VISIBLE (apthumb->prison));
-  g_assert (CLUTTER_ACTOR_IS_VISIBLE (tnote->notwin));
+  g_assert (clutter_actor_is_visible (apthumb->prison));
+  g_assert (clutter_actor_is_visible (tnote->notwin));
   if (hd_task_navigator_is_active ())
     {
       ClutterTimeline *timeline;
@@ -2717,7 +2717,7 @@ adopt_notification (Thumbnail * apthumb, TNote * tnote)
       fade (timeline, apthumb->frame.all, 0, FINALLY_HIDE, apthumb->frame.all);
       clutter_actor_show (apthumb->close_notif_icon);
       fade (timeline, apthumb->close_notif_icon, 255, FINALLY_REST, NULL);
-      if (CLUTTER_ACTOR_IS_VISIBLE (apthumb->close_app_icon))
+      if (clutter_actor_is_visible (apthumb->close_app_icon))
         fade (timeline, apthumb->close_app_icon, 0,
               FINALLY_HIDE, apthumb->close_app_icon);
       else /* Reset its opacity to normal. */
@@ -2752,7 +2752,7 @@ orphan_notification (Thumbnail * apthumb, gboolean animate)
 
   clutter_actor_show (apthumb->prison);
   clutter_actor_show (apthumb->frame.all);
-  g_assert (CLUTTER_ACTOR_IS_VISIBLE (apthumb->close_notif_icon));
+  g_assert (clutter_actor_is_visible (apthumb->close_notif_icon));
   if (hd_task_navigator_is_active ())
     {
       ClutterTimeline *timeline;
@@ -4576,15 +4576,17 @@ hd_task_navigator_rotate_thumbs (void)
 
   while (t && !thumb_has_notification ((Thumbnail *) (t->data)) &&
          !thumb_is_notification ((Thumbnail *) (t->data)))
-    t = g_list_next (t);
+    {
+      t = g_list_next (t);
+    }
 
-    if (t)
-      {
-        Thumbnails = g_list_insert_before (Thumbnails, t, s->data);
-        g_list_free (s);
-      }
-    else
-      Thumbnails = g_list_concat (Thumbnails,s);
+  if (t)
+    {
+      Thumbnails = g_list_insert_before (Thumbnails, t, s->data);
+      g_list_free (s);
+    }
+  else
+    Thumbnails = g_list_concat (Thumbnails, s);
 
   layout (NULL, FALSE);
 }

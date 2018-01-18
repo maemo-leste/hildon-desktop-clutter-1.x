@@ -166,7 +166,7 @@ hd_remote_texture_client_message (XClientMessageEvent *xev, void *userdata)
 
       /* perserve actor's visibility over the unparenting/reparenting */
 
-      gboolean show = CLUTTER_ACTOR_IS_VISIBLE (actor);
+      gboolean show = clutter_actor_is_visible (actor);
 
       /* unparent the actor */
 

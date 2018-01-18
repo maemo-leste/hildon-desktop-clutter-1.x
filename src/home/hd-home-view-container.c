@@ -673,18 +673,18 @@ hd_home_view_container_allocate (ClutterActor          *self,
 
         /* Make sure offscreen views are hidden. Views positioned offscreen
          * wouldn't be seen anyway, but they introduce extra overheads in
-         * Clutter/GLES if they are CLUTTER_ACTOR_IS_VISIBLE. We use < rather
+         * Clutter/GLES if they are clutter_actor_is_visible. We use < rather
          * than <= here because given the positioning above, the clause would
          * always be true otherwise */
         if ((child_box.y1 < width) &&
             (child_box.y2 > 0))
           {
-            if (!CLUTTER_ACTOR_IS_VISIBLE(priv->views[i]))
+            if (!clutter_actor_is_visible(priv->views[i]))
               clutter_actor_show(priv->views[i]);
           }
         else
           {
-            if (CLUTTER_ACTOR_IS_VISIBLE(priv->views[i]))
+            if (clutter_actor_is_visible(priv->views[i]))
               clutter_actor_hide(priv->views[i]);
           }
       }
@@ -721,18 +721,18 @@ hd_home_view_container_allocate (ClutterActor          *self,
 
         /* Make sure offscreen views are hidden. Views positioned offscreen
          * wouldn't be seen anyway, but they introduce extra overheads in
-         * Clutter/GLES if they are CLUTTER_ACTOR_IS_VISIBLE. We use < rather
+         * Clutter/GLES if they are clutter_actor_is_visible. We use < rather
          * than <= here because given the positioning above, the clause would
          * always be true otherwise */
         if ((child_box.x1 < width) &&
             (child_box.x2 > 0))
           {
-            if (!CLUTTER_ACTOR_IS_VISIBLE(priv->views[i]))
+            if (!clutter_actor_is_visible(priv->views[i]))
               clutter_actor_show(priv->views[i]);
           }
         else
           {
-            if (CLUTTER_ACTOR_IS_VISIBLE(priv->views[i]))
+            if (clutter_actor_is_visible(priv->views[i]))
               clutter_actor_hide(priv->views[i]);
           }
       }
