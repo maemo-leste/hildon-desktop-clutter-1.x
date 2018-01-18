@@ -116,7 +116,7 @@ if test "$ac_cv_enable_static_mb2" = yes; then
         PKG_CHECK_MODULES([MB2], [libmatchbox2-0.1])
         MB2_STATIC_LIB=/usr/lib/libmatchbox2-0.1.a
 
-        PKG_CHECK_MODULES(HD, [clutter-1.0 dnl
+        PKG_CHECK_MODULES(HD, [
                        glib-2.0 >= 2.12 dnl
                        gthread-2.0 dnl
                        dbus-1 dnl
@@ -138,11 +138,12 @@ if test "$ac_cv_enable_static_mb2" = yes; then
                        pangoxft dnl
                        xft dnl
                        profile dnl
+                       clutter-1.0 dnl
                        mce])
 else
         MB2_CFLAGS=''
         MB2_STATIC_LIB=''
-        PKG_CHECK_MODULES(HD, [clutter-1.0 dnl
+        PKG_CHECK_MODULES(HD, [
                        glib-2.0 >= 2.12 dnl
                        gthread-2.0 dnl
                        dbus-1 dnl
@@ -164,6 +165,7 @@ else
                        xft dnl
                        libmatchbox2-0.1 dnl
                        profile dnl
+                       clutter-1.0 dnl
                        mce])
 fi
 
