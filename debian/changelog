@@ -1,3 +1,9 @@
+hildon-desktop (1:2.2.157.3) unstable; urgency=medium
+
+  * Fix gtk linking issue and other 10+ years old maemo bugs
+
+ -- Merlijn Wajer <merlijn@wizzup.org>  Fri, 19 Jan 2018 19:30:00 +0100
+
 hildon-desktop (1:2.2.157.2) unstable; urgency=medium
 
   * fixup! do not link to unused libs
