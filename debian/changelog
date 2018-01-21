@@ -1,3 +1,9 @@
+hildon-desktop (1:2.2.157.4) unstable; urgency=medium
+
+  * revert incorrectly changed HD_IS_CLUTTER_CACHE and HD_IS_TITLE_BAR
+
+ -- Ivaylo Dimitrov <ivo.g.dimitrov.75@gmail.com>  Fri, 12 Jan 2018 14:07:15 +0300
+
 hildon-desktop (1:2.2.157.2) unstable; urgency=medium
 
   * fixup! do not link to unused libs
