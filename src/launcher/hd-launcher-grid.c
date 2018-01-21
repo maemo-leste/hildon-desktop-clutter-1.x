@@ -387,7 +387,7 @@ _hd_launcher_grid_count_children_and_rows (HdLauncherGrid *grid,
     {
       ClutterActor *child = l->data;
 
-      if (CLUTTER_ACTOR_IS_VISIBLE (child))
+      if (clutter_actor_is_visible (child))
         {
           ++(*children);
         }

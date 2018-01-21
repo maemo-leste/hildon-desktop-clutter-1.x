@@ -126,11 +126,11 @@ tidy_scroll_view_paint (ClutterActor *actor)
 {
   TidyScrollViewPrivate *priv = TIDY_SCROLL_VIEW (actor)->priv;
 
-  if (priv->child && CLUTTER_ACTOR_IS_VISIBLE (priv->child))
+  if (priv->child && clutter_actor_is_visible (priv->child))
     clutter_actor_paint (priv->child);
-  if (CLUTTER_ACTOR_IS_VISIBLE (priv->hscroll))
+  if (clutter_actor_is_visible (priv->hscroll))
     clutter_actor_paint (priv->hscroll);
-  if (CLUTTER_ACTOR_IS_VISIBLE (priv->vscroll))
+  if (clutter_actor_is_visible (priv->vscroll))
     clutter_actor_paint (priv->vscroll);
 }
 
@@ -258,8 +258,8 @@ tidy_scroll_view_allocate (ClutterActor          *actor,
                      "xthickness", &xthickness,
                      "ythickness", &ythickness,
                      NULL);
-  xthicknessu = CLUTTER_ACTOR_IS_VISIBLE (priv->vscroll) ? xthickness : 0;
-  ythicknessu = CLUTTER_ACTOR_IS_VISIBLE (priv->hscroll) ? ythickness : 0;
+  xthicknessu = clutter_actor_is_visible (priv->vscroll) ? xthickness : 0;
+  ythicknessu = clutter_actor_is_visible (priv->hscroll) ? ythickness : 0;
 
   /* Vertical scrollbar */
   child_box.x1 = box->x2 - box->x1 - padding.right;
@@ -550,7 +550,7 @@ tidy_scroll_view_remove_actor (ClutterContainer *container,
 
       g_object_notify (G_OBJECT (container), "child");
 
-      if (CLUTTER_ACTOR_IS_VISIBLE (container))
+      if (clutter_actor_is_visible (CLUTTER_ACTOR (container)))
         clutter_actor_queue_relayout (CLUTTER_ACTOR (container));
     }
 }

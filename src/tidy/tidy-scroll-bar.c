@@ -160,7 +160,7 @@ tidy_scroll_bar_paint (ClutterActor *actor)
 {
   TidyScrollBarPrivate *priv = TIDY_SCROLL_BAR (actor)->priv;
 
-  if (priv->texture && CLUTTER_ACTOR_IS_VISIBLE (priv->texture))
+  if (priv->texture && clutter_actor_is_visible (priv->texture))
     clutter_actor_paint (priv->texture);
   else
     {
@@ -177,7 +177,7 @@ tidy_scroll_bar_paint (ClutterActor *actor)
       cogl_rectangle (0, 0, w, h);
     }
 
-  if (priv->handle && CLUTTER_ACTOR_IS_VISIBLE (priv->handle))
+  if (priv->handle && clutter_actor_is_visible (priv->handle))
     clutter_actor_paint (priv->handle);
 }
 
@@ -190,7 +190,7 @@ tidy_scroll_bar_pick (ClutterActor       *actor,
   CLUTTER_ACTOR_CLASS (tidy_scroll_bar_parent_class)->pick (actor, pick_color);
 
   if (priv->handle &&
-      CLUTTER_ACTOR_IS_VISIBLE (priv->handle) &&
+      clutter_actor_is_visible (priv->handle) &&
       priv->adjustment)
     clutter_actor_paint (priv->handle);
 }
@@ -703,7 +703,7 @@ tidy_scroll_bar_set_texture (TidyScrollBar *bar,
       clutter_actor_set_size (priv->texture, width, height);
     }
 
-  if (CLUTTER_ACTOR_IS_VISIBLE (bar))
+  if (clutter_actor_is_visible (CLUTTER_ACTOR (bar)))
     clutter_actor_queue_redraw (CLUTTER_ACTOR (bar));
 }
 

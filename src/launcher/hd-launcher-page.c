@@ -357,7 +357,7 @@ void hd_launcher_page_transition(HdLauncherPage *page, HdLauncherPageTransition 
   priv = HD_LAUNCHER_PAGE_GET_PRIVATE (page);
 
   /* check for the case where we're hiding when already hidden */
-  if (!CLUTTER_ACTOR_IS_VISIBLE(page) &&
+  if (!clutter_actor_is_visible(CLUTTER_ACTOR (page)) &&
       trans_type == HD_LAUNCHER_PAGE_TRANSITION_OUT)
     return;
   /* check for the case where we're launching and then hiding, and just use

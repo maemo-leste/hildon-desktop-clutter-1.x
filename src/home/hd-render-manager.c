@@ -835,7 +835,7 @@ gboolean hd_render_manager_actor_is_visible(ClutterActor *actor)
    * lead to false negatives. */
   hdrm = CLUTTER_ACTOR(hd_render_manager_get());
   for (; actor != hdrm && actor; actor = clutter_actor_get_parent(actor))
-    if (!CLUTTER_ACTOR_IS_VISIBLE(actor))
+    if (!clutter_actor_is_visible(actor))
       return FALSE;
   return TRUE;
 }
@@ -2145,7 +2145,7 @@ void hd_render_manager_restack()
        child = clutter_group_get_nth_child(CLUTTER_GROUP(priv->home_blur), 0);
        child;
        child = clutter_group_get_nth_child(CLUTTER_GROUP(priv->home_blur), ++i))
-    if (CLUTTER_ACTOR_IS_VISIBLE(child))
+    if (clutter_actor_is_visible(child))
       previous_home_blur = g_list_prepend(previous_home_blur, child);
 
   screenw = hd_comp_mgr_get_current_screen_width ();
@@ -2368,7 +2368,7 @@ void hd_render_manager_restack()
        it=it->prev)
     {
       /* search for next visible child */
-      while (child && !CLUTTER_ACTOR_IS_VISIBLE(child))
+      while (child && !clutter_actor_is_visible(child))
         child=clutter_group_get_nth_child(CLUTTER_GROUP(priv->home_blur), ++i);
 
       /* now compare children */
@@ -2400,7 +2400,7 @@ void hd_render_manager_restack()
           {
             ClutterActor *actor =
                 clutter_group_get_nth_child(CLUTTER_GROUP(priv->home_blur), i);
-            if (CLUTTER_ACTOR_IS_VISIBLE(actor))
+            if (clutter_actor_is_visible(actor))
               {
                 if (clutter_actor_get_name(actor))
                   g_debug("CURRENT %s", clutter_actor_get_name(actor));
@@ -2420,7 +2420,7 @@ void hd_render_manager_restack()
                 clutter_group_get_nth_child(CLUTTER_GROUP(priv->home_blur), i);
       const char *name = clutter_actor_get_name(child);
       g_debug("STACK[%d] %s %s", i, name?name:"?",
-          CLUTTER_ACTOR_IS_VISIBLE(child)?"":"(invisible)");
+          clutter_actor_is_visible(child)?"":"(invisible)");
     }
   for (i = 0;i<clutter_group_get_n_children(CLUTTER_GROUP(priv->app_top));i++)
       {
@@ -2428,7 +2428,7 @@ void hd_render_manager_restack()
                   clutter_group_get_nth_child(CLUTTER_GROUP(priv->app_top), i);
         const char *name = clutter_actor_get_name(child);
         g_debug("TOP[%d] %s %s", i, name?name:"?",
-            CLUTTER_ACTOR_IS_VISIBLE(child)?"":"(invisible)");
+            clutter_actor_is_visible(child)?"":"(invisible)");
       }
 
   for (c = wm->stack_bottom,i=0; c; c = c->stacked_above,i++)
@@ -2856,7 +2856,7 @@ void hd_render_manager_set_visibilities()
         }
     }
 
-  /* We did check STATE_NEED_DESKTOP(state) &&  CLUTTER_ACTOR_IS_VISIBLE(home)
+  /* We did check STATE_NEED_DESKTOP(state) &&  clutter_actor_is_visible(home)
    * and make an error here, but there are actually many cases where this is
    * valid. See NB#117092 */
 
@@ -2954,7 +2954,7 @@ void hd_render_manager_place_titlebar_elements (void)
   if (hd_title_bar_get_state(priv->title_bar) & HDTB_VIS_BTN_LEFT_MASK)
     x += hd_title_bar_get_button_width(priv->title_bar);
 
-  if (priv->status_area && CLUTTER_ACTOR_IS_VISIBLE(priv->status_area))
+  if (priv->status_area && clutter_actor_is_visible(priv->status_area))
     {
       g_assert(priv->status_area_client && priv->status_area_client->window);
       if (priv->status_area_client->frame_geometry.x != x)
@@ -2976,7 +2976,7 @@ void hd_render_manager_place_titlebar_elements (void)
         x += priv->status_area_client->frame_geometry.width;
     }
 
-  if (priv->operator && CLUTTER_ACTOR_IS_VISIBLE(priv->operator))
+  if (priv->operator && clutter_actor_is_visible(priv->operator))
     clutter_actor_set_x(priv->operator, HD_COMP_MGR_OPERATOR_PADDING + x);
 
   /* Force title bar to update the title/progress indicator position */

@@ -431,12 +431,12 @@ status_area_is_visible (void)
   ClutterActor *status_area = hd_render_manager_get_status_area();
   MBWindowManagerClient *sa_client = hd_render_manager_get_status_area_client();
   return status_area && sa_client &&
-    CLUTTER_ACTOR_IS_VISIBLE (status_area) &&
+    clutter_actor_is_visible (status_area) &&
     sa_client->frame_geometry.x >= 0 &&
     sa_client->frame_geometry.y >= 0;
   /*
    * It can also be invisible by being behind something, but in
-   * that case CLUTTER_ACTOR_IS_VISIBLE should be returning
+   * that case clutter_actor_is_visible should be returning
    * false anyway.
    */
 }
@@ -714,7 +714,7 @@ hd_title_bar_left_pressed(HdTitleBar *bar, gboolean pressed)
 
   if (pressed)
     {
-      if (CLUTTER_ACTOR_IS_VISIBLE(priv->buttons[BTN_BG_ATTACHED]))
+      if (clutter_actor_is_visible(priv->buttons[BTN_BG_ATTACHED]))
         {
           clutter_actor_hide(priv->buttons[BTN_BG_LEFT_PRESSED]);
           clutter_actor_show(priv->buttons[BTN_BG_LEFT_ATTACHED_PRESSED]);
@@ -782,7 +782,7 @@ hd_title_bar_set_full_width(HdTitleBar *bar, gboolean full_size)
       if (priv->state & HDTB_VIS_BTN_LEFT_MASK)
         {
           clutter_actor_show(priv->buttons[BTN_SEPARATOR_LEFT]);
-          if (CLUTTER_ACTOR_IS_VISIBLE (priv->buttons[BTN_MENU]))
+          if (clutter_actor_is_visible (priv->buttons[BTN_MENU]))
             {
               /* In portrait mode apply the offset. Thanks to that the width of the BTN_MENU
                * will be equal to HD_COMP_MGR_TOP_RIGHT_BTN_WIDTH_SMALL. */
@@ -829,7 +829,7 @@ hd_title_bar_set_full_width(HdTitleBar *bar, gboolean full_size)
       if (priv->state & HDTB_VIS_BTN_RIGHT_MASK)
         {
           clutter_actor_show(priv->buttons[BTN_SEPARATOR_RIGHT]);
-          if (CLUTTER_ACTOR_IS_VISIBLE (priv->buttons[BTN_DONE]))
+          if (clutter_actor_is_visible (priv->buttons[BTN_DONE]))
             clutter_actor_set_x(priv->buttons[BTN_SEPARATOR_RIGHT],
                                 hd_comp_mgr_get_current_screen_width () -
                                 clutter_actor_get_width (priv->buttons[BTN_DONE]));

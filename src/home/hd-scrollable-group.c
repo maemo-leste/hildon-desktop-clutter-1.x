@@ -390,7 +390,7 @@ hd_scrollable_group_scroll_viewport (HdScrollableGroup * self,
     goto shortcut;
 
   /* Don't animate if we're not visible in the first place. */
-  if (!CLUTTER_ACTOR_IS_VISIBLE (self))
+  if (!clutter_actor_is_visible (CLUTTER_ACTOR (self)))
     {
       tidy_adjustment_set_valuex (dir->adjustment, dir->manual_scroll_to);
       goto shortcut;

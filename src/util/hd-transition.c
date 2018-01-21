@@ -1102,7 +1102,7 @@ hd_transition_close_app (HdCompMgr                  *mgr,
 
   cclient = MB_WM_COMP_MGR_CLUTTER_CLIENT (c->cm_client);
   actor = mb_wm_comp_mgr_clutter_client_get_actor (cclient);
-  if (!actor || !CLUTTER_ACTOR_IS_VISIBLE(actor))
+  if (!actor || !clutter_actor_is_visible(actor))
     return;
 
   /* Don't bother for anything tiny */

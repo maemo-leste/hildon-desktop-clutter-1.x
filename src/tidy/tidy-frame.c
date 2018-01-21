@@ -183,12 +183,8 @@ tidy_frame_allocate (ClutterActor          *actor,
       if (child_height > available_height)
         child_height = available_height;
 
-      child_box.x1 = CLUTTER_FIXED_MUL ((available_width - child_width),
-                                        x_align)
-                   + padding.left;
-      child_box.y1 = CLUTTER_FIXED_MUL ((available_height - child_height),
-                                        y_align)
-                   + padding.top;
+      child_box.x1 = (available_width - child_width) * x_align + padding.left;
+      child_box.y1 = (available_height - child_height) * y_align + padding.top;
 
       child_box.x2 = child_box.x1 + child_width;
       child_box.y2 = child_box.y1 + child_height;
@@ -233,7 +229,7 @@ tidy_frame_paint (ClutterActor *actor)
         clutter_color_free (bg_color);
     }
 
-  if (priv->child && CLUTTER_ACTOR_IS_VISIBLE (priv->child))
+  if (priv->child && clutter_actor_is_visible (priv->child))
     clutter_actor_paint (priv->child);
 
   cogl_pop_matrix ();
@@ -248,7 +244,7 @@ tidy_frame_pick (ClutterActor       *actor,
   /* chain up, so we get a box with our coordinates */
   CLUTTER_ACTOR_CLASS (tidy_frame_parent_class)->pick (actor, pick_color);
 
-  if (priv->child && CLUTTER_ACTOR_IS_VISIBLE (priv->child))
+  if (priv->child && clutter_actor_is_visible (priv->child))
     clutter_actor_paint (priv->child);
 }
 

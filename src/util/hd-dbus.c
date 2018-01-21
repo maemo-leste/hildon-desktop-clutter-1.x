@@ -186,7 +186,7 @@ hd_dbus_system_bus_signal_handler (DBusConnection *conn,
       const char *mode;
 
       if (dbus_message_get_args (msg, NULL, DBUS_TYPE_STRING, &mode,
-                                 DBUS_TYPE_INVALID));
+                                 DBUS_TYPE_INVALID))
         {
           if (strcmp(mode, MCE_TK_LOCKED))
             {

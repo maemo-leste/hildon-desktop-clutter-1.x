@@ -1422,7 +1422,7 @@ hd_comp_mgr_texture_update_area(HdCompMgr *hmgr,
   gboolean blur_update = FALSE;
   ClutterActor *actors_stage;
 
-  if (!actor || !CLUTTER_ACTOR_IS_VISIBLE(actor) || hmgr == 0)
+  if (!actor || !clutter_actor_is_visible(actor) || hmgr == 0)
     return;
 
   if (hd_dbus_display_is_off)
@@ -1453,7 +1453,7 @@ hd_comp_mgr_texture_update_area(HdCompMgr *hmgr,
 
   while (parent && parent != actors_stage)
     {
-      if (!CLUTTER_ACTOR_IS_VISIBLE(parent))
+      if (!clutter_actor_is_visible(parent))
         return;
       /* if we're a child of a blur group, tell it that it has changed */
       if (TIDY_IS_BLUR_GROUP(parent))
@@ -3725,7 +3725,7 @@ dump_clutter_actor_tree (ClutterActor *actor, GString *indent)
            cmgrc && cmgrc->wm_client && cmgrc->wm_client->window
                ? cmgrc->wm_client->window->xwindow : 0,
            geo.width, geo.height, geo.x, geo.y, ax, ay,
-           CLUTTER_ACTOR_IS_VISIBLE (actor) != 0,
+           clutter_actor_is_visible (actor) != 0,
            CLUTTER_ACTOR_IS_REACTIVE (actor) != 0);
   if (CLUTTER_IS_CONTAINER (actor))
     {

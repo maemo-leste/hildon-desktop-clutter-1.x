@@ -794,13 +794,13 @@ main (int argc, char **argv)
           || (!hd_orientation_lock_is_enabled () && hd_home_is_portrait_capable ()))
     {
       hd_render_manager_set_state (HDRM_STATE_HOME_PORTRAIT);
-      if (hd_util_change_screen_orientation (wm, TRUE));
+      if (hd_util_change_screen_orientation (wm, TRUE))
         hd_util_root_window_configured (wm);
     }
   else
     {
       /* Move to landscape for safety. */
-      if (hd_util_change_screen_orientation (wm, FALSE));
+      if (hd_util_change_screen_orientation (wm, FALSE))
         hd_util_root_window_configured (wm);
     }
 

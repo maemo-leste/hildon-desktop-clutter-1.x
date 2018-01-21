@@ -905,15 +905,15 @@ hd_home_desktop_key_press (XKeyEvent *xev, void *userdata)
     g_warning("kv=%i   %i %i", keyval, GDK_KEY_Left, GDK_KEY_Right);
     if (keyval==GDK_KEY_Left) {
       if (!hd_home_view_container_is_scrolling (HD_HOME_VIEW_CONTAINER (priv->view_container)))
-  		  hd_home_view_container_scroll_to_previous (HD_HOME_VIEW_CONTAINER (priv->view_container), 20000);
-		  return ;
-	  }
+        hd_home_view_container_scroll_to_previous (HD_HOME_VIEW_CONTAINER (priv->view_container), 20000);
+      return ;
+      }
     if (keyval==GDK_KEY_Right) {
       if (!hd_home_view_container_is_scrolling (HD_HOME_VIEW_CONTAINER (priv->view_container)))
-		    hd_home_view_container_scroll_to_next (HD_HOME_VIEW_CONTAINER (priv->view_container), -20000);
-		  return ;
-	  }
-	  
+        hd_home_view_container_scroll_to_next (HD_HOME_VIEW_CONTAINER (priv->view_container), -20000);
+      return ;
+      }
+
   if(conf_enable_home_contacts_phone) {
 
   /* First check how long has it been since last key press. If more than n sec,
