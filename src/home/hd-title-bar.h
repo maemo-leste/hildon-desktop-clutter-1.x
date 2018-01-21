@@ -35,8 +35,7 @@ typedef struct _HdTitleBarPrivate HdTitleBarPrivate;
 #define HD_TITLE_BAR(c)       ((HdTitleBar*)(c))
 #define HD_TITLE_BAR_CLASS(c) ((HdTitleBarClass*)(c))
 #define HD_TYPE_TITLE_BAR     (hd_title_bar_get_type ())
-
-#define HD_IS_TITLE_BAR(c) (G_TYPE_CHECK_INSTANCE_TYPE ((c), HD_TYPE_TITLE_BAR))
+#define HD_IS_TITLE_BAR(c)    (MB_WM_OBJECT_TYPE(c)==HD_TYPE_TITLE_BAR)
 
 struct _HdTitleBar
 {

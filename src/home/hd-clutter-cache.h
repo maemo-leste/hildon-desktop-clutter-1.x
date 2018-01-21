@@ -35,7 +35,7 @@ typedef struct _HdClutterCachePrivate HdClutterCachePrivate;
 #define HD_CLUTTER_CACHE(c)       ((HdClutterCache*)(c))
 #define HD_CLUTTER_CACHE_CLASS(c) ((HdClutterCacheClass*)(c))
 #define HD_TYPE_CLUTTER_CACHE     (hd_clutter_cache_get_type ())
-#define HD_IS_CLUTTER_CACHE(c) (G_TYPE_CHECK_INSTANCE_TYPE ((c), HD_TYPE_CLUTTER_CACHE))
+#define HD_IS_CLUTTER_CACHE(c)    (MB_WM_OBJECT_TYPE(c)==HD_TYPE_CLUTTER_CACHE)
 
 struct _HdClutterCache
 {
