@@ -1,3 +1,9 @@
+hildon-desktop (1:2.2.157.5) unstable; urgency=medium
+
+  * Fix highlight effect in launcher
+
+ -- Ivaylo Dimitrov <ivo.g.dimitrov.75@gmail.com>  Fri, 22 Jan 2018 19:31:12 +0200
+
 hildon-desktop (1:2.2.157.4) unstable; urgency=medium
 
   * revert incorrectly changed HD_IS_CLUTTER_CACHE and HD_IS_TITLE_BAR
