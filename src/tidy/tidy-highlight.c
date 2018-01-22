@@ -22,10 +22,10 @@ enum
 
 struct _TidyHighlight
 {
-  ClutterActor                 parent;
+  ClutterActor          parent;
 
   /*< priv >*/
-  TidyHighlightPrivate    *priv;
+  TidyHighlightPrivate *priv;
 };
 
 struct _TidyHighlightClass
@@ -38,18 +38,16 @@ struct _TidyHighlightClass
 
 struct _TidyHighlightPrivate
 {
-  ClutterTexture       *texture;
-  CoglPipeline         *pipeline;
-  gint                  blurx_uniform;
-  gint                  blury_uniform;
+  ClutterTexture *texture;
+  CoglPipeline   *pipeline;
+  gint            blurx_uniform;
+  gint            blury_uniform;
 
-  float                 amount;
-  ClutterColor          color;
+  float           amount;
+  ClutterColor    color;
 };
 
-G_DEFINE_TYPE (TidyHighlight,
-	       tidy_highlight,
-	       CLUTTER_TYPE_ACTOR);
+G_DEFINE_TYPE (TidyHighlight, tidy_highlight, CLUTTER_TYPE_ACTOR);
 
 #define CLUTTER_HIGHLIGHT_GET_PRIVATE(obj) \
 (G_TYPE_INSTANCE_GET_PRIVATE ((obj), TIDY_TYPE_HIGHLIGHT, TidyHighlightPrivate))
@@ -97,7 +95,7 @@ tidy_highlight_get_preferred_width (ClutterActor *self, gfloat for_height,
                                     gfloat *natural_width_p)
 {
   TidyHighlightPrivate *priv = TIDY_HIGHLIGHT(self)->priv;
-  ClutterActor *texture;
+  ClutterActor *texture = CLUTTER_ACTOR (priv->texture);
   ClutterActorClass *texture_class;
 
   /* Note that by calling the get_width_request virtual method directly
@@ -105,7 +103,6 @@ tidy_highlight_get_preferred_width (ClutterActor *self, gfloat for_height,
    * are ignoring any size request override set on the parent texture
    * and just getting the normal size of the parent texture.
    */
-  texture = CLUTTER_ACTOR (priv->texture);
   if (!texture)
     {
       if (min_width_p)
@@ -128,7 +125,7 @@ tidy_highlight_get_preferred_height (ClutterActor *self, gfloat for_width,
                                      gfloat *natural_height_p)
 {
   TidyHighlightPrivate *priv = TIDY_HIGHLIGHT (self)->priv;
-  ClutterActor *texture;
+  ClutterActor *texture = CLUTTER_ACTOR (priv->texture);
   ClutterActorClass *texture_class;
 
   /* Note that by calling the get_height_request virtual method directly
@@ -136,7 +133,6 @@ tidy_highlight_get_preferred_height (ClutterActor *self, gfloat for_width,
    * are ignoring any size request override set on the parent texture and
    * just getting the normal size of the parent texture.
    */
-  texture = CLUTTER_ACTOR (priv->texture);
   if (!texture)
     {
       if (min_height_p)
@@ -149,10 +145,8 @@ tidy_highlight_get_preferred_height (ClutterActor *self, gfloat for_width,
     }
 
   texture_class = CLUTTER_ACTOR_GET_CLASS (texture);
-  texture_class->get_preferred_height (texture,
-                                              for_width,
-                                              min_height_p,
-                                              natural_height_p);
+  texture_class->get_preferred_height (texture, for_width, min_height_p,
+                                       natural_height_p);
 }
 
 static void
@@ -177,11 +171,12 @@ set_texture (TidyHighlight *self, ClutterTexture *texture)
   if (texture)
     {
       priv->texture = g_object_ref (texture);
-      cogl_pipeline_set_layer_texture (priv->pipeline, 0,
-                                       clutter_texture_get_cogl_texture(priv->texture));
+      cogl_pipeline_set_layer_texture (
+            priv->pipeline, 0, clutter_texture_get_cogl_texture(priv->texture));
 
       /* queue a redraw if the subd texture is already visible */
-      if (clutter_actor_is_visible (CLUTTER_ACTOR(priv->texture)) && was_visible)
+      if (clutter_actor_is_visible (CLUTTER_ACTOR(priv->texture)) &&
+          was_visible)
         {
           clutter_actor_show (actor);
           clutter_actor_queue_redraw (actor);
@@ -219,10 +214,8 @@ tidy_highlight_finalize (GObject *object)
 }
 
 static void
-tidy_highlight_set_property (GObject *object,
-                             guint prop_id,
-                             const GValue *value,
-                             GParamSpec *pspec)
+tidy_highlight_set_property (GObject *object, guint prop_id,
+                             const GValue *value, GParamSpec *pspec)
 {
   TidyHighlight *ctexture = TIDY_HIGHLIGHT (object);
 
@@ -261,6 +254,7 @@ tidy_highlight_paint_node (ClutterActor *actor, ClutterPaintNode *root)
   ClutterActorBox box, tex_box;
   gfloat width, height;
   gfloat blurx, blury;
+  gfloat alpha = (gfloat)clutter_actor_get_paint_opacity (actor) / 255.0;
   TidyHighlightPrivate *priv = TIDY_HIGHLIGHT(actor)->priv;
   CoglHandle tex = cogl_pipeline_get_layer_texture(priv->pipeline, 0);
   CoglColor color;
@@ -283,10 +277,8 @@ tidy_highlight_paint_node (ClutterActor *actor, ClutterPaintNode *root)
   box.x2 = box.x1 + width;
   box.y2 = box.y1 + height;
 
-  cogl_color_init_from_4ub(
-              &color, priv->color.red, priv->color.green, priv->color.blue,
-              priv->color.alpha *
-                         (float)clutter_actor_get_paint_opacity(actor) / 255.0);
+  cogl_color_init_from_4ub (&color, priv->color.red, priv->color.green,
+                            priv->color.blue, priv->color.alpha * alpha);
 
   cogl_pipeline_set_color(priv->pipeline, &color);
 
@@ -311,15 +303,16 @@ tidy_highlight_class_init (TidyHighlightClass *klass)
   gobject_class->set_property = tidy_highlight_set_property;
   gobject_class->get_property = tidy_highlight_get_property;
 
-  g_object_class_install_property
-(gobject_class, PROP_PARENT_TEXTURE,
-     g_param_spec_object ("parent-texture",
-                          "Parent Texture",
-                          "The parent texture to sub",
-                          CLUTTER_TYPE_TEXTURE,
-                          G_PARAM_READABLE | G_PARAM_WRITABLE |
-                          G_PARAM_STATIC_NAME | G_PARAM_STATIC_NICK |
-                          G_PARAM_STATIC_BLURB));
+  g_object_class_install_property(gobject_class, PROP_PARENT_TEXTURE,
+                               g_param_spec_object ("parent-texture",
+                                                    "Parent Texture",
+                                                    "The parent texture to sub",
+                                                    CLUTTER_TYPE_TEXTURE,
+                                                    G_PARAM_READABLE |
+                                                    G_PARAM_WRITABLE |
+                                                    G_PARAM_STATIC_NAME |
+                                                    G_PARAM_STATIC_NICK |
+                                                    G_PARAM_STATIC_BLURB));
 
   g_type_class_add_private (gobject_class, sizeof (TidyHighlightPrivate));
 }
@@ -356,10 +349,10 @@ tidy_highlight_init (TidyHighlight *self)
       cogl_pipeline_set_layer_null_texture (klass->base_pipeline,
                                             0, /* layer number */
                                             COGL_TEXTURE_TYPE_2D);
-      cogl_pipeline_set_layer_filters(
-                  klass->base_pipeline, 0, /* layer number */
-                  COGL_PIPELINE_FILTER_LINEAR,
-                  COGL_PIPELINE_FILTER_LINEAR);
+      cogl_pipeline_set_layer_filters(klass->base_pipeline,
+                                      0, /* layer number */
+                                      COGL_PIPELINE_FILTER_LINEAR,
+                                      COGL_PIPELINE_FILTER_LINEAR);
       cogl_pipeline_set_layer_wrap_mode(klass->base_pipeline,
                                         0, /* layer number */
                                         COGL_PIPELINE_WRAP_MODE_CLAMP_TO_EDGE);
@@ -368,7 +361,7 @@ tidy_highlight_init (TidyHighlight *self)
   priv->pipeline = cogl_pipeline_copy (klass->base_pipeline);
 
   priv->blurx_uniform =
-    cogl_pipeline_get_uniform_location (priv->pipeline, "blurx");
+      cogl_pipeline_get_uniform_location (priv->pipeline, "blurx");
   priv->blury_uniform =
     cogl_pipeline_get_uniform_location (priv->pipeline, "blury");
 }
@@ -405,7 +398,8 @@ tidy_highlight_set_amount (TidyHighlight *self, float amount)
     }
 }
 
-void tidy_highlight_set_color (TidyHighlight *self, ClutterColor *col)
+void
+tidy_highlight_set_color (TidyHighlight *self, ClutterColor *col)
 {
   g_return_if_fail (TIDY_IS_HIGHLIGHT (self));
 
