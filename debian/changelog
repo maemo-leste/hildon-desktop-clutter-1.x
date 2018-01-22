@@ -1,8 +1,14 @@
+hildon-desktop (1:2.2.157.6) unstable; urgency=medium
+
+  * build with glesv2 not with gl
+
+ -- Ivaylo Dimitrov <ivo.g.dimitrov.75@gmail.com>  Mon, 22 Jan 2018 22:10:32 +0200
+
 hildon-desktop (1:2.2.157.5) unstable; urgency=medium
 
   * Fix highlight effect in launcher
 
- -- Ivaylo Dimitrov <ivo.g.dimitrov.75@gmail.com>  Fri, 22 Jan 2018 19:31:12 +0200
+ -- Ivaylo Dimitrov <ivo.g.dimitrov.75@gmail.com>  Mon, 22 Jan 2018 19:31:12 +0200
 
 hildon-desktop (1:2.2.157.4) unstable; urgency=medium
 
