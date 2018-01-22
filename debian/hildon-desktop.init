@@ -1,46 +1,25 @@
-#! /bin/sh
-#
-### BEGIN INIT INFO
-# Provides:		hildon-desktop
-# Required-Start:	af-startup
-# Required-Stop:	af-startup
-# Default-Start:	2 3 4 5
-# Default-Stop:		0 1 6
-# Short-Description:	hildon-desktop
-# Description:		Hildon desktop for Fremantle
-### END INIT INFO
+#!/sbin/openrc-run
 
-if [ -r /etc/osso-af-init/af-defines.sh ]; then
-  . /etc/osso-af-init/af-defines.sh
-fi
+description="Fake job for hildon-desktop"
 
-START_AS_USER=""
-[ -d /scratchbox ] || START_AS_USER="su - user"
+depend() {
+    need xsession
+}
 
-case "$1" in
-start)
-        if [ -r /etc/osso-af-init/matchbox.sh ]; then
-          . /etc/osso-af-init/matchbox.sh stop
-        fi
-        # HD_NOTHREADS is a workaround for NB#116766
-        CLUTTER_BACKEND=x11 HD_NOTHREADS=yes CLUTTER_VBLANK=none $START_AS_USER \
-          $LAUNCHWRAPPER_TRYRESTART start \
-          hildon-desktop /usr/bin/hildon-desktop
-        ;;
-stop)
-        $START_AS_USER $LAUNCHWRAPPER_TRYRESTART stop \
-          hildon-desktop /usr/bin/hildon-desktop
-        ;;
-restart)
-        echo "$0: not implemented"
-        exit 1
-        ;;
-force-reload)
-        echo "$0: not implemented"
-        exit 1
-        ;;
-*)      echo "Usage: $0 {start|stop}"
-        exit 1
-        ;;
-esac
+start_pre() {
+    [ -e /tmp/ACT_DEAD ] && exit 1
 
+    ebegin "Wating for hildon-desktop to start"
+
+    while [ ! -e /tmp/hildon-desktop/desktop-started.stamp ]
+    do
+        sleep 2
+    done
+    # This is to make sure it's really functional by the time user
+    # gets to use it.
+    sleep 5
+}
+
+start() {
+    eend 0
+}
