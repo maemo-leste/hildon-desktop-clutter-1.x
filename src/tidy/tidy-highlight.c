@@ -89,7 +89,7 @@ static const gchar *tidy_highlight_glsl_shader =
   "    texture2D (tex, vec2(tex_coord.x + blurx*0.3, tex_coord.y + blury*0.3)).a * 0.125 + \n"
   "    texture2D (tex, vec2(tex_coord.x + blurx*0.3, tex_coord.y - blury*0.3)).a * 0.125; \n"
 
-  "  cogl_texel= alpha * vec4(2.0);\n";
+  "  cogl_texel= alpha * vec4(4.0);\n";
 
 static void
 tidy_highlight_get_preferred_width (ClutterActor *self, gfloat for_height,
@@ -273,8 +273,10 @@ tidy_highlight_paint_node (ClutterActor *actor, ClutterPaintNode *root)
   blurx = priv->amount / width;
   blury = priv->amount / height;
 
-  cogl_pipeline_set_uniform_1f (priv->pipeline, priv->blurx_uniform, blurx/2);
-  cogl_pipeline_set_uniform_1f (priv->pipeline, priv->blury_uniform, blury/2);
+  cogl_pipeline_set_uniform_1f (priv->pipeline, priv->blurx_uniform,
+                                blurx / 128.0);
+  cogl_pipeline_set_uniform_1f (priv->pipeline, priv->blury_uniform,
+                                blury / 128.0);
 
   box.x1 = tex_box.x1 - box.x1;
   box.y1 = tex_box.y1 - box.y1;
