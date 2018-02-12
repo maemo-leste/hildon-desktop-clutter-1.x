@@ -1,3 +1,9 @@
+hildon-desktop (1:2.2.157.7) unstable; urgency=medium
+
+  * Apply Cordia mouse patch
+
+ -- Ivan J. <parazyd@dyne.org>  Mon, 12 Feb 2018 20:25:00 +0100
+
 hildon-desktop (1:2.2.157.6) unstable; urgency=medium
 
   * build with glesv2 not with gl
