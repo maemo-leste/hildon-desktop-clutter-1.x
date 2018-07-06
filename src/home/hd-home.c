@@ -284,6 +284,22 @@ hd_home_edit_button_clicked (ClutterActor *button,
   return TRUE;
 }
 
+static gboolean
+hd_home_edit_button_touched(ClutterActor *button,
+			     ClutterEvent *event,
+			     HdHome       *home)
+{
+    switch(event->type) {
+        case CLUTTER_TOUCH_END:
+            return hd_home_edit_button_clicked(button, event, home);
+        default:
+            break;
+    }
+
+    return CLUTTER_EVENT_PROPAGATE;
+}
+
+
 static void
 hd_home_live_bg_emit_button1_event (
 		HdHome             *home,
@@ -1373,6 +1389,9 @@ hd_home_constructed (GObject *object)
   g_signal_connect (priv->edit_button, "button-release-event",
 		    G_CALLBACK (hd_home_edit_button_clicked),
 		    object);
+  g_signal_connect (priv->edit_button, "touch-event",
+		    G_CALLBACK (hd_home_edit_button_touched),
+		    object);
 
   priv->operator = clutter_group_new ();
   clutter_actor_set_name(priv->operator, "HdHome:operator");
@@ -2191,6 +2210,24 @@ hd_home_applet_release (ClutterActor       *applet,
   return TRUE;
 }
 
+
+static gboolean
+hd_home_applet_touched (ClutterActor       *applet,
+                        ClutterButtonEvent *event,
+                        HdHome             *home)
+{
+    switch(event->type) {
+        case CLUTTER_TOUCH_BEGIN:
+            return hd_home_applet_press(applet, event, home);
+        case CLUTTER_TOUCH_END:
+            return hd_home_applet_release(applet, event, home);
+        default:
+            break;
+    }
+
+    return CLUTTER_EVENT_PROPAGATE;
+}
+
 static gboolean
 do_home_applet_motion (HdHome       *home,
                        ClutterActor *applet,
@@ -2295,6 +2332,8 @@ hd_home_add_applet (HdHome *home, ClutterActor *applet)
 		  G_CALLBACK (hd_home_applet_press), home);
   g_signal_connect (applet, "button-release-event",
 		  G_CALLBACK (hd_home_applet_release), home);
+  g_signal_connect (applet, "touch-event",
+		  G_CALLBACK (hd_home_applet_touched), home);
   g_signal_connect (applet, "motion-event",
                   G_CALLBACK (hd_home_applet_motion), home);
 
