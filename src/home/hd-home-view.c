@@ -158,6 +158,7 @@ struct _HdHomeViewAppletData
 
   guint press_cb;
   guint release_cb;
+  guint touch_cb;
   guint resize_cb;
   guint motion_cb;
 
@@ -1289,6 +1290,25 @@ hd_home_view_applet_release (ClutterActor       *applet,
   return TRUE;
 }
 
+hd_home_view_applet_touched (ClutterActor       *applet,
+			     ClutterButtonEvent *event,
+			     HdHomeView         *view)
+{
+    switch(event->type) {
+        case CLUTTER_TOUCH_BEGIN:
+            return hd_home_view_applet_press(applet, event, view);
+        case CLUTTER_TOUCH_UPDATE:
+            return hd_home_view_applet_motion(applet, event, view);
+        case CLUTTER_TOUCH_END:
+            return hd_home_view_applet_release(applet, event, view);
+        default:
+            break;
+    }
+
+    return CLUTTER_EVENT_PROPAGATE;
+}
+
+
 static gint
 cmp_applet_modified (gconstpointer a,
                      gconstpointer b)
@@ -1463,6 +1483,23 @@ close_button_released (ClutterActor       *button,
 }
 
 static gboolean
+close_button_touched (ClutterActor       *button,
+                      ClutterButtonEvent *event,
+                      HdHomeView         *view)
+{
+    switch (event->type) {
+        case CLUTTER_TOUCH_BEGIN:
+            return close_button_pressed(button, event, view);
+        case CLUTTER_TOUCH_END:
+            return close_button_released(button, event, view);
+        default:
+            break;
+    }
+
+    return CLUTTER_EVENT_PROPAGATE;
+}
+
+static gboolean
 configure_button_clicked (ClutterActor       *button,
                           ClutterButtonEvent *event,
                           HdHomeView         *view)
@@ -1522,6 +1559,8 @@ hd_home_view_add_applet (HdHomeView   *view,
                     G_CALLBACK (close_button_pressed), view);
   g_signal_connect (close_button, "button-release-event",
                     G_CALLBACK (close_button_released), view);
+  g_signal_connect (close_button, "touch-event",
+                    G_CALLBACK (close_button_touched), view);
   data->close_button = close_button;
 
   /* Add configure button */
@@ -1545,6 +1584,9 @@ hd_home_view_add_applet (HdHomeView   *view,
                                        G_CALLBACK (hd_home_view_applet_release), view);
   data->press_cb = g_signal_connect (applet, "button-press-event",
                                      G_CALLBACK (hd_home_view_applet_press), view);
+
+  data->touch_cb = g_signal_connect (applet, "touch-event",
+                                     G_CALLBACK (hd_home_view_applet_touched), view);
 
   data->resize_cb = g_signal_connect (applet, "notify::allocation",
                                       G_CALLBACK (hd_home_view_applet_resize), view);
@@ -1781,6 +1823,8 @@ applet_data_free (HdHomeViewAppletData *data)
 
   if (data->press_cb)
     data->press_cb = (g_signal_handler_disconnect (data->actor, data->press_cb), 0);
+  if (data->touch_cb)
+    data->touch_cb = (g_signal_handler_disconnect (data->actor, data->touch_cb), 0);
   if (data->release_cb)
     data->release_cb = (g_signal_handler_disconnect (data->actor, data->release_cb), 0);
   if (data->resize_cb)
