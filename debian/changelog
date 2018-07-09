@@ -1,3 +1,9 @@
+hildon-desktop (1:2.2.157.9) unstable; urgency=medium
+
+  * Add basic support for touch events on hildon home
+
+ -- Merlijn Wajer <merlijn@wizzup.org>  Mon, 06 Apr 2018 23:30:00 +0100
+
 hildon-desktop (1:2.2.157.8) unstable; urgency=medium
 
   * Fix Cordia mouse patch
