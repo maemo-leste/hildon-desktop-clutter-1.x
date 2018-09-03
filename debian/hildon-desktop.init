@@ -4,12 +4,13 @@ description="Fake job for hildon-desktop"
 
 depend() {
     need xsession
+    keyword -timeout
 }
 
 start_pre() {
     [ -e /tmp/ACT_DEAD ] && exit 1
 
-    ebegin "Wating for hildon-desktop to start"
+    ebegin "Waiting for hildon-desktop to start"
 
     while [ ! -e /tmp/hildon-desktop/desktop-started.stamp ]
     do
