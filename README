@@ -1,0 +1,24 @@
+The Hildon Desktop application
+==============================
+
+The hildon-desktop process acts as a compositing window manager for all
+applications. All screen painting, including painting of X windows, is
+done through the Clutter canvas library and OpenGL ES v2.0 API.
+Compositing means that hildon-desktop tells the X server (through the X
+Composite extension) to draw all windows to an off-screen buffer,
+instead of drawing them directly to the framebuffer. This allows hildon-
+desktop to modify window contents before drawing them onto the screen.
+
+In Leste, compositing is used to implement window transitions and
+blurring of the screen. Hildon-desktop handles all mapped windows as
+Clutter actors, which are objects usually containing an OpenGL texture.
+As the window manager hildon-desktop will reparent application windows
+to decorate them with the application title bar and close button.
+
+Task launcher and Task switcher (aka. Dashboard, Task navigator) are
+implemented by the hildon-desktop process. Task launcher is a menu the
+user can access to start new applications or bring running applications
+on top. Task switcher is a view to switch between running applications,
+some of which might be ’background killed’, which means that they appear
+running to the user but really have saved their UI state and are started
+by hildon-desktop on demand.
