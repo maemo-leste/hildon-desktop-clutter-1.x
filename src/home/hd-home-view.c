@@ -909,9 +909,9 @@ hd_home_view_applet_resize (ClutterActor *applet,
 }
 
 static gboolean
-hd_home_view_applet_motion (ClutterActor       *applet,
-                            ClutterMotionEvent *event,
-                            HdHomeView         *view)
+_hd_home_view_applet_motion (ClutterActor       *applet,
+                             gfloat event_x, gfloat event_y,
+                             HdHomeView         *view)
 {
   HdHomeViewPrivate *priv = view->priv;
   gfloat x, y, w, h;
@@ -919,8 +919,8 @@ hd_home_view_applet_motion (ClutterActor       *applet,
   /* Check if it is still a tap or already a move */
   if (priv->applet_motion_tap)
     {
-      if (ABS (priv->applet_motion_start_x - event->x) > MAX_TAP_DISTANCE ||
-          ABS (priv->applet_motion_start_y - event->y) > MAX_TAP_DISTANCE)
+      if (ABS (priv->applet_motion_start_x - event_x) > MAX_TAP_DISTANCE ||
+          ABS (priv->applet_motion_start_y - event_y) > MAX_TAP_DISTANCE)
         priv->applet_motion_tap = FALSE;
       else
         return FALSE;
@@ -929,8 +929,8 @@ hd_home_view_applet_motion (ClutterActor       *applet,
   hd_home_show_edge_indication (priv->home);
 
   /* New position of applet actor based on movement */
-  x = priv->applet_motion_start_position_x + event->x - priv->applet_motion_start_x;
-  y = priv->applet_motion_start_position_y + event->y - priv->applet_motion_start_y;
+  x = priv->applet_motion_start_position_x + event_x - priv->applet_motion_start_x;
+  y = priv->applet_motion_start_position_y + event_y - priv->applet_motion_start_y;
 
   /* Get size of home view and applet actor */
   clutter_actor_get_size (applet, &w, &h);
@@ -977,25 +977,25 @@ hd_home_view_applet_motion (ClutterActor       *applet,
 
   if(!STATE_IS_PORTRAIT (hd_render_manager_get_state()))
     {
-      if (event->x < HD_EDGE_INDICATION_WIDTH)
+      if (event_x < HD_EDGE_INDICATION_WIDTH)
         priv->move_applet_left = TRUE;
-      else if (event->x > HD_COMP_MGR_LANDSCAPE_WIDTH - HD_EDGE_INDICATION_WIDTH)
+      else if (event_x > HD_COMP_MGR_LANDSCAPE_WIDTH - HD_EDGE_INDICATION_WIDTH)
         priv->move_applet_right = TRUE;
     }
   else
     {
       if(hd_home_get_vertical_scrolling (priv->home))
         {
-          if (event->y < HD_EDGE_INDICATION_WIDTH + HD_COMP_MGR_TOP_MARGIN)
+          if (event_y < HD_EDGE_INDICATION_WIDTH + HD_COMP_MGR_TOP_MARGIN)
             priv->move_applet_left = TRUE;
-          else if (event->y > HD_COMP_MGR_PORTRAIT_HEIGHT - HD_EDGE_INDICATION_WIDTH)
+          else if (event_y > HD_COMP_MGR_PORTRAIT_HEIGHT - HD_EDGE_INDICATION_WIDTH)
             priv->move_applet_right = TRUE;
         }
       else
         {
-          if (event->x < HD_EDGE_INDICATION_WIDTH)
+          if (event_x < HD_EDGE_INDICATION_WIDTH)
             priv->move_applet_left = TRUE;
-          else if (event->x > HD_COMP_MGR_PORTRAIT_WIDTH - HD_EDGE_INDICATION_WIDTH)
+          else if (event_x > HD_COMP_MGR_PORTRAIT_WIDTH - HD_EDGE_INDICATION_WIDTH)
             priv->move_applet_right = TRUE;
         }
     }
@@ -1006,9 +1006,17 @@ hd_home_view_applet_motion (ClutterActor       *applet,
 }
 
 static gboolean
-hd_home_view_applet_press (ClutterActor       *applet,
-			   ClutterButtonEvent *event,
-			   HdHomeView         *view)
+hd_home_view_applet_motion (ClutterActor       *applet,
+                            ClutterMotionEvent *event,
+                            HdHomeView         *view)
+{
+  return _hd_home_view_applet_motion (applet, event->x, event->y, view);
+}
+
+static gboolean
+_hd_home_view_applet_press (ClutterActor       *applet,
+                            gfloat event_x, gfloat event_y,
+                            HdHomeView         *view)
 {
   HdHomeViewPrivate *priv = view->priv;
   gchar *modified_key, *modified;
@@ -1067,8 +1075,8 @@ hd_home_view_applet_press (ClutterActor       *applet,
 
   mb_wm_client_stacking_mark_dirty (desktop_client);
 
-  priv->applet_motion_start_x = event->x;
-  priv->applet_motion_start_y = event->y;
+  priv->applet_motion_start_x = event_x;
+  priv->applet_motion_start_y = event_y;
 
   clutter_actor_get_position (applet,
                               &priv->applet_motion_start_position_x,
@@ -1080,6 +1088,14 @@ hd_home_view_applet_press (ClutterActor       *applet,
   priv->move_applet_right = FALSE;
 
   return FALSE;
+}
+
+static gboolean
+hd_home_view_applet_press (ClutterActor       *applet,
+                           ClutterButtonEvent *event,
+                           HdHomeView         *view)
+{
+  return _hd_home_view_applet_press(applet, event->x, event->y, view);
 }
 
 #define SNAP_GRID_SIZE_DEFAULT 4
@@ -1220,14 +1236,14 @@ hd_home_view_store_applet_position (HdHomeView   *view,
 }
 
 static gboolean
-hd_home_view_applet_release (ClutterActor       *applet,
-			     ClutterButtonEvent *event,
-			     HdHomeView         *view)
+_hd_home_view_applet_release (ClutterActor       *applet,
+                              gfloat event_x, gfloat event_y,
+                              HdHomeView         *view)
 {
   HdHomeViewPrivate *priv = view->priv;
   HdHomeViewAppletData *data;
 
-/*  g_debug ("%s: %d, %d", __FUNCTION__, event->x, event->y); */
+/*  g_debug ("%s: %d, %d", __FUNCTION__, event_x, event_y); */
 
   /* Get all pointer events */
   clutter_ungrab_pointer ();
@@ -1290,20 +1306,30 @@ hd_home_view_applet_release (ClutterActor       *applet,
   return TRUE;
 }
 
-hd_home_view_applet_touched (ClutterActor       *applet,
-			     ClutterButtonEvent *event,
-			     HdHomeView         *view)
+static gboolean
+hd_home_view_applet_release (ClutterActor       *applet,
+                             ClutterButtonEvent *event,
+                             HdHomeView         *view)
 {
-    switch(event->type) {
+  return _hd_home_view_applet_release(applet, event->x, event->y, view);
+}
+
+static gboolean
+hd_home_view_applet_touched (ClutterActor      *applet,
+                             ClutterTouchEvent *event,
+                             HdHomeView        *view)
+{
+    switch(event->type)
+      {
         case CLUTTER_TOUCH_BEGIN:
-            return hd_home_view_applet_press(applet, event, view);
+          return _hd_home_view_applet_press(applet, event->x, event->y, view);
         case CLUTTER_TOUCH_UPDATE:
-            return hd_home_view_applet_motion(applet, event, view);
+          return _hd_home_view_applet_motion(applet, event->x, event->y, view);
         case CLUTTER_TOUCH_END:
-            return hd_home_view_applet_release(applet, event, view);
+          return _hd_home_view_applet_release(applet, event->x, event->y, view);
         default:
             break;
-    }
+      }
 
     return CLUTTER_EVENT_PROPAGATE;
 }
