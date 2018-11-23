@@ -910,8 +910,8 @@ hd_home_view_applet_resize (ClutterActor *applet,
 
 static gboolean
 hd_home_view_applet_motion (ClutterActor       *applet,
-			    ClutterMotionEvent *event,
-			    HdHomeView         *view)
+                            ClutterMotionEvent *event,
+                            HdHomeView         *view)
 {
   HdHomeViewPrivate *priv = view->priv;
   gfloat x, y, w, h;
@@ -938,24 +938,22 @@ hd_home_view_applet_motion (ClutterActor       *applet,
   /* Restrict new applet actor position to allowed values */
   if (!hd_home_view_container_get_previous_view (HD_HOME_VIEW_CONTAINER (priv->view_container)) ||
       !hd_home_view_container_get_next_view (HD_HOME_VIEW_CONTAINER (priv->view_container)))
-	{
-		if(!STATE_IS_PORTRAIT (hd_render_manager_get_state()))
-	    x = MAX (MIN (x,
-  	                (gint) HD_COMP_MGR_LANDSCAPE_WIDTH - ((gint) w)),
-  	           0);
-		else
-	    x = MAX (MIN (x,
-  	                (gint) HD_COMP_MGR_PORTRAIT_WIDTH - ((gint) w)),
-  	           0);
-	}
-	if(!STATE_IS_PORTRAIT (hd_render_manager_get_state()))
-	  y = MAX (MIN (y,
-  	              (gint) HD_COMP_MGR_LANDSCAPE_HEIGHT - ((gint) h)),
-  	         HD_COMP_MGR_TOP_MARGIN);
-	else
-	  y = MAX (MIN (y,
-  	              (gint) HD_COMP_MGR_PORTRAIT_HEIGHT - ((gint) h)),
-  	         HD_COMP_MGR_TOP_MARGIN);
+    {
+      if(!STATE_IS_PORTRAIT (hd_render_manager_get_state()))
+        x = MAX (MIN (x, (gint) HD_COMP_MGR_LANDSCAPE_WIDTH - ((gint) w)), 0);
+      else
+        x = MAX (MIN (x, (gint) HD_COMP_MGR_PORTRAIT_WIDTH - ((gint) w)), 0);
+    }
+  if(!STATE_IS_PORTRAIT (hd_render_manager_get_state()))
+    {
+      y = MAX (MIN (y, (gint) HD_COMP_MGR_LANDSCAPE_HEIGHT - ((gint) h)),
+               HD_COMP_MGR_TOP_MARGIN);
+    }
+  else
+    {
+      y = MAX (MIN (y, (gint) HD_COMP_MGR_PORTRAIT_HEIGHT - ((gint) h)),
+               HD_COMP_MGR_TOP_MARGIN);
+    }
 
   /* Update applet actor position */
   clutter_actor_set_position (applet, x, y);
@@ -967,7 +965,9 @@ hd_home_view_applet_motion (ClutterActor       *applet,
   /* Check if this is the only active Home view */
   if (!hd_home_view_container_get_previous_view (HD_HOME_VIEW_CONTAINER (priv->view_container)) ||
       !hd_home_view_container_get_next_view (HD_HOME_VIEW_CONTAINER (priv->view_container)))
-    return FALSE;
+    {
+      return FALSE;
+    }
 
   /*
    * If the "drag cursor" entered the left/right indication area, highlight the indication.
@@ -975,30 +975,30 @@ hd_home_view_applet_motion (ClutterActor       *applet,
   priv->move_applet_left = FALSE;
   priv->move_applet_right = FALSE;
 
-	if(!STATE_IS_PORTRAIT (hd_render_manager_get_state()))
-	{
-    if (event->x < HD_EDGE_INDICATION_WIDTH)
-    	priv->move_applet_left = TRUE;
-   	else if (event->x > HD_COMP_MGR_LANDSCAPE_WIDTH - HD_EDGE_INDICATION_WIDTH)
-    	priv->move_applet_right = TRUE;
-	}
-	else
-	{
-    if(hd_home_get_vertical_scrolling (priv->home))
-      {
-    	  if (event->y < HD_EDGE_INDICATION_WIDTH + HD_COMP_MGR_TOP_MARGIN)
-    	    priv->move_applet_left = TRUE;
-    	  else if (event->y > HD_COMP_MGR_PORTRAIT_HEIGHT - HD_EDGE_INDICATION_WIDTH)
-    	    priv->move_applet_right = TRUE;
-      }
-    else
-      {
-    	  if (event->x < HD_EDGE_INDICATION_WIDTH)
-    	    priv->move_applet_left = TRUE;
-    	  else if (event->x > HD_COMP_MGR_PORTRAIT_WIDTH - HD_EDGE_INDICATION_WIDTH)
-    	    priv->move_applet_right = TRUE;
-      }
-	}
+  if(!STATE_IS_PORTRAIT (hd_render_manager_get_state()))
+    {
+      if (event->x < HD_EDGE_INDICATION_WIDTH)
+        priv->move_applet_left = TRUE;
+      else if (event->x > HD_COMP_MGR_LANDSCAPE_WIDTH - HD_EDGE_INDICATION_WIDTH)
+        priv->move_applet_right = TRUE;
+    }
+  else
+    {
+      if(hd_home_get_vertical_scrolling (priv->home))
+        {
+          if (event->y < HD_EDGE_INDICATION_WIDTH + HD_COMP_MGR_TOP_MARGIN)
+            priv->move_applet_left = TRUE;
+          else if (event->y > HD_COMP_MGR_PORTRAIT_HEIGHT - HD_EDGE_INDICATION_WIDTH)
+            priv->move_applet_right = TRUE;
+        }
+      else
+        {
+          if (event->x < HD_EDGE_INDICATION_WIDTH)
+            priv->move_applet_left = TRUE;
+          else if (event->x > HD_COMP_MGR_PORTRAIT_WIDTH - HD_EDGE_INDICATION_WIDTH)
+            priv->move_applet_right = TRUE;
+        }
+    }
 
   hd_home_highlight_edge_indication (priv->home, priv->move_applet_left, priv->move_applet_right);
 
@@ -1038,7 +1038,7 @@ hd_home_view_applet_press (ClutterActor       *applet,
 
   modified = g_strdup_printf ("%ld", wm_applet->modified);
 
-	modified_key = g_strdup_printf (GCONF_KEY_MODIFIED, wm_applet->applet_id);	
+  modified_key = g_strdup_printf (GCONF_KEY_MODIFIED, wm_applet->applet_id);
 
   gconf_client_set_string (priv->gconf_client,
                            modified_key,
