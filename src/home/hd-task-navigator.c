@@ -1305,25 +1305,6 @@ check_and_move (ClutterActor * actor, gfloat xpos_new, gfloat ypos_new)
     free_effect (closure->timeline, closure);
 }
 
-/* On the gadget (or maybe in general if we're accelerated) we can't
- * resize continously because it blocks all effects and doesn't come
- * about anyway.  It's so even if we don't clip_on_resize(). */
-#ifdef __i386__
-DEFINE_RMS_EFFECT(resize, gfloat,
-                  clutter_actor_get_size, clutter_actor_set_size);
-static void
-check_and_resize (ClutterActor * actor, gint width_new, gint height_new)
-{
-  EffectClosure *closure;
-  guint width_now, height_now;
-
-  clutter_actor_get_size (actor, &width_now, &height_now);
-  if (width_now != width_new || height_now != height_new)
-    resize (actor, width_new, height_new);
-  else if ((closure = has_effect (actor, resize_effect_frame)) != NULL)
-    free_effect (closure->timeline, closure);
-}
-#else /* __armel__ */
 static void resize_effect_complete (ClutterTimeline * timeline,
                                     EffectClosure * closure)
 {
@@ -1387,7 +1368,6 @@ check_and_resize (ClutterActor * actor, gfloat width_new, gfloat height_new)
   else if ((closure = has_effect (actor, resize_effect_complete)) != NULL)
     free_effect (closure->timeline, closure);
 }
-#endif /* __armel__ */
 
 DEFINE_RMS_EFFECT(scale, gdouble,
                   clutter_actor_get_scale, clutter_actor_set_scale);
