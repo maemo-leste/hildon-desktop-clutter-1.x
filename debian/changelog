@@ -1,3 +1,9 @@
+hildon-desktop (1:2.2.157.11) unstable; urgency=medium
+
+  * Remove unused ifdef for i386
+
+ -- Merlijn Wajer <merlijn@wizzup.org>  Sun, 06 Jan 2019 00:03:05 +0100
+
 hildon-desktop (1:2.2.157.10) unstable; urgency=medium
 
   * Add 'keyword -timeout' to init script to deal with slow starting
