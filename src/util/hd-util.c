@@ -362,6 +362,14 @@ hd_util_change_screen_orientation (MBWindowManager *wm,
 		     DisplayHeightMM (wm->xdpy, DefaultScreen (wm->xdpy)));
       height_mm = MAX(DisplayWidthMM (wm->xdpy, DefaultScreen (wm->xdpy)),
  		      DisplayHeightMM (wm->xdpy, DefaultScreen (wm->xdpy)));
+
+      if ((crtc_info->rotation == RR_Rotate_0 &&
+           crtc_info->width < crtc_info->height) ||
+          (crtc_info->rotation == RR_Rotate_270 &&
+           crtc_info->width > crtc_info->height))
+        {
+          want = RR_Rotate_0;
+        }
     }
   else
     {
@@ -375,6 +383,14 @@ hd_util_change_screen_orientation (MBWindowManager *wm,
 		     DisplayHeightMM (wm->xdpy, DefaultScreen (wm->xdpy)));
       height_mm = MIN(DisplayWidthMM (wm->xdpy, DefaultScreen (wm->xdpy)),
  		      DisplayHeightMM (wm->xdpy, DefaultScreen (wm->xdpy)));
+
+      if ((crtc_info->rotation == RR_Rotate_0 &&
+           crtc_info->width < crtc_info->height) ||
+          (crtc_info->rotation == RR_Rotate_270 &&
+           crtc_info->width > crtc_info->height))
+        {
+          want = RR_Rotate_270;
+        }
     }
 
   if (!(crtc_info->rotations & want))

@@ -483,8 +483,19 @@ set_background_common (HdHomeView *hview, ClutterActor *new_bg)
     {
       guint bg_width, bg_height;
       guint actual_width, actual_height;
-      bg_width = HD_COMP_MGR_LANDSCAPE_WIDTH;
-      bg_height = HD_COMP_MGR_LANDSCAPE_HEIGHT;
+
+      /* we could be started in portrait mode */
+      if (HD_COMP_MGR_LANDSCAPE_WIDTH > HD_COMP_MGR_LANDSCAPE_HEIGHT)
+        {
+          bg_width = HD_COMP_MGR_LANDSCAPE_WIDTH;
+          bg_height = HD_COMP_MGR_LANDSCAPE_HEIGHT;
+        }
+      else
+        {
+          bg_width = HD_COMP_MGR_LANDSCAPE_HEIGHT;
+          bg_height = HD_COMP_MGR_LANDSCAPE_WIDTH;
+        }
+
       actual_width = clutter_actor_get_width (new_bg);
       actual_height = clutter_actor_get_height (new_bg);
       /* It may be that we get a bigger texture than we need
@@ -1931,18 +1942,20 @@ hd_home_view_rotate_background(ClutterActor *actor, GParamSpec *unused,
   gfloat w, h;
 
   clutter_actor_get_size (stage, &w, &h);
+
   if (w < h)
     { /* -> portrait */
-      clutter_actor_set_anchor_point_from_gravity (actor,
-                                                   CLUTTER_GRAVITY_SOUTH_WEST);
-      clutter_actor_set_rotation (actor, CLUTTER_Z_AXIS, 90, 0, 0, 0);
+      clutter_actor_set_pivot_point(actor, 0, 1);
+      clutter_actor_set_translation(actor, w - h, -h, 0);
+      clutter_actor_set_rotation_angle (actor, CLUTTER_Z_AXIS, 90);
     }
   else
     { /* -> landscape */
-     clutter_actor_set_anchor_point_from_gravity (actor,
-                                                   CLUTTER_GRAVITY_NORTH_WEST);
-      clutter_actor_set_rotation (actor, CLUTTER_Z_AXIS, 0, 0, 0, 0);
+      clutter_actor_set_pivot_point(actor, 0, 0);
+      clutter_actor_set_translation(actor, 0, 0, 0);
+      clutter_actor_set_rotation_angle (actor, CLUTTER_Z_AXIS, 0);
     }
+
   clutter_actor_set_size(actor, w, h);
 }
 
