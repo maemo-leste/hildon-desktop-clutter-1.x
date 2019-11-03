@@ -318,14 +318,14 @@ show_scrollbars (TidyFingerScroll *scroll, gboolean show)
   vscroll = tidy_scroll_view_get_vscroll_bar (TIDY_SCROLL_VIEW (scroll));
 
   /* Create new ones */
-  if (!CLUTTER_ACTOR_IS_REACTIVE (hscroll))
+  if (!clutter_actor_get_reactive (hscroll))
     priv->hscroll_timeline =
         clutter_actor_animate (hscroll, CLUTTER_LINEAR, duration,
                                "opacity", opacity,
                                "signal-swapped::completed",
                                G_CALLBACK(hfade_complete_cb), scroll, NULL);
 
-  if (!CLUTTER_ACTOR_IS_REACTIVE (vscroll))
+  if (!clutter_actor_get_reactive (vscroll))
     priv->vscroll_timeline =
         clutter_actor_animate (vscroll, CLUTTER_LINEAR, duration,
                                "opacity", opacity,
@@ -829,7 +829,7 @@ hscroll_notify_reactive_cb (ClutterActor     *bar,
   TidyFingerScrollPrivate *priv;
 
   priv = scroll->priv;
-  if (CLUTTER_ACTOR_IS_REACTIVE (bar))
+  if (clutter_actor_get_reactive (bar))
     {
       if (priv->hscroll_timeline)
         {
@@ -849,7 +849,7 @@ vscroll_notify_reactive_cb (ClutterActor     *bar,
   TidyFingerScrollPrivate *priv;
 
   priv = scroll->priv;
-  if (CLUTTER_ACTOR_IS_REACTIVE (bar))
+  if (clutter_actor_get_reactive (bar))
     {
       if (priv->vscroll_timeline)
         {
