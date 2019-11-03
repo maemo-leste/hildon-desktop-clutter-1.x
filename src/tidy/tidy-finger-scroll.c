@@ -445,7 +445,7 @@ deceleration_new_frame_cb (ClutterTimeline *timeline,
   TidyAdjustment *hadjust, *vadjust;
   gfloat hvalue, hlowest, hlower, hpage, hupper, hhighest;
   gfloat vvalue, vlowest, vlower, vpage, vupper, vhighest;
-  guint frame_num = msecs / clutter_timeline_get_duration(timeline);
+  gint frame_num = (msecs * 60) / 1000;
 
   if (!(child = tidy_scroll_view_get_child (TIDY_SCROLL_VIEW(scroll))))
     return;
