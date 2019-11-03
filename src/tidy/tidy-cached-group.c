@@ -76,14 +76,6 @@ tidy_cached_group_paint (ClutterActor *actor)
       return;
     }
 
-#ifdef __i386__
-  if (!cogl_features_available(COGL_FEATURE_OFFSCREEN))
-    { /* If we can't render offscreen properly, just render normally. */
-      CLUTTER_ACTOR_CLASS (tidy_cached_group_parent_class)->paint(actor);
-      return;
-    }
-#endif
-
   int exp_width = width/priv->downsample;
   int exp_height = height/priv->downsample;
   int tex_width = 0;
