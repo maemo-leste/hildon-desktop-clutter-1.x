@@ -1391,7 +1391,7 @@ hd_transition_fade_and_rotate(gboolean first_part,
   data->timeline = hd_transition_timeline_new("rotate", data->event, 300);
 
   g_signal_connect (data->timeline, "new-frame",
-                        G_CALLBACK (on_rotate_screen_timeline_new_frame), data);
+                    G_CALLBACK (on_rotate_screen_timeline_new_frame), data);
   g_signal_connect (data->timeline, "completed",
                          G_CALLBACK (hd_transition_completed), data);
   if (finished_callback)
@@ -1766,14 +1766,15 @@ hd_transition_rotate_screen (MBWindowManager *wm, gboolean goto_portrait)
   else
     g_debug("divert");
 
-	/*Update applets position after transition, it's different
-	* for both desktop orientations. It's here for the performance
-	* reasons. */
-	hd_render_manager_update_applets_position ();
+  /*Update applets position after transition, it's different
+        * for both desktop orientations. It's here for the performance
+        * reasons. */
+  hd_render_manager_update_applets_position ();
+
   if(hd_render_manager_is_portrait_wallpaper_enabled ())
 	  hd_render_manager_update_wallpapers ();
 
-	hd_dbus_send_desktop_orientation_changed (STATE_IS_PORTRAIT (hd_render_manager_get_state ()));
+  hd_dbus_send_desktop_orientation_changed (STATE_IS_PORTRAIT (hd_render_manager_get_state ()));
 
   return TRUE;
 }
