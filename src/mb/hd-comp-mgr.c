@@ -3706,8 +3706,7 @@ dump_clutter_actor_tree (ClutterActor *actor, GString *indent)
 {
   const gchar *name;
   MBWMCompMgrClient *cmgrc;
-  ClutterGeometry geo;
-  gint ax, ay;
+  gfloat x, y, w, h, ax, ay, tx, ty, tz;
 
   if (!indent)
     indent = g_string_new ("");
@@ -3716,17 +3715,21 @@ dump_clutter_actor_tree (ClutterActor *actor, GString *indent)
     name = clutter_text_get_text (CLUTTER_TEXT (actor));
   cmgrc = g_object_get_data(G_OBJECT (actor), "HD-MBWMCompMgrClutterClient");
 
-  clutter_actor_get_geometry (actor, &geo);
-  clutter_actor_get_anchor_point (actor, &ax, &ay);
-  g_debug ("actor[%u]: %s%p (type=%s, name=%s, win=0x%lx), "
-           "size: %ux%u%+d%+d[%d,%d], visible: %d, reactive: %d",
+  clutter_actor_get_position (actor, &x, &y);
+  clutter_actor_get_size (actor, &w, &h);
+  clutter_actor_get_pivot_point (actor, &ax, &ay);
+  clutter_actor_get_translation(actor, &tx, &ty, &tz);
+
+  g_debug ("actor[%lu]: %s%p (type=%s, name=%s, win=0x%lx), "
+           "size: %.0fx%.0f%+.0f%+.0f[%.0f,%.0f][%.0f,%.0f,%.0f], visible: %d, reactive: %d",
            indent->len, indent->str, actor,
            G_OBJECT_TYPE_NAME (actor), name,
            cmgrc && cmgrc->wm_client && cmgrc->wm_client->window
                ? cmgrc->wm_client->window->xwindow : 0,
-           geo.width, geo.height, geo.x, geo.y, ax, ay,
+           w, h, x, y, ax, ay, tx, ty, tz,
            clutter_actor_is_visible (actor) != 0,
-           CLUTTER_ACTOR_IS_REACTIVE (actor) != 0);
+           clutter_actor_get_reactive(actor) != 0);
+
   if (CLUTTER_IS_CONTAINER (actor))
     {
       g_string_append_c (indent, ' ');
@@ -3800,6 +3803,7 @@ hd_comp_mgr_dump_debug_info (const gchar *tag)
     g_debug ("    %dx%d%+d%+d", MBWM_GEOMETRY(&inputshape[i]));
   XFree(inputshape);
 
+  g_debug("Stage winid %lx", clutter_x11_get_stage_window (CLUTTER_STAGE (stage)));
   dump_clutter_actor_tree (clutter_stage_get_default (), NULL);
   hd_app_mgr_dump_app_list (TRUE);
 #endif
