@@ -520,7 +520,6 @@ hd_comp_mgr_init (MBWMObject *obj, va_list vap)
 
   stage = clutter_stage_get_default ();
 
-  clutter_stage_set_no_clear_hint(CLUTTER_STAGE(stage), TRUE);
   /*
    * Create the home group before the switcher, so the switcher can
    * connect it's signals to it.
