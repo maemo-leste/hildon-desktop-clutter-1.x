@@ -772,6 +772,7 @@ on_rotate_screen_timeline_new_frame(ClutterTimeline *timeline,
   gint duration;
   gint use_zaxis = hd_transition_get_int ("thp_tweaks", "zaxisrotation", 0);
   ClutterActor *actor;
+  ClutterRotateAxis axis;
 
   duration = clutter_timeline_get_duration(timeline);
   amt = msecs / (float)duration;
@@ -788,17 +789,23 @@ on_rotate_screen_timeline_new_frame(ClutterTimeline *timeline,
   angle = data->angle * amt;
 
   actor = CLUTTER_ACTOR(hd_render_manager_get());
-  clutter_actor_set_rotation(actor, use_zaxis ? CLUTTER_Z_AXIS :
-      (hd_comp_mgr_is_portrait () ? CLUTTER_Y_AXIS : CLUTTER_X_AXIS),
-      msecs < duration ? angle : 0,
-      hd_comp_mgr_get_current_screen_width()/2,
-      hd_comp_mgr_get_current_screen_height()/2, 0);
+
+  if (use_zaxis)
+    axis = CLUTTER_Z_AXIS;
+  else if (hd_comp_mgr_is_portrait ())
+    axis = CLUTTER_Y_AXIS;
+  else
+    axis = CLUTTER_X_AXIS;
+
+  clutter_actor_set_rotation_angle(actor, axis, msecs < duration ? angle : 0);
 
   if (!use_zaxis)
     {
-      clutter_actor_set_depth(actor, -amt * 150);
+      clutter_actor_set_z_position(actor, -amt * 150);
       /* use this actor to dim out the screen */
-      clutter_actor_raise_top(data->particles[0]);
+      clutter_actor_set_child_above_sibling(
+            clutter_actor_get_parent(data->particles[0]),
+            data->particles[0], NULL);
       clutter_actor_set_opacity(data->particles[0], (int)(dim_amt*255));
     }
 }
