@@ -3114,7 +3114,8 @@ void hd_render_manager_remove_input_blocker() {
  {
    XSelectInput (xdpy, win, FocusChangeMask | ExposureMask
                  | PropertyChangeMask | ButtonPressMask | ButtonReleaseMask
-                 | KeyPressMask | KeyReleaseMask | PointerMotionMask);
+                 | KeyPressMask | KeyReleaseMask | PointerMotionMask
+                 | StructureNotifyMask);
    if (STATE_IS_NON_COMP (hd_render_manager_get_state ()))
      /* nobody knows what this actually is, let alone why shouldn't be
       * reset in non-composited mode */
