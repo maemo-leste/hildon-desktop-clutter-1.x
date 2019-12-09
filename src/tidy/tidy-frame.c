@@ -128,13 +128,13 @@ tidy_frame_get_preferred_height (ClutterActor *actor,
 static void
 tidy_frame_allocate (ClutterActor          *actor,
                      const ClutterActorBox *box,
-                     gboolean               origin_changed)
+                     ClutterAllocationFlags flags)
 {
   TidyFramePrivate *priv = TIDY_FRAME (actor)->priv;
   ClutterActorClass *klass;
 
   klass = CLUTTER_ACTOR_CLASS (tidy_frame_parent_class);
-  klass->allocate (actor, box, origin_changed);
+  klass->allocate (actor, box, flags);
 
   if (priv->texture)
     {
@@ -145,7 +145,7 @@ tidy_frame_allocate (ClutterActor          *actor,
       texture_box.x2 = box->x2 - box->x1;
       texture_box.y2 = box->y2 - box->y1;
 
-      clutter_actor_allocate (priv->texture, &texture_box, origin_changed);
+      clutter_actor_allocate (priv->texture, &texture_box, flags);
     }
 
   if (priv->child)
@@ -189,7 +189,7 @@ tidy_frame_allocate (ClutterActor          *actor,
       child_box.x2 = child_box.x1 + child_width;
       child_box.y2 = child_box.y1 + child_height;
 
-      clutter_actor_allocate (priv->child, &child_box, origin_changed);
+      clutter_actor_allocate (priv->child, &child_box, flags);
     }
 }
 
