@@ -915,9 +915,9 @@ load_image (char const * fname, guint aw, guint ah)
       if (dh < vh)
         clutter_actor_set_y (texture, (vh - dh) / 2);
 
-      final = clutter_group_new ();
-      clutter_container_add (CLUTTER_CONTAINER (final),
-                             bg, texture, NULL);
+      final = clutter_actor_new ();
+      clutter_actor_add_child (final, bg);
+      clutter_actor_add_child (final, texture);
     }
   else
     final = texture;
@@ -1042,7 +1042,7 @@ need_to_animate (ClutterActor * actor)
     return FALSE;
   else if (CLUTTER_IS_GROUP (actor))
     /* Don't fly empty groups. */
-    return clutter_group_get_n_children (CLUTTER_GROUP (actor)) > 0;
+    return clutter_actor_get_n_children (actor) > 0;
   else
     return TRUE;
 }
@@ -1658,7 +1658,7 @@ turnoff_effect (ClutterTimeline * timeline, ClutterActor * thwin)
    * effect. */
   clutter_actor_get_position (thwin,  &centerx, &centery);
   centery -= hd_scrollable_group_get_viewport_y (Grid);
-  closure->all_particles = clutter_group_new ();
+  closure->all_particles = clutter_actor_new ();
   clutter_actor_set_position (closure->all_particles, centerx, centery);
   clutter_actor_add_child (CLUTTER_ACTOR (Navigator), closure->all_particles);
   clutter_actor_hide (closure->all_particles);
@@ -2446,7 +2446,7 @@ create_thwin (Thumbnail * thumb, ClutterActor * prison)
                               TITLE_LEFT_MARGIN, TITLE_HEIGHT / 2);
 
   /* .close, anchored at the top-right corner of the close graphics. */
-  thumb->close = clutter_group_new ();
+  thumb->close = clutter_actor_new ();
   clutter_actor_set_name (thumb->close, "close area");
   clutter_actor_set_size (thumb->close, CLOSE_AREA_SIZE, CLOSE_AREA_SIZE);
   clutter_actor_set_anchor_point (thumb->close,
@@ -2474,7 +2474,7 @@ create_thwin (Thumbnail * thumb, ClutterActor * prison)
     clutter_actor_hide (thumb->close_notif_icon);
 
   /* .plate */
-  thumb->plate = clutter_group_new ();
+  thumb->plate = clutter_actor_new ();
   clutter_actor_set_name (thumb->plate, "plate");
   clutter_container_add (CLUTTER_CONTAINER (thumb->plate),
                          thumb->title, thumb->close, NULL);
@@ -2483,7 +2483,7 @@ create_thwin (Thumbnail * thumb, ClutterActor * prison)
   if (THUMB_DESATURATION_ENABLED)
     thumb->thwin = tidy_desaturation_group_new ();
   else
-    thumb->thwin = clutter_group_new ();
+    thumb->thwin = clutter_actor_new ();
 
   clutter_actor_set_name (thumb->thwin, "thumbnail");
   clutter_actor_set_reactive (thumb->thwin, TRUE);
@@ -3241,7 +3241,7 @@ create_apthumb_frame (Thumbnail * apthumb)
 
   guint i;
 
-  apthumb->frame.all = clutter_group_new ();
+  apthumb->frame.all = clutter_actor_new ();
   clutter_actor_set_name (apthumb->frame.all, "apthumb frame");
 
   for (i = 0; i < G_N_ELEMENTS (frames); i++)
@@ -3311,7 +3311,7 @@ create_appthumb (ClutterActor * apwin)
   /* Now the actors: .apwin, .titlebar, .windows. */
   apthumb->apwin = g_object_ref (apwin);
   apthumb->titlebar = hd_title_bar_create_fake(SCREEN_WIDTH);
-  apthumb->windows = clutter_group_new ();
+  apthumb->windows = clutter_actor_new ();
   clutter_actor_set_name (apthumb->windows, "windows");
   /* See mb_wm_comp_mgr_clutter_client_actor_reparent_cb - we check this to
    * see if we should linear filter the actor or not */
@@ -3320,7 +3320,7 @@ create_appthumb (ClutterActor * apwin)
   /* .prison: anchor it so that we can ignore the UI framework area
    * of its contents.  Do so even if @apwin is really fullscreen,
    * ie. ignore the parts that would be in place of the title bar. */
-  apthumb->prison = clutter_group_new ();
+  apthumb->prison = clutter_actor_new ();
   clutter_actor_set_name (apthumb->prison, "prison");
   clutter_actor_set_anchor_point (apthumb->prison,
 				  App_window_geometry_x,
@@ -3908,7 +3908,7 @@ create_tnote (HdNote * hdnote)
   /* .icon will be set by layout_thumbs() because we can't decide yet
    * what size to use because we don't know whether we'll get our own
    * thumbnail. */
-  tnote->notwin = clutter_group_new();
+  tnote->notwin = clutter_actor_new();
   clutter_actor_set_name (tnote->notwin, "notwin");
   clutter_container_add (CLUTTER_CONTAINER (tnote->notwin),
                          tnote->background, tnote->separator,
@@ -4124,7 +4124,7 @@ hd_task_navigator_remove_notification (HdTaskNavigator * self,
 /* }}} */
 
 /* %HdTaskNavigator {{{ */
-G_DEFINE_TYPE (HdTaskNavigator, hd_task_navigator, CLUTTER_TYPE_GROUP);
+G_DEFINE_TYPE (HdTaskNavigator, hd_task_navigator, CLUTTER_TYPE_ACTOR);
 
 /* Private functions {{{ */
 /*

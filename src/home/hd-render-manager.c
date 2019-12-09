@@ -379,9 +379,7 @@ hd_render_manager_create (HdCompMgr *hdcompmgr,
                           HD_COMP_MGR_LANDSCAPE_HEIGHT);
   clutter_actor_add_child(CLUTTER_ACTOR(render_manager),
                               CLUTTER_ACTOR(priv->task_nav));
-  clutter_actor_move_anchor_point_from_gravity(CLUTTER_ACTOR(priv->task_nav),
-                                               CLUTTER_GRAVITY_CENTER);
-
+  clutter_actor_set_pivot_point(CLUTTER_ACTOR(priv->task_nav), 0.5f, 0.5f);
  /* Add the launcher widget. */
   clutter_actor_add_child(CLUTTER_ACTOR(render_manager),
                           CLUTTER_ACTOR(launcher));

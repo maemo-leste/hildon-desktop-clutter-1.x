@@ -16,12 +16,12 @@ typedef struct _HdTaskNavigatorClass HdTaskNavigatorClass;
 
 struct _HdTaskNavigator
 {
-  ClutterGroup             parent;
+  ClutterActor             parent;
 };
 
 struct _HdTaskNavigatorClass
 {
-  ClutterGroupClass        parent_class;
+  ClutterActorClass        parent_class;
 };
 
 GType            hd_task_navigator_get_type  (void);
