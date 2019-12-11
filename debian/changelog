@@ -1,3 +1,11 @@
+hildon-desktop (1:2.2.157.12) unstable; urgency=medium
+
+  * Fix hildon-desktop behaviour on rotated displays
+  * Port some parts of the code to more modern clutter api
+  * Do not always clear clutter scene in hope of some performance improvements
+
+ -- Merlijn Wajer <merlijn@wizzup.org>  Wed, 11 Dec 2019 15:14:35 +0100
+
 hildon-desktop (1:2.2.157.10) unstable; urgency=medium
 
   * Add 'keyword -timeout' to init script to deal with slow starting
