@@ -311,18 +311,21 @@ hd_util_change_screen_orientation (MBWindowManager *wm,
   XRRScreenResources *res;
   XRRCrtcInfo *crtc_info;
   Rotation want;
-  Status ret;
+  Status status = RRSetConfigSuccess;
   int width, height, width_mm, height_mm;
   unsigned long one = 1;
+  gboolean rv = FALSE;
 
   if (randr_supported == -1)
     {
-      ret = XRRQueryVersion (wm->xdpy, &rr_major, &rr_minor);
-      if (ret == True && (rr_major > 1 || (rr_major == 1 && rr_minor >= 3)))
+      Status ok = XRRQueryVersion (wm->xdpy, &rr_major, &rr_minor);
+
+      if (ok == 1 && (rr_major > 1 || (rr_major == 1 && rr_minor >= 3)))
           randr_supported = 1;
       else
           randr_supported = 0;
     }
+
   if (!randr_supported)
     {
       g_debug ("Server does not support RandR 1.3\n");
@@ -330,6 +333,7 @@ hd_util_change_screen_orientation (MBWindowManager *wm,
     }
 
   res = XRRGetScreenResources (wm->xdpy, wm->root_win->xwindow);
+
   if (!res)
     {
       g_warning ("Couldn't get RandR screen resources\n");
@@ -338,16 +342,19 @@ hd_util_change_screen_orientation (MBWindowManager *wm,
 
   if (crtc == ~0UL)
       crtc = get_primary_crtc (wm, res);
+
   if (crtc == ~0UL)
     {
       g_warning ("Couldn't find CRTC to rotate\n");
-      return FALSE;
+      goto err_res;
     }
+
   crtc_info = XRRGetCrtcInfo (wm->xdpy, res, crtc);
+
   if (!crtc_info)
     {
       g_warning ("Couldn't find CRTC info\n");
-      return FALSE;
+      goto err_res;
     }
 
   if (goto_portrait)
@@ -397,13 +404,13 @@ hd_util_change_screen_orientation (MBWindowManager *wm,
     {
       g_warning ("CRTC does not support rotation (0x%.8X vs. 0x%.8X)",
 		 crtc_info->rotations, want);
-      return FALSE;
+      goto err_crtc_info;
     }
 
   if (crtc_info->rotation == want)
     {
       g_debug ("Requested rotation already active");
-      return FALSE;
+      goto err_crtc_info;
     }
 
   /* We must call glFinish here in order to be sure that OpenGL won't be
@@ -427,9 +434,9 @@ hd_util_change_screen_orientation (MBWindowManager *wm,
   XRRSetScreenSize (wm->xdpy, wm->root_win->xwindow, width, height,
 		    width_mm, height_mm);
   /* And now rotate. */
-  ret = XRRSetCrtcConfig (wm->xdpy, res, crtc, crtc_info->timestamp,
-                          crtc_info->x, crtc_info->y, crtc_info->mode, want,
-                          crtc_info->outputs, crtc_info->noutput);
+  status = XRRSetCrtcConfig (wm->xdpy, res, crtc, crtc_info->timestamp,
+                             crtc_info->x, crtc_info->y, crtc_info->mode, want,
+                             crtc_info->outputs, crtc_info->noutput);
 
   /* hd_util_root_window_configured will be called directly after this root
    * window has been reconfigured */
@@ -437,19 +444,24 @@ hd_util_change_screen_orientation (MBWindowManager *wm,
   /* Allow clients to redraw. */
   XUngrabServer (wm->xdpy);
   XFlush (wm->xdpy);  /* <-- this is required to avoid a lock-up */
-
+  rv = TRUE;
+err_crtc_info:
   XRRFreeCrtcInfo (crtc_info);
+err_res:
   XRRFreeScreenResources (res);
 
-  if (ret != Success)
+  if (rv == TRUE)
     {
-      g_warning ("XRRSetCrtcConfig() failed: %d", ret);
-      return FALSE;
+      if (status != RRSetConfigSuccess)
+        {
+          g_warning ("XRRSetCrtcConfig() failed: %d", status);
+          return FALSE;
+        }
+
+      hd_render_manager_flip_input_viewport();
     }
 
-  hd_render_manager_flip_input_viewport();
-
-  return TRUE;
+  return rv;
 }
 
 /* This is the finishing counterpart of hd_util_change_screen_orientation(),
