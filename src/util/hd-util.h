@@ -52,4 +52,6 @@ float hd_key_frame_interpolate(HdKeyFrameList *k, float x);
 void hd_cogl_color_to_clutter_color(CoglColor *cogl_color,
                                     ClutterColor *clutter_color);
 
+/* Display native orientation */
+gboolean hd_util_display_is_portrait(void);
 #endif

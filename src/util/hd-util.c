@@ -18,6 +18,9 @@
 #include <gdk/gdk.h>
 #include <GLES2/gl2.h>
 
+/* whether our display width < height, not accounting for any rotation */
+static gboolean display_is_portrait = FALSE;
+
 void *
 hd_util_get_win_prop_data_and_validate (Display   *xdpy,
 					Window     xwin,
@@ -383,6 +386,7 @@ hd_util_change_screen_orientation (MBWindowManager *wm,
            crtc_info->width > crtc_info->height))
         {
           want = RR_Rotate_0;
+          display_is_portrait = TRUE;
         }
     }
   else
@@ -404,6 +408,7 @@ hd_util_change_screen_orientation (MBWindowManager *wm,
            crtc_info->width > crtc_info->height))
         {
           want = RR_Rotate_270;
+          display_is_portrait = TRUE;
         }
     }
 
@@ -838,4 +843,11 @@ void hd_cogl_color_to_clutter_color(CoglColor *cogl_color,
     clutter_color->green = cogl_color_get_green(cogl_color) * 255;
     clutter_color->blue  = cogl_color_get_blue (cogl_color) * 255;
     clutter_color->alpha = cogl_color_get_alpha(cogl_color) * 255;
+}
+
+/* Display native orientation is portrait? */
+gboolean
+hd_util_display_is_portrait(void)
+{
+  return display_is_portrait;
 }

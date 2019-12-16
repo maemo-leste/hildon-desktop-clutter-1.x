@@ -82,9 +82,6 @@ void hd_task_navigator_activate(int x, int y, int close);
 void hd_task_navigator_sort_thumbs(void);
 void hd_task_navigator_rotate_thumbs(void);
 
-/* FIXME: not used anymore. */
-int hd_task_navigator_mode(void);
-
 void hd_task_navigator_rotate(int mode);
 void hd_task_navigator_update_orientation(gboolean portrait);
 void hd_task_navigator_update_win_orientation(Window xwindow,gboolean portrait);

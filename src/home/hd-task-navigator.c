@@ -80,12 +80,6 @@
 # define g_return_if_fail         g_assert
 #endif
 
-#if 0
-# define PORTRAIT       g_warning
-#else
-# define PORTRAIT(...)  /* NOP */
-#endif
-
 /* Measures (in pixels).  Unless indicated, none of them is tunable. */
 /* Common platform metrics */
 #define SCREEN_WIDTH               HD_COMP_MGR_LANDSCAPE_WIDTH
@@ -689,7 +683,7 @@ static void
 clutter_actor_effect_fade(ClutterActor *actor, guint msecs, guint8 opacity,
                           ClutterCallback fade_stopped_cb);
 
-static gint g_hd_task_navigator_mode=0;
+static gint g_hd_task_navigator_mode = 0;
 static const Flyops Fly_smoothly =
 {
   .move   = check_and_move,
@@ -4659,18 +4653,11 @@ hd_task_navigator_activate (int x, int y, int close)
       }
 }
 
-/* FIXME: not used anymore. */
-int
-hd_task_navigator_mode(void)
-{
-  return g_hd_task_navigator_mode;
-}
-
 void
 hd_task_navigator_rotate(int mode)
 {
-  if(mode)
-    mode = 1;
+  /* if our native orientation is portrait, invert mode */
+  mode = hd_util_display_is_portrait() != (!!mode);
 
   hd_launcher_update_orientation (mode);
 
