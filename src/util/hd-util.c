@@ -298,23 +298,11 @@ void hd_util_set_screen_size_property(MBWindowManager *wm,
                     (unsigned char *)value, 2);
 }
 
-/* Change the screen's orientation by rotating 90 degrees
- * (portrait mode) or going back to landscape.
- * Returns whether the orientation has actually changed. */
-gboolean
-hd_util_change_screen_orientation (MBWindowManager *wm,
-                                   gboolean goto_portrait)
+static gboolean
+randr_supported(MBWindowManager *wm)
 {
-  int rr_major, rr_minor;
-  static RRCrtc crtc = ~0UL; /* cache to avoid potentially lots of roundtrips */
   static int randr_supported = -1;
-  XRRScreenResources *res;
-  XRRCrtcInfo *crtc_info;
-  Rotation want;
-  Status status = RRSetConfigSuccess;
-  int width, height, width_mm, height_mm;
-  unsigned long one = 1;
-  gboolean rv = FALSE;
+  int rr_major, rr_minor;
 
   if (randr_supported == -1)
     {
@@ -326,7 +314,26 @@ hd_util_change_screen_orientation (MBWindowManager *wm,
           randr_supported = 0;
     }
 
-  if (!randr_supported)
+  return randr_supported != 0;
+}
+
+/* Change the screen's orientation by rotating 90 degrees
+ * (portrait mode) or going back to landscape.
+ * Returns whether the orientation has actually changed. */
+gboolean
+hd_util_change_screen_orientation (MBWindowManager *wm,
+                                   gboolean goto_portrait)
+{
+  static RRCrtc crtc = ~0UL; /* cache to avoid potentially lots of roundtrips */
+  XRRScreenResources *res;
+  XRRCrtcInfo *crtc_info;
+  Rotation want;
+  Status status = RRSetConfigSuccess;
+  int width, height, width_mm, height_mm;
+  unsigned long one = 1;
+  gboolean rv = FALSE;
+
+  if (!randr_supported(wm))
     {
       g_debug ("Server does not support RandR 1.3\n");
       return FALSE;
