@@ -338,6 +338,8 @@ hd_launcher_update_orientation (gboolean portraited)
 {
   HdLauncherPrivate *priv = HD_LAUNCHER_GET_PRIVATE (hd_launcher_get ());
 
+  portraited = hd_util_display_is_portrait() != (!!portraited);
+
   /* no changes, don't waste any time updating */
   if (priv->portraited == portraited)
     return;
