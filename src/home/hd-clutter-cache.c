@@ -250,7 +250,7 @@ hd_clutter_cache_get_sub_texture_for_area(const char *filename,
   gboolean extend_x, extend_y;
   gint low_x, low_y, high_x, high_y;
   ClutterTexture *texture = 0;
-  ClutterGroup *group = 0;
+  ClutterActor *group = 0;
   ClutterGeometry geo = *geo_;
   gint x,y;
 
@@ -289,8 +289,8 @@ hd_clutter_cache_get_sub_texture_for_area(const char *filename,
       return actor;
     }
 
-  group = CLUTTER_GROUP(clutter_group_new());
-  clutter_actor_set_name(CLUTTER_ACTOR(group), filename);
+  group = clutter_group_new();
+  clutter_actor_set_name(group, filename);
   if (extend_x)
     {
       low_x = geo.x + (geo.width/4);
@@ -368,11 +368,11 @@ hd_clutter_cache_get_sub_texture_for_area(const char *filename,
               tidy_sub_texture_set_tiled(tex, TRUE);
             clutter_actor_set_position(CLUTTER_ACTOR(tex), pos.x, pos.y);
             clutter_actor_set_size(CLUTTER_ACTOR(tex), pos.width, pos.height);
-            clutter_actor_add_child (CLUTTER_ACTOR(group), CLUTTER_ACTOR(tex));
+            clutter_actor_add_child (group, CLUTTER_ACTOR(tex));
           }
       }
 
-  return CLUTTER_ACTOR(group);
+  return group;
 }
 
 static void
