@@ -684,6 +684,8 @@ clutter_actor_effect_fade(ClutterActor *actor, guint msecs, guint8 opacity,
                           ClutterCallback fade_stopped_cb);
 
 static gint g_hd_task_navigator_mode = 0;
+static gboolean g_hd_task_navigator_rotated = FALSE;
+
 static const Flyops Fly_smoothly =
 {
   .move   = check_and_move,
@@ -4654,18 +4656,24 @@ hd_task_navigator_activate (int x, int y, int close)
 }
 
 void
+hd_task_navigator_set_rotated(gboolean rotated)
+{
+    g_hd_task_navigator_rotated = rotated;
+}
+
+void
 hd_task_navigator_rotate(int mode)
 {
-  /* if our native orientation is portrait, invert mode */
-  mode = hd_util_display_is_portrait() != (!!mode);
+  if (g_hd_task_navigator_rotated)
+    mode = !mode;
 
   hd_launcher_update_orientation (mode);
 
   /* no changes, don't waste any time updating */
-  if(g_hd_task_navigator_mode == mode )
+  if (g_hd_task_navigator_mode == mode)
     return;
 
-  g_hd_task_navigator_mode = mode;
+  g_hd_task_navigator_mode = !!mode;
 
   clutter_actor_set_size (Navigator, DESKTOP_WIDTH,DESKTOP_HEIGHT);
   clutter_actor_set_size (Scroller, DESKTOP_WIDTH,DESKTOP_HEIGHT);
