@@ -3720,7 +3720,7 @@ dump_clutter_actor_tree (ClutterActor *actor, GString *indent)
   clutter_actor_get_pivot_point (actor, &ax, &ay);
   clutter_actor_get_translation(actor, &tx, &ty, &tz);
 
-  g_debug ("actor[%lu]: %s%p (type=%s, name=%s, win=0x%lx), "
+  g_debug ("actor[%" G_GSIZE_FORMAT "]: %s%p (type=%s, name=%s, win=0x%lx), "
            "size: %.0fx%.0f%+.0f%+.0f[%.0f,%.0f][%.0f,%.0f,%.0f], visible: %d, reactive: %d",
            indent->len, indent->str, actor,
            G_OBJECT_TYPE_NAME (actor), name,
