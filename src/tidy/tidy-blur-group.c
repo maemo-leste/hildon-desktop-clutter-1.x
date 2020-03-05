@@ -117,6 +117,7 @@ tidy_blur_group_fallback_blur(TidyBlurGroup *group, int tex_width, int tex_heigh
 }
 #endif
 
+#if 0
 /* If priv->chequer, draw a chequer pattern over the screen */
 static void
 tidy_blur_group_do_chequer(TidyBlurGroup *group, guint width, guint height)
@@ -142,6 +143,8 @@ tidy_blur_group_do_chequer(TidyBlurGroup *group, guint width, guint height)
   g_object_unref (pipeline);
 }
 
+#endif
+
 static void
 tidy_blur_group_dispose (GObject *gobject)
 {
@@ -152,6 +155,12 @@ tidy_blur_group_dispose (GObject *gobject)
     {
       cogl_texture_unref(priv->tex_chequer);
       priv->tex_chequer = 0;
+    }
+
+  if (priv->blur_effect != NULL)
+    {
+      g_object_unref(priv->blur_effect);
+      priv->blur_effect = NULL;
     }
 
   G_OBJECT_CLASS (tidy_blur_group_parent_class)->dispose (gobject);
@@ -170,7 +179,7 @@ static void
 tidy_blur_group_init (TidyBlurGroup *self)
 {
   TidyBlurGroupPrivate *priv;
-  gint i, x, y;
+  gint i = 0, x, y;
   guchar dither_data[CHEQUER_SIZE*CHEQUER_SIZE];
 
   priv = self->priv = G_TYPE_INSTANCE_GET_PRIVATE (self,
@@ -181,20 +190,23 @@ tidy_blur_group_init (TidyBlurGroup *self)
   priv->use_mirror = FALSE;
 
   priv->tweaks_blurless = hd_transition_get_int("thp_tweaks", "blurless", 0);
-  priv->blurless_saturation = hd_transition_get_double("thp_tweaks", "blurless_saturation", 0);
+  priv->blurless_saturation =
+      hd_transition_get_double("thp_tweaks", "blurless_saturation", 0);
 
   /* Dimming texture - a 32x32 chequer pattern */
-  i=0;
-  for (y=0;y<CHEQUER_SIZE;y++)
-    for (x=0;x<CHEQUER_SIZE;x++)
-      {
-        /* A 50:50 chequer pattern:
+  for (y = 0; y < CHEQUER_SIZE; y++)
+    {
+      for (x = 0;x < CHEQUER_SIZE; x++)
+        {
+          /* A 50:50 chequer pattern:
          * dither_data[i++] = ((x&1) == (y&1)) ? 255 : 0;*/
 
-        /* 25:75 pattern */
-        gint d = x + y;
-        dither_data[i++] = ((d&3) == 0) ? 0 : 255;
-      }
+          /* 25:75 pattern */
+          gint d = x + y;
+          dither_data[i++] = ((d&3) == 0) ? 0 : 255;
+        }
+    }
+
   priv->tex_chequer = cogl_texture_new_from_data(
       CHEQUER_SIZE,
       CHEQUER_SIZE,
@@ -204,18 +216,10 @@ tidy_blur_group_init (TidyBlurGroup *self)
       CHEQUER_SIZE,
       dither_data);
 
-  if (!hd_transition_get_int("blur", "turbo", 0))
-    {
-    if (priv->tweaks_blurless)
-      {
-      }
-    else
-      {
-        priv->blur_effect = tidy_blur_effect_new();
-        clutter_actor_add_effect_with_name (CLUTTER_ACTOR(self), "blur",
-                                            priv->blur_effect);
-      }
-  }
+  if (!hd_transition_get_int("blur", "turbo", 0) && !priv->tweaks_blurless)
+    priv->blur_effect = g_object_ref(tidy_blur_effect_new());
+  else
+    priv->blur_effect = NULL;
 }
 
 /*
@@ -253,6 +257,7 @@ tidy_blur_group_set_chequer(ClutterActor *blur_group, gboolean chequer)
   if (priv->chequer != chequer)
     {
       priv->chequer = chequer;
+
       if (clutter_actor_is_visible(blur_group))
         clutter_actor_queue_redraw(blur_group);
     }
@@ -275,6 +280,17 @@ tidy_blur_group_set_blur(ClutterActor *blur_group, float blur)
 
   if (!priv->blur_effect)
       return;
+
+  if (blur != 0.0f)
+    {
+      if (!clutter_actor_get_effect(blur_group, "blur"))
+        {
+          clutter_actor_add_effect_with_name (blur_group, "blur",
+                                              priv->blur_effect);
+        }
+    }
+  else
+    clutter_actor_remove_effect_by_name (blur_group, "blur");
 
   tidy_blur_effect_set_blur(priv->blur_effect, blur);
 }
@@ -321,6 +337,9 @@ tidy_blur_group_set_brightness(ClutterActor *blur_group, float brightness)
 
   priv = TIDY_BLUR_GROUP(blur_group)->priv;
 
+  if (!priv->blur_effect)
+      return;
+
   tidy_blur_effect_set_brigtness(priv->blur_effect, brightness);
 }
 
@@ -340,6 +359,10 @@ tidy_blur_group_set_zoom(ClutterActor *blur_group, float zoom)
     return;
 
   priv = TIDY_BLUR_GROUP(blur_group)->priv;
+
+  if (!priv->blur_effect)
+      return;
+
   tidy_blur_effect_set_zoom(priv->blur_effect, zoom);
 }
 
@@ -358,6 +381,9 @@ tidy_blur_group_get_zoom(ClutterActor *blur_group)
     return 1.0f;
 
   priv = TIDY_BLUR_GROUP(blur_group)->priv;
+
+  if (!priv->blur_effect)
+    return 1.0f;
 
   return tidy_blur_effect_get_zoom(priv->blur_effect);
 }
@@ -409,12 +435,12 @@ tidy_blur_group_set_use_mirror(ClutterActor *blur_group, gboolean mirror)
 void
 tidy_blur_group_set_source_changed(ClutterActor *blur_group)
 {
-  TidyBlurGroupPrivate *priv;
+  /* TidyBlurGroupPrivate *priv; */
 
   if (!TIDY_IS_SANE_BLUR_GROUP(blur_group))
     return;
 
-  priv = TIDY_BLUR_GROUP(blur_group)->priv;
+  /* priv = TIDY_BLUR_GROUP(blur_group)->priv; */
   clutter_actor_queue_redraw(blur_group);
 }
 
@@ -427,7 +453,7 @@ tidy_blur_group_set_source_changed(ClutterActor *blur_group)
 void
 tidy_blur_group_hint_source_changed(ClutterActor *blur_group)
 {
-  TidyBlurGroupPrivate *priv;
+  /* TidyBlurGroupPrivate *priv; */
 
   if (!TIDY_IS_SANE_BLUR_GROUP(blur_group))
     return;
@@ -439,13 +465,13 @@ tidy_blur_group_hint_source_changed(ClutterActor *blur_group)
 void
 tidy_blur_group_stop_progressing(ClutterActor *blur_group)
 {
-  TidyBlurGroupPrivate *priv;
+  /* TidyBlurGroupPrivate *priv; */
 
   if (!TIDY_IS_SANE_BLUR_GROUP(blur_group))
     return;
 
-  priv = TIDY_BLUR_GROUP(blur_group)->priv;
-  /*priv->skip_progress = TRUE;*/
+  /* priv = TIDY_BLUR_GROUP(blur_group)->priv;
+  priv->skip_progress = TRUE; */
 }
 
 /**
